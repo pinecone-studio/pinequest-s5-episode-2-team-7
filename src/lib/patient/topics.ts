@@ -95,7 +95,7 @@ export const TOPICS = [
     id: "relieving",
     kind: "hpi",
     label: { mn: "Намдаадаг хүчин зүйл", en: "Relieving factors" },
-    patterns: [/намд/, /багас(гадаг|дог|ах)/, /гайгүй болдог/, /хөнгөр/, /юу(наас)? .*(дээрдэ|зүгээр бол)/, /relie/, /better (when|with)/, /makes it better/, /амрахаар/],
+    patterns: [/намд/, /багас(гадаг|даг|дог|ах|на)/, /гайгүй болдог/, /хөнгөр/, /юу(наас)? .*(дээрдэ|зүгээр бол)/, /relie/, /better (when|with)/, /makes it better/, /амрахаар/],
   }),
   t({
     id: "previous_episodes",
@@ -108,6 +108,7 @@ export const TOPICS = [
     kind: "hpi",
     label: { mn: "Өдөөгч нөхцөл", en: "Trigger / context" },
     patterns: [/юу хийж (байх|байсан) үед/, /юунаас бол/, /шалтгаа/, /өдөөг/, /what were you doing/, /trigger/],
+    suppressedBy: ["aggravating", "relieving"],
   }),
 
   // ------------------------------------------------------------ symptoms ---
@@ -199,7 +200,7 @@ export const TOPICS = [
     id: "chills",
     kind: "symptom",
     label: { mn: "Жихүүдэс, чичрэх", en: "Chills" },
-    patterns: [/жихүүд/, /чичр/, /даарч/, /chill/, /rigor/, /shiver/],
+    patterns: [/жихүүд/, /чичи?р/, /даарч/, /chill/, /rigor/, /shiver/],
     defaultNegative: "Үгүй, чичрээгүй.",
   }),
   t({
@@ -230,6 +231,7 @@ export const TOPICS = [
     kind: "symptom",
     label: { mn: "Хоолны дуршил", en: "Appetite" },
     patterns: [/дурш/, /хоол (ид|орж|орох)/, /appetite/, /eat(ing)?\b/],
+    exclude: [/ямар хоол/, /хооллолт/],
     defaultNegative: "Хоолны дуршил хэвийн.",
   }),
   t({
@@ -272,7 +274,7 @@ export const TOPICS = [
     id: "weight_loss",
     kind: "symptom",
     label: { mn: "Жин буурах", en: "Weight loss" },
-    patterns: [/(^|\s)жин/, /тура(лт|сан|ж)/, /weight/],
+    patterns: [/(^|\s)жин/, /тура(лт|сан|ж)/, /(^|\s)тур(сан|аад|ж|ах)/, /weight/],
     defaultNegative: "Үгүй, жин хаяагүй.",
   }),
   t({
@@ -429,7 +431,6 @@ export const TOPICS = [
     kind: "history",
     label: { mn: "Хооллолт", en: "Diet" },
     patterns: [/ямар хоол/, /хооллолт/, /хоол.*(иддэг|идэж байсан|идсэн)/, /\bdiet\b/, /what did you eat/],
-    suppressedBy: ["appetite"],
   }),
   t({
     id: "lmp",

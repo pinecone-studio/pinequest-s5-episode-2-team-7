@@ -16,7 +16,8 @@
     "db:seed": "tsx --conditions=react-server scripts/db-seed.ts",
     "cases:validate": "tsx scripts/validate-cases.ts",
     "schema:export": "tsx scripts/export-json-schema.ts",
-    "setup": "npm run db:migrate && npm run db:seed"
+    "setup": "npm run db:migrate && npm run db:seed",
+    "ml:fixtures": "tsx --conditions=react-server scripts/export-prompt-fixtures.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
