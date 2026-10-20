@@ -1,0 +1,10 @@
+# Inference service for the fine-tuned patient model (GPU recommended).
+fastapi>=0.115
+uvicorn[standard]>=0.30
+torch>=2.4
+transformers>=4.51
+peft>=0.15
+accelerate>=1.0
+bitsandbytes>=0.45; sys_platform == "linux"
+# Shared chat formatting (installed from this repository):
+-e ../ml

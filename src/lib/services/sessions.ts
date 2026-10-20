@@ -41,6 +41,18 @@ export function providerBadge(provider: string): ProviderBadge {
   return { label: PROVIDER_LABELS[provider as ProviderId] ?? provider, isDemo: provider === "mock" };
 }
 
+/**
+ * Badge for the model that ACTUALLY produced the latest answer. If the
+ * configured model failed and templates answered, say so — never show the
+ * configured model's name for a fallback answer.
+ */
+export function answeringBadge(configured: string, last: { provider: string | null; fallbackUsed: boolean } | undefined): ProviderBadge {
+  if (last?.fallbackUsed) {
+    return { label: `Демо горим (${PROVIDER_LABELS[configured as ProviderId] ?? configured} хариулсангүй)`, isDemo: true };
+  }
+  return providerBadge(last?.provider ?? configured);
+}
+
 function messageView(row: MessageRow): MessageView {
   return { id: row.id, role: row.role, content: row.content, createdAt: row.createdAt.toISOString() };
 }
@@ -83,6 +95,7 @@ export async function startSession(auth: SessionData, caseId: string): Promise<{
 export interface QuestionResult {
   messages: MessageView[];
   questionCount: number;
+  provider: ProviderBadge;
 }
 
 export async function askQuestion(auth: SessionData, sessionId: string, content: string): Promise<QuestionResult> {
@@ -177,7 +190,11 @@ export async function askQuestion(auth: SessionData, sessionId: string, content:
         .where(eq(interviewSessions.id, session.id));
       return created;
     });
-    return { messages: inserted.map(messageView), questionCount: session.questionCount + 1 };
+    return {
+      messages: inserted.map(messageView),
+      questionCount: session.questionCount + 1,
+      provider: answeringBadge(session.provider, { provider: turn.provider, fallbackUsed: turn.fallbackUsed }),
+    };
   } catch (error) {
     if (error instanceof Error && /unique|duplicate/i.test(error.message)) {
       throw Errors.conflict("Өмнөх асуултын хариу боловсруулагдаж байна. Түр хүлээнэ үү.");
@@ -259,7 +276,10 @@ export async function getSessionView(auth: SessionData, sessionId: string): Prom
     maxQuestions: MAX_QUESTIONS_PER_SESSION,
     startedAt: session.startedAt.toISOString(),
     endedAt: session.endedAt?.toISOString() ?? null,
-    provider: providerBadge(session.provider),
+    provider: answeringBadge(
+      session.provider,
+      rows.filter((r) => r.role === "patient" && r.seq > 0).at(-1),
+    ),
     submission: submission ? { diagnosis: submission.diagnosis, reasoning: submission.reasoning } : null,
     evaluation: evaluation ? { result: evaluation.result, narrative: evaluation.narrative, createdAt: evaluation.createdAt.toISOString() } : null,
   };

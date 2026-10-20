@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Python pipeline, inference service and local data are not part of the web app.
+    "ml/**",
+    "inference/**",
+    ".data/**",
   ]),
 ]);
 

@@ -253,3 +253,24 @@ describe("LLM provider safety net", () => {
     await expect(interview(chest, failing, "none").ask("Тамхи татдаг уу?")).rejects.toBeInstanceOf(SimulatorError);
   });
 });
+
+describe("grounding check", () => {
+  it("rejects a fluent reply that ignores the allowed facts", async () => {
+    const provider: PatientProvider = {
+      id: "finetuned",
+      model: "smoke",
+      label: "smoke",
+      async generate() {
+        // Real output of an under-trained smoke model to "Тамхи татдаг уу?"
+        return "Башка болгондуу эмчийн асуултуулган. Эмчийгүй, цээж өвдөөд байна.";
+      },
+      async health() {
+        return { ok: true, provider: "finetuned", model: "smoke", detail: "" };
+      },
+    };
+    const result = await interview(chest, provider).ask("Тамхи татдаг уу?");
+    expect(result.fallbackUsed).toBe(true);
+    expect(result.validationIssues.map((i) => i.code)).toContain("ungrounded");
+    expect(result.patientText).toContain("татаж");
+  });
+});

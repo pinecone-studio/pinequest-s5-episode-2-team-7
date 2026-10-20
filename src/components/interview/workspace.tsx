@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { apiFetch } from "@/lib/fetcher";
 import { SEX_LABELS } from "@/lib/i18n";
-import type { MessageView, SessionView } from "@/lib/views";
+import type { MessageView, ProviderBadge, SessionView } from "@/lib/views";
 import { Alert, Badge, Button, Card, Spinner, cn } from "../ui";
 import { DiagnosisDialog } from "./diagnosis-dialog";
 import { PatientAvatar } from "./patient-avatar";
@@ -22,6 +22,7 @@ export function InterviewWorkspace({ initial }: { initial: SessionView }) {
   const router = useRouter();
   const [messages, setMessages] = useState<MessageView[]>(initial.messages);
   const [questionCount, setQuestionCount] = useState(initial.questionCount);
+  const [provider, setProvider] = useState(initial.provider);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,12 +48,13 @@ export function InterviewWorkspace({ initial }: { initial: SessionView }) {
     setMessages((prev) => [...prev, { id: tempId, role: "student", content, createdAt: new Date().toISOString() }]);
     setDraft("");
     try {
-      const result = await apiFetch<{ messages: MessageView[]; questionCount: number }>(`/api/sessions/${initial.id}/messages`, {
+      const result = await apiFetch<{ messages: MessageView[]; questionCount: number; provider: ProviderBadge }>(`/api/sessions/${initial.id}/messages`, {
         method: "POST",
         json: { content },
       });
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), ...result.messages]);
       setQuestionCount(result.questionCount);
+      setProvider(result.provider);
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setDraft(content);
@@ -123,10 +125,10 @@ export function InterviewWorkspace({ initial }: { initial: SessionView }) {
             <Badge>
               {questionCount}/{initial.maxQuestions} асуулт
             </Badge>
-            {initial.provider.isDemo ? (
-              <Badge tone="amber">{initial.provider.label}</Badge>
+            {provider.isDemo ? (
+              <Badge tone="amber">{provider.label}</Badge>
             ) : (
-              <Badge tone="sky">AI: {initial.provider.label}</Badge>
+              <Badge tone="sky">AI: {provider.label}</Badge>
             )}
           </dd>
         </div>

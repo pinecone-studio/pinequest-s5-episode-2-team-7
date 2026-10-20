@@ -256,6 +256,11 @@ describe("17. model-provider failures", () => {
       const { status, body } = await ask(id, "Тамхи татдаг уу?");
       expect(status).toBe(201);
       expect(body.messages[1].content).toContain("татаж");
+      // The badge must not claim the configured model answered.
+      expect(body.provider.isDemo).toBe(true);
+      expect(body.provider.label).toContain("хариулсангүй");
+      const view = await (await getSession(req(`/api/sessions/${id}`, { cookie: studentCookie }), ctx(id))).json();
+      expect(view.session.provider.isDemo).toBe(true);
     } finally {
       setPatientProviderForTests(new MockPatientProvider());
     }

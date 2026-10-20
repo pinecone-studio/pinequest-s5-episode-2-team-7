@@ -17,7 +17,8 @@ export type ValidationIssueCode =
   | "speculation"
   | "undisclosed_fact"
   | "out_of_character"
-  | "contradiction";
+  | "contradiction"
+  | "ungrounded";
 
 export interface ValidationIssue {
   code: ValidationIssueCode;
@@ -25,6 +26,9 @@ export interface ValidationIssue {
 }
 
 export const MAX_REPLY_CHARS = 600;
+
+/** Frequent Mongolian words that say nothing about a fact's content. */
+const COMMON_STEMS = new Set(["бай", "эмч", "тий", "үгү", "гэж", "бол", "нэг", "мэд", "хэл", "одо", "энэ", "тэр", "бас", "жаа", "маш", "дээ", "гэс"]);
 
 const OUT_OF_CHARACTER = [
   /\bai\b/,
@@ -107,6 +111,24 @@ export function validatePatientReply(args: {
     if (pattern.test(normalized) && !pattern.test(normalizeQuestion(ctx.question))) {
       issues.push({ code: "out_of_character", detail: `Дүрээс гарсан: ${pattern.source}` });
       break;
+    }
+  }
+
+  // Grounding: when facts are being shared, the reply must reuse at least one
+  // content word from them (3-letter stems tolerate Mongolian suffixes;
+  // very common words are ignored). Catches fluent-looking replies that
+  // ignore the allowed facts.
+  if (ctx.share.length > 0) {
+    const stemsOf = (text: string) =>
+      normalizeQuestion(text)
+        .split(" ")
+        .filter((w) => w.length >= 4)
+        .map((w) => w.slice(0, 3))
+        .filter((stem) => !COMMON_STEMS.has(stem));
+    const stems = new Set(stemsOf(ctx.share.map((s) => s.text).join(" ")));
+    const replyStems = stemsOf(text);
+    if (stems.size > 0 && !replyStems.some((s) => stems.has(s))) {
+      issues.push({ code: "ungrounded", detail: "Зөвшөөрсөн баримтын агуулга хариултад алга" });
     }
   }
 

@@ -1,0 +1,28 @@
+# Tiny smoke test that runs on a Mac (Apple Silicon / CPU) to check that the
+# training code works end to end. The result is NOT a usable patient model.
+# On an 8 GB Mac the MPS GPU runs out of memory (Mongolian prompts are ~1.3k tokens
+# and Qwen's vocabulary is ~150k), so this runs on the CPU: slow but it fits.
+device: cpu
+base_model: Qwen/Qwen2.5-0.5B-Instruct
+adapter_id: pq-smoke-0.5b
+output_dir: outputs/smoke-0.5b
+purpose: "Smoke test of the training pipeline only."
+quantization: none
+max_seq_length: 1400
+max_train_examples: 64
+max_eval_examples: 16
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.0
+  target_modules: [q_proj, v_proj]
+training:
+  max_steps: 12
+  batch_size: 1
+  grad_accum: 2
+  learning_rate: 2.0e-4
+  logging_steps: 2
+  eval_steps: 12
+  save_steps: 12
+  gradient_checkpointing: true
+  seed: 42
