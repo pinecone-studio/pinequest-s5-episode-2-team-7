@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { ImportForm } from "@/components/admin/import-form";
 import { Card, PageHeader } from "@/components/ui";
+import { requirePageAdmin } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Админ — Импорт / Экспорт" };
 
-export default function ImportExportPage() {
+export default async function ImportExportPage() {
+  await requirePageAdmin("/admin/import");
   return (
     <main className="space-y-6">
       <PageHeader title="Импорт / Экспорт" subtitle="Кейс бүрийг тусад нь шалгана. Алдаатай кейс бусдыг хаахгүй, импортолсон кейс ноорог төлөвтэй орно." />

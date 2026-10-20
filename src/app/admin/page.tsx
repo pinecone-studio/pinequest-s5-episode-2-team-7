@@ -4,10 +4,12 @@ import { CaseStatusSelect } from "@/components/admin/case-status-select";
 import { Badge, buttonClass, Card, EmptyState, PageHeader } from "@/components/ui";
 import { DIFFICULTY_LABELS, formatDateTime } from "@/lib/i18n";
 import { listAllCases } from "@/lib/services/cases";
+import { requirePageAdmin } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Админ — Кейсүүд" };
 
 export default async function AdminCasesPage() {
+  await requirePageAdmin("/admin");
   const cases = await listAllCases();
   return (
     <main>

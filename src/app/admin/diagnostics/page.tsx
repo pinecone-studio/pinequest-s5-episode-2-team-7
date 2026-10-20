@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Alert, Badge, Card, PageHeader } from "@/components/ui";
 import { providerDiagnostics } from "@/lib/services/diagnostics";
+import { requirePageAdmin } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Админ — AI загварын төлөв" };
 
 export default async function DiagnosticsPage() {
+  await requirePageAdmin("/admin/diagnostics");
   const d = await providerDiagnostics();
   const totalAnswers = d.recentAnswers.reduce((sum, r) => sum + r.count, 0);
   const fallbacks = d.recentAnswers.filter((r) => r.fallback).reduce((sum, r) => sum + r.count, 0);

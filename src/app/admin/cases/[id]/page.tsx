@@ -4,13 +4,16 @@ import { CaseEditor } from "@/components/admin/case-editor";
 import { CaseStatusSelect } from "@/components/admin/case-status-select";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { ApiError } from "@/lib/api/http";
+import { PatientCase } from "@/lib/cases/schema";
 import { getTopic } from "@/lib/patient/topics";
 import { getCaseAdmin } from "@/lib/services/cases";
+import { requirePageAdmin } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Админ — Кейс засах" };
 
 export default async function AdminCasePage({ params }: PageProps<"/admin/cases/[id]">) {
   const { id } = await params;
+  await requirePageAdmin(`/admin/cases/${id}`);
   let record;
   try {
     record = await getCaseAdmin(id);
@@ -58,7 +61,8 @@ export default async function AdminCasePage({ params }: PageProps<"/admin/cases/
           </tbody>
         </table>
       </Card>
-      <CaseEditor mode="edit" caseId={summary.id} initialJson={JSON.stringify(data, null, 2)} />
+      {/* Re-parse to restore schema key order (PostgreSQL jsonb reorders keys). */}
+      <CaseEditor mode="edit" caseId={summary.id} initialJson={JSON.stringify(PatientCase.parse(data), null, 2)} />
     </main>
   );
 }

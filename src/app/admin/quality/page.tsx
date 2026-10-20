@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Badge, Card, PageHeader } from "@/components/ui";
 import { qualityReport } from "@/lib/services/quality";
+import { requirePageAdmin } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Админ — Өгөгдлийн чанар" };
 
 export default async function QualityPage() {
+  await requirePageAdmin("/admin/quality");
   const report = await qualityReport();
   const byCase = new Map<string, typeof report.issues>();
   for (const issue of report.issues) byCase.set(issue.caseId, [...(byCase.get(issue.caseId) ?? []), issue]);

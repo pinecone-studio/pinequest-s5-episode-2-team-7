@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { CaseEditor } from "@/components/admin/case-editor";
 import { PageHeader } from "@/components/ui";
 import { loadDemoCase } from "@/lib/cases/demo";
+import { requirePageAdmin } from "@/lib/auth/server";
 
 export const metadata: Metadata = { title: "Админ — Шинэ кейс" };
 
-export default function NewCasePage() {
+export default async function NewCasePage() {
+  await requirePageAdmin("/admin/cases/new");
   // Start from a valid demo case as a template; the author changes id and content.
   const template = { ...loadDemoCase("chest-pain-01"), id: "new-case-01", version: 1 };
   return (
