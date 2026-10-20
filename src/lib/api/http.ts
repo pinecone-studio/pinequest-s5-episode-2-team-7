@@ -72,17 +72,23 @@ export async function getAuth(request: Request): Promise<SessionData | null> {
   return unsealSession(readCookie(request.headers.get("cookie"), SESSION_COOKIE));
 }
 
-export async function requireUser(request: Request): Promise<SessionData> {
+/** Valid cookie whose user still exists (cookies outlive deleted users and database switches). */
+async function requireUserRow(request: Request): Promise<{ auth: SessionData; role: string }> {
   const auth = await getAuth(request);
   if (!auth) throw Errors.unauthorized();
-  return auth;
+  const db = await getDb();
+  const [row] = await db.select({ role: users.role }).from(users).where(eq(users.id, auth.userId));
+  if (!row) throw Errors.unauthorized();
+  return { auth, role: row.role };
+}
+
+export async function requireUser(request: Request): Promise<SessionData> {
+  return (await requireUserRow(request)).auth;
 }
 
 /** Admin check re-reads the role from the database (cookies can be stale). */
 export async function requireAdmin(request: Request): Promise<SessionData> {
-  const auth = await requireUser(request);
-  const db = await getDb();
-  const [row] = await db.select({ role: users.role }).from(users).where(eq(users.id, auth.userId));
-  if (!row || row.role !== "admin") throw Errors.forbidden();
+  const { auth, role } = await requireUserRow(request);
+  if (role !== "admin") throw Errors.forbidden();
   return auth;
 }
