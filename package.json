@@ -19,6 +19,7 @@
     "setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
     "@electric-sql/pglite": "^0.5.10",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.4",
