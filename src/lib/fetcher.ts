@@ -26,6 +26,12 @@ export async function apiFetch<T>(url: string, init?: RequestInit & { json?: unk
   const data = (await response.json().catch(() => null)) as (T & Partial<ApiErrorBody>) | null;
   if (!response.ok) {
     const error = data?.error;
+    // Login expired (or the account is gone): sign in again and come back here.
+    // A full navigation is intended: this helper has no router and stale client state should reset.
+    if (response.status === 401 && typeof window !== "undefined") {
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+    }
     throw new ClientApiError(error?.message ?? `Алдаа гарлаа (${response.status}).`, response.status, error?.code ?? "unknown", error?.details);
   }
   return data as T;

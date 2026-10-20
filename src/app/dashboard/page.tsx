@@ -65,6 +65,8 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
             {cases.map((c) => {
               const attempts = completed.filter((s) => s.caseId === c.id);
               const best = attempts.length ? Math.max(...attempts.map((s) => s.totalScore ?? 0)) : null;
+              // Continue an open interview instead of starting a parallel one.
+              const open = active.find((s) => s.caseId === c.id);
               return (
                 <Card key={c.id} className="flex flex-col p-5">
                   <div className="mb-3 flex flex-wrap gap-1.5">
@@ -99,7 +101,13 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
                         </>
                       )}
                     </p>
-                    <StartCaseButton caseId={c.id} label={attempts.length ? "Дахин оролдох" : "Ярилцлага эхлэх"} />
+                    {open ? (
+                      <Link href={`/interview/${open.id}`} className={buttonClass("primary", "md", "w-full")}>
+                        Үргэлжлүүлэх
+                      </Link>
+                    ) : (
+                      <StartCaseButton caseId={c.id} label={attempts.length ? "Дахин оролдох" : "Ярилцлага эхлэх"} />
+                    )}
                   </div>
                 </Card>
               );

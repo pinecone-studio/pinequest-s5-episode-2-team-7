@@ -26,7 +26,7 @@ const chest = loadDemoCase("chest-pain-01");
 describe("Gemini provider", () => {
   it("sends the restricted prompt and returns the text", async () => {
     const { impl, calls } = fakeFetch(() => json({ candidates: [{ content: { parts: [{ text: "Тийм ээ, гучаад жил татаж байна." }] } }] }));
-    const provider = new GeminiPatientProvider("key", "gemini-2.5-flash", impl);
+    const provider = new GeminiPatientProvider("key", "gemini-3.8-flash", impl);
     const result = await simulateTurn(
       { patientCase: chest, question: "Тамхи татдаг уу?", disclosedFactIds: new Set(), history: [], turnIndex: 0 },
       { provider, fallback: "mock", intentMode: "keyword" },
@@ -37,15 +37,22 @@ describe("Gemini provider", () => {
     expect(body).not.toContain(chest.hidden.diagnosis.label.mn);
     expect(body).not.toContain("зүүн гар");
     expect(body).toContain("хайрцаг");
-    expect(calls[0].url).toContain("gemini-2.5-flash:generateContent");
+    expect(calls[0].url).toContain("gemini-3.8-flash:generateContent");
   });
 
   it("maps quota errors and missing keys to provider errors", async () => {
     const { impl } = fakeFetch(() => json({ error: {} }, 429));
-    await expect(new GeminiPatientProvider("key", "gemini-2.5-flash", impl).complete({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 })).rejects.toMatchObject({
+    await expect(new GeminiPatientProvider("key", "gemini-3.8-flash", impl).complete({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 })).rejects.toMatchObject({
       kind: "rate_limit",
     });
-    expect(() => new GeminiPatientProvider("", "gemini-2.5-flash")).toThrow(ProviderError);
+    expect(() => new GeminiPatientProvider("", "gemini-3.8-flash")).toThrow(ProviderError);
+  });
+
+  it("keeps Google's error message for diagnostics", async () => {
+    const { impl } = fakeFetch(() => json({ error: { message: "This model models/gemini-2.5-flash is no longer available to new users." } }, 404));
+    await expect(new GeminiPatientProvider("key", "gemini-2.5-flash", impl).complete({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 })).rejects.toThrow(
+      "Gemini HTTP 404: This model models/gemini-2.5-flash is no longer available to new users.",
+    );
   });
 });
 
