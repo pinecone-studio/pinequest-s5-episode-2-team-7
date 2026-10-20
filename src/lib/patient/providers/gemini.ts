@@ -8,6 +8,15 @@ interface GeminiResponse {
   promptFeedback?: { blockReason?: string };
 }
 
+async function errorMessage(response: Response): Promise<string> {
+  try {
+    const data = (await response.json()) as { error?: { message?: string } };
+    return data.error?.message?.slice(0, 300) ?? "";
+  } catch {
+    return "";
+  }
+}
+
 /**
  * Google Gemini via the REST generateContent API (free tier available at
  * https://aistudio.google.com). Note: on the free tier Google may use
@@ -52,7 +61,15 @@ export class GeminiPatientProvider extends ChatModelProvider {
       throw new ProviderError("Could not reach Gemini", "gemini", "network");
     }
     if (response.status === 429) throw new ProviderError("Gemini rate limit / quota exceeded", "gemini", "rate_limit");
-    if (!response.ok) throw new ProviderError(`Gemini HTTP ${response.status}`, "gemini", response.status === 400 || response.status === 403 ? "config" : "bad_response");
+    if (!response.ok) {
+      // Google explains retired models and bad keys in error.message; keep it for diagnostics.
+      const detail = await errorMessage(response);
+      throw new ProviderError(
+        `Gemini HTTP ${response.status}${detail ? `: ${detail}` : ""}`,
+        "gemini",
+        response.status === 400 || response.status === 403 ? "config" : "bad_response",
+      );
+    }
 
     const data = (await response.json()) as GeminiResponse;
     if (data.promptFeedback?.blockReason) throw new ProviderError(`Gemini blocked the prompt (${data.promptFeedback.blockReason})`, "gemini", "bad_response");

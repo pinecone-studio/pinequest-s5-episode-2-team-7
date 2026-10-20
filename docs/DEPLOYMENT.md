@@ -72,7 +72,7 @@ are short and the provider timeout defaults to 20 s (`PROVIDER_TIMEOUT_MS`).
 ## 5. Switching the patient AI
 
 - **Free (recommended):** `PATIENT_PROVIDER=gemini`, `GEMINI_API_KEY=...`,
-  `GEMINI_MODEL=gemini-2.5-flash` (check AI Studio for current free models).
+  `GEMINI_MODEL=gemini-3.8-flash` (check AI Studio for current free models).
   Free-tier prompts may be used by Google — only synthetic cases are sent.
 - **Paid later:** `PATIENT_PROVIDER=anthropic`, `ANTHROPIC_API_KEY=...`,
   `ANTHROPIC_MODEL` (defaults to `claude-opus-5-5`; a cheaper model can be set).
