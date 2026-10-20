@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "id": "cough-malaise-01",
+  "version": 1,
+  "internalTitle": "Community-acquired pneumonia (right lower lobe) in a 67-year-old diabetic with penicillin allergy",
+  "public": {
+    "displayTitle": { "mn": "Ханиалгаж, бие тавгүй болсон 67 настай эрэгтэй", "en": "67-year-old man with cough and malaise" },
+    "specialty": "Дотор / Уушги",
+    "difficulty": "intermediate",
+    "tags": ["амьсгалын зам", "ахмад настан"],
+    "setting": { "mn": "Өрхийн эрүүл мэндийн төв, үдээс хойш", "en": "Family health centre, afternoon" },
+    "patient": {
+      "name": "Дорж",
+      "age": 67,
+      "sex": "male",
+      "occupation": { "mn": "Тэтгэвэрт гарсан багш", "en": "Retired teacher" }
+    },
+    "chiefComplaint": { "mn": "Ханиалгах, бие тавгүйрхэх", "en": "Cough and feeling unwell" },
+    "openingLine": { "mn": "Эмч ээ, хэд хоног ханиалгаад, бие тавгүй байна.", "en": "Doctor, I've been coughing for a few days and feel unwell." },
+    "estimatedMinutes": 15,
+    "timeCritical": false
+  },
+  "persona": {
+    "personality": { "mn": "Ярианч, нарийн тайлбарлах дуртай, эелдэг ахмад настан. Заримдаа ач зээгийнхээ тухай ярина.", "en": "Talkative, polite elderly man who likes to explain; mentions grandchildren." },
+    "speakingStyle": { "mn": "Хүндэтгэлтэй, тайван, бага зэрэг урт өгүүлбэрээр ярина. Ханиалгаж зогсох нь бий.", "en": "Respectful, calm, slightly long sentences; pauses to cough." },
+    "emotionalState": { "mn": "Ядарсан, амьсгаадаж байгаадаа санаа зовсон.", "en": "Tired, worried about his breathing." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Гаднын (нийгэмд олдмол) уушгины хатгалгаа", "en": "Community-acquired pneumonia" },
+      "icd10": "J18.9",
+      "acceptedAliases": [
+        "community acquired pneumonia", "community-acquired pneumonia", "cap", "pneumonia", "lobar pneumonia", "bacterial pneumonia",
+        "уушгины хатгалгаа", "хатгалгаа", "гаднын уушгины хатгалгаа", "гаднын хатгалгаа", "нийгэмд олдмол уушгины хатгалгаа",
+        "баруун уушгины хатгалгаа", "уушгины үрэвсэл", "пневмони"
+      ],
+      "partialAliases": ["lower respiratory tract infection", "lrti", "амьсгалын доод замын халдвар", "амьсгалын замын халдвар"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Уушгины сүрьеэ", "en": "Pulmonary tuberculosis" },
+        "aliases": ["tuberculosis", "tb", "сүрьеэ", "уушгины сүрьеэ"],
+        "rationale": { "mn": "Монголд сүрьеэгийн тархалт өндөр. Удаан ханиалгах, шөнө хөлрөх, жин буурах, цустай цэр, хавьтлыг асууна.", "en": "High TB prevalence in Mongolia: ask about chronic cough, night sweats, weight loss, haemoptysis, contacts." }
+      },
+      {
+        "label": { "mn": "Уушгины артерийн тромбоэмболи", "en": "Pulmonary embolism" },
+        "aliases": ["pulmonary embolism", "pe", "тромбоэмболи"],
+        "rationale": { "mn": "Гэнэтийн амьсгаадалт, хатгах өвдөлт, хөл хавагнах, хөдөлгөөнгүй байдал.", "en": "Sudden dyspnoea, pleuritic pain, leg swelling, immobility." }
+      },
+      {
+        "label": { "mn": "Зүрхний дутагдал", "en": "Heart failure" },
+        "aliases": ["heart failure", "зүрхний дутагдал"],
+        "rationale": { "mn": "Хэвтэхэд амьсгаадах, хөл хавагнах, зүрхний өвчний түүх.", "en": "Orthopnoea, oedema, cardiac history." }
+      },
+      {
+        "label": { "mn": "Цочмог бронхит / томуу", "en": "Acute bronchitis / influenza" },
+        "aliases": ["bronchitis", "influenza", "бронхит", "томуу"],
+        "rationale": { "mn": "Өндөр халууралт, амьсгалын дутагдал, нэг талын хатгах өвдөлт бронхитод ховор.", "en": "High fever, hypoxia and focal pleuritic pain are unusual in bronchitis." }
+      }
+    ],
+    "summary": {
+      "mn": "67 настай, 2-р хэлбэрийн чихрийн шижинтэй, өмнө нь удаан тамхи татаж байсан эрэгтэйд 4 хоногийн өмнө ханиадны шинжээр эхэлж, шар-ногоон цэртэй ханиалгах, 38.9°C хүртэл халуурах, жихүүдэс хүрэх, баруун цээжинд амьсгалын үед хатгах өвдөлт, ачааллын амьсгаадалт илэрсэн. Пенициллинд харшилтай.",
+      "en": "67-year-old with type 2 diabetes and ex-smoker: 4 days of productive cough (yellow-green sputum), fever to 38.9°C with rigors, right pleuritic chest pain and exertional dyspnoea. Penicillin allergy."
+    },
+    "facts": [
+      {
+        "id": "onset",
+        "kind": "positive",
+        "topics": ["onset", "progression"],
+        "patientKnows": true,
+        "answer": { "mn": "Дөрвөн хоногийн өмнө эхэлсэн. Эхлээд ханиад хүрсэн юм шиг хамар битүүрээд, дараа нь ханиалгаж, өчигдрөөс улам дордсон.", "en": "Four days ago. It felt like a cold at first, then the cough came, and since yesterday it got worse." },
+        "leakTerms": ["дөрвөн хоног"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "cough-sputum",
+        "kind": "positive",
+        "topics": ["cough", "sputum", "character"],
+        "patientKnows": true,
+        "answer": { "mn": "Шар ногоон өнгийн өтгөн цэртэй ханиалгаж байна. Шөнө ч ханиалгаад унтаж чадахгүй байна.", "en": "I'm coughing up thick yellow-green phlegm. I cough at night and can't sleep." },
+        "significance": { "mn": "Идээт цэртэй ханиалгах нь бактерийн халдварыг илтгэнэ.", "en": "Purulent sputum suggests bacterial infection." },
+        "leakTerms": ["шар ногоон", "цэр"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "no-hemoptysis",
+        "kind": "negative",
+        "topics": ["hemoptysis"],
+        "patientKnows": true,
+        "answer": { "mn": "Үгүй, цэрэнд цус гараагүй.", "en": "No blood in the sputum." },
+        "significance": { "mn": "Цустай цэр байхгүй нь сүрьеэ, хавдрын магадлалыг бага зэрэг бууруулна.", "en": "No haemoptysis slightly lowers TB/cancer suspicion." }
+      },
+      {
+        "id": "fever-chills",
+        "kind": "positive",
+        "topics": ["fever", "chills"],
+        "patientKnows": true,
+        "answer": { "mn": "Тийм, өчигдөр орой 38.9 хүрсэн. Жихүүдэс хүрээд, шүд тагжиганатлаа чичирсэн.", "en": "Yes, last night it reached 38.9. I had chills and shook so much my teeth chattered." },
+        "significance": { "mn": "Өндөр халууралт, чичрэлт (ригор) нь бактерийн хатгалгаанд түгээмэл.", "en": "High fever with rigors is common in bacterial pneumonia." },
+        "leakTerms": ["38.9", "шүд тагжиган"]
+      },
+      {
+        "id": "dyspnea",
+        "kind": "positive",
+        "topics": ["dyspnea", "associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Шатаар нэг давхар өгсөхөд л амьсгаадаад байна. Өмнө нь ийм байгаагүй.", "en": "I get out of breath after one flight of stairs. That never happened before." },
+        "significance": { "mn": "Шинээр үүссэн амьсгаадалт нь хатгалгааны хүндийн зэргийг үнэлэхэд чухал.", "en": "New dyspnoea is important for severity assessment." },
+        "leakTerms": ["нэг давхар"]
+      },
+      {
+        "id": "pleuritic-pain",
+        "kind": "positive",
+        "topics": ["chest_pain", "aggravating", "location"],
+        "patientKnows": true,
+        "answer": { "mn": "Баруун талын цээж амьсгаа гүн авах, ханиалгах үед хатгаад өвддөг.", "en": "The right side of my chest stabs when I breathe deeply or cough." },
+        "significance": { "mn": "Амьсгалын үед хатгах (плеврит) өвдөлт нь гялтанд хүрсэн үрэвслийг илтгэнэ.", "en": "Pleuritic pain indicates pleural involvement." },
+        "leakTerms": ["баруун талын цээж", "хатгаад"]
+      },
+      {
+        "id": "fatigue-appetite",
+        "kind": "positive",
+        "topics": ["fatigue", "appetite"],
+        "patientKnows": true,
+        "answer": { "mn": "Маш их сульдаад, хоолны дуршил муудсан. Цай л уугаад байна.", "en": "Very weak, poor appetite. I'm only drinking tea." },
+        "leakTerms": ["сульдаад"]
+      },
+      {
+        "id": "no-weight-loss-night-sweats",
+        "kind": "negative",
+        "topics": ["weight_loss", "night_sweats"],
+        "patientKnows": true,
+        "answer": { "mn": "Жин хаяагүй. Шөнө халуурахдаа хөлөрсөн, түүнээс өмнө шөнө хөлрөөд байдаггүй.", "en": "No weight loss. I sweated at night with the fever, but never before this." },
+        "significance": { "mn": "Удаан хугацааны жин буурах, шөнийн хөлрөлт байхгүй нь сүрьеэгийн магадлалыг бууруулна.", "en": "No chronic weight loss or night sweats lowers TB suspicion." }
+      },
+      {
+        "id": "no-tb",
+        "kind": "negative",
+        "topics": ["lung_disease"],
+        "patientKnows": true,
+        "answer": { "mn": "Сүрьеэ, багтраа өвчин тусаж байгаагүй. Ойр хүрээлэлд маань сүрьеэтэй хүн байгаагүй.", "en": "Never had TB or asthma; no TB contacts that I know of." },
+        "significance": { "mn": "Сүрьеэгийн түүх, хавьтал байхгүй.", "en": "No TB history or contact." }
+      },
+      {
+        "id": "sick-contacts",
+        "kind": "history",
+        "topics": ["sick_contacts"],
+        "patientKnows": true,
+        "answer": { "mn": "Өнгөрсөн долоо хоногт ач охин маань ханиад хүрсэн байсан, манайд ирж байсан.", "en": "My granddaughter had a cold last week and visited us." },
+        "leakTerms": ["ач охин"]
+      },
+      {
+        "id": "no-leg-swelling",
+        "kind": "negative",
+        "topics": ["leg_swelling", "travel"],
+        "patientKnows": true,
+        "answer": { "mn": "Хөл хавдаагүй. Хаашаа ч аялаагүй, гэртээ л байсан.", "en": "No leg swelling. I haven't travelled." }
+      },
+      {
+        "id": "diabetes",
+        "kind": "history",
+        "topics": ["diabetes", "pmh"],
+        "patientKnows": true,
+        "answer": { "mn": "Арван жилийн өмнөөс чихрийн шижин 2-р хэлбэртэй. Сахар маань сүүлийн үед 9–10 орчим байгаа.", "en": "Type 2 diabetes for ten years. My sugar has been around 9–10 lately." },
+        "significance": { "mn": "Чихрийн шижин нь хүнд явцын эрсдэлийг нэмэгдүүлнэ.", "en": "Diabetes increases risk of severe course." },
+        "leakTerms": ["арван жил", "2-р хэлбэр"]
+      },
+      {
+        "id": "no-htn-heart",
+        "kind": "negative",
+        "topics": ["hypertension", "heart_disease"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралт, зүрхний өвчин байхгүй гэж эмч хэлдэг.", "en": "No blood pressure or heart problems, as far as the doctor says." }
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications"],
+        "patientKnows": true,
+        "answer": { "mn": "Метформин өдөрт хоёр удаа уудаг. Халуунд парацетамол уусан.", "en": "Metformin twice a day. I took paracetamol for the fever." },
+        "leakTerms": ["метформин"]
+      },
+      {
+        "id": "allergy",
+        "kind": "history",
+        "topics": ["allergies", "rash"],
+        "patientKnows": true,
+        "answer": { "mn": "Пенициллинд харшилтай. Залуу байхдаа тарьлгаад бүх биеэр тууралт гарч, амьсгаадаж байсан.", "en": "I'm allergic to penicillin — as a young man I got a full-body rash and trouble breathing after an injection." },
+        "significance": { "mn": "Пенициллины хүнд харшил — антибиотик сонголтод шийдвэрлэх ач холбогдолтой.", "en": "Serious penicillin allergy — critical for antibiotic choice." },
+        "leakTerms": ["пенициллин"]
+      },
+      {
+        "id": "smoking",
+        "kind": "history",
+        "topics": ["smoking"],
+        "patientKnows": true,
+        "answer": { "mn": "Дөчин жил татаад, таван жилийн өмнө больсон.", "en": "I smoked for forty years and quit five years ago." },
+        "significance": { "mn": "Удаан хугацаанд тамхи татсан нь уушгины архаг өвчин, хавдрын эрсдэлтэй.", "en": "Long smoking history — COPD and cancer risk." },
+        "leakTerms": ["дөчин жил"]
+      },
+      {
+        "id": "alcohol",
+        "kind": "history",
+        "topics": ["alcohol"],
+        "patientKnows": true,
+        "answer": { "mn": "Архи уудаггүй.", "en": "I don't drink." }
+      },
+      {
+        "id": "living",
+        "kind": "history",
+        "topics": ["living_situation", "occupation"],
+        "patientKnows": true,
+        "answer": { "mn": "Тэтгэвэрт гарсан багш. Эхнэртэйгээ хамт орон сууцанд амьдардаг.", "en": "Retired teacher, live with my wife in an apartment." }
+      },
+      {
+        "id": "vaccination",
+        "kind": "history",
+        "topics": ["vaccination"],
+        "patientKnows": true,
+        "answer": { "mn": "Энэ жил томуугийн вакцин хийлгээгүй. Уушгины хатгалгааны вакцин хийлгэж байсан эсэхээ санахгүй байна.", "en": "No flu vaccine this year. I don't remember having a pneumonia vaccine." },
+        "leakTerms": ["вакцин"]
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Ээж маань чихрийн шижинтэй байсан. Өөр онцгой зүйл санахгүй байна.", "en": "My mother had diabetes. Nothing else I recall." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Амьсгаадаад байгаа нь л санаа зовоож байна. Эхнэр маань эмнэлэгт хэвт гээд байна.", "en": "The breathlessness worries me. My wife wants me admitted." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 38.6°C, зүрхний цохилт 108/мин, амьсгал 26/мин, АД 126/78 мм.муб, SpO₂ 91% (агаараар). Ухаан саруул.", "en": "T 38.6°C, HR 108, RR 26, BP 126/78, SpO₂ 91% RA. Alert and oriented." }
+      },
+      {
+        "id": "chest-exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Баруун доод талд тогшилтоор дүлий, чагналтаар нойтон жижиг хэржигнүүр болон гуурсан хоолойн амьсгал сонсогдоно. Хөл хавангүй.", "en": "Right base: dull to percussion, crackles and bronchial breathing. No leg oedema." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "fever", "category": "associated_symptoms", "topics": ["fever", "chills"], "weight": 2, "critical": true,
+        "label": { "mn": "Халуурах, жихүүдэс", "en": "Fever and rigors" },
+        "rationale": { "mn": "Бактерийн халдвар, хатгалгааны гол шинж.", "en": "Key feature of bacterial pneumonia." },
+        "suggestedQuestion": { "mn": "Халуурсан уу? Жихүүдэс хүрч чичирсэн үү?" }
+      },
+      {
+        "id": "cough-sputum", "category": "hpi", "topics": ["sputum", "cough", "character", "hemoptysis"], "weight": 2, "critical": true,
+        "label": { "mn": "Ханиалгалт ба цэрний шинж", "en": "Cough and sputum characteristics" },
+        "rationale": { "mn": "Цэрний өнгө, цус байгаа эсэх нь бактерийн халдвар, сүрьеэ, хавдрыг ялгахад тусална.", "en": "Sputum colour/blood distinguishes infection, TB, cancer." },
+        "suggestedQuestion": { "mn": "Цэртэй ханиалгаж байна уу? Ямар өнгөтэй вэ? Цус гарсан уу?" }
+      },
+      {
+        "id": "dyspnea", "category": "associated_symptoms", "topics": ["dyspnea"], "weight": 2, "critical": true,
+        "label": { "mn": "Амьсгаадалт", "en": "Breathlessness" },
+        "rationale": { "mn": "Хүндийн зэрэг (CURB-65), хүчилтөрөгчийн хэрэгцээг үнэлнэ.", "en": "Severity assessment (CURB-65), oxygen need." },
+        "suggestedQuestion": { "mn": "Амьсгаадаж байна уу? Хэр ачаалалд амьсгаадаг вэ?" }
+      },
+      {
+        "id": "allergies", "category": "medications_allergies", "topics": ["allergies"], "weight": 2, "critical": true,
+        "label": { "mn": "Эмийн харшил", "en": "Drug allergies" },
+        "rationale": { "mn": "Пенициллины харшил нь антибиотикийн сонголтыг шууд өөрчилнө.", "en": "Penicillin allergy changes antibiotic choice." },
+        "suggestedQuestion": { "mn": "Ямар нэг эмэнд, ялангуяа антибиотикт харшилтай юу?" }
+      },
+      {
+        "id": "onset", "category": "hpi", "topics": ["onset", "duration", "progression"], "weight": 1,
+        "label": { "mn": "Эхлэл ба явц", "en": "Onset and course" },
+        "rationale": { "mn": "Цочмог (хоногийн) явц нь архаг өвчнөөс ялгагдана.", "en": "Acute course differs from chronic disease." },
+        "suggestedQuestion": { "mn": "Хэзээнээс эхэлсэн бэ? Явц нь ямар байна?" }
+      },
+      {
+        "id": "pleuritic-pain", "category": "hpi", "topics": ["chest_pain", "aggravating"], "weight": 1,
+        "label": { "mn": "Цээжний өвдөлт (амьсгалтай холбоотой)", "en": "Pleuritic chest pain" },
+        "rationale": { "mn": "Гялтангийн үрэвсэл, тромбоэмболийг ялгахад чухал.", "en": "Pleural involvement vs PE." },
+        "suggestedQuestion": { "mn": "Цээж өвддөг үү? Амьсгаа авах, ханиалгахад өвдөлт өөрчлөгддөг үү?" }
+      },
+      {
+        "id": "tb-screen", "category": "pertinent_negatives", "topics": ["weight_loss", "night_sweats", "lung_disease", "hemoptysis"], "weight": 1.5,
+        "label": { "mn": "Сүрьеэгийн илрүүлэг асуулт", "en": "TB screening questions" },
+        "rationale": { "mn": "Монголд сүрьеэгийн тархалт өндөр тул жин буурах, шөнийн хөлрөлт, сүрьеэгийн хавьтлыг заавал асууна.", "en": "TB is prevalent in Mongolia." },
+        "suggestedQuestion": { "mn": "Жин хаясан уу? Шөнө хөлөрдөг үү? Сүрьеэтэй хүнтэй ойр байсан уу?" }
+      },
+      {
+        "id": "pe-hf-negatives", "category": "pertinent_negatives", "topics": ["leg_swelling", "travel", "heart_disease"], "weight": 1,
+        "label": { "mn": "Тромбоэмболи, зүрхний дутагдлын сөрөг шинж", "en": "Negatives for PE / heart failure" },
+        "rationale": { "mn": "Амьсгаадалтын бусад аюултай шалтгааныг хасна.", "en": "Exclude other dangerous causes of dyspnoea." },
+        "suggestedQuestion": { "mn": "Хөл хавдсан уу? Зүрхний өвчтэй юу? Саяхан удаан хөдөлгөөнгүй байсан уу?" }
+      },
+      {
+        "id": "comorbidities", "category": "past_history", "topics": ["diabetes", "pmh", "lung_disease"], "weight": 1.5,
+        "label": { "mn": "Хавсарсан өвчин (чихрийн шижин, уушгины өвчин)", "en": "Comorbidities" },
+        "rationale": { "mn": "Хавсарсан өвчин хүндрэлийн эрсдэл, эмнэлэгт хэвтүүлэх шийдвэрт нөлөөлнө.", "en": "Comorbidity affects risk and admission decision." },
+        "suggestedQuestion": { "mn": "Ямар нэг архаг өвчтэй юу? Чихрийн шижин, уушгины өвчин бий юу?" }
+      },
+      {
+        "id": "medications", "category": "medications_allergies", "topics": ["medications"], "weight": 1,
+        "label": { "mn": "Хэрэглэдэг эм", "en": "Medications" },
+        "rationale": { "mn": "Эмийн харилцан үйлчлэл, шижингийн хяналт.", "en": "Interactions, glycaemic control." },
+        "suggestedQuestion": { "mn": "Ямар эм уудаг вэ?" }
+      },
+      {
+        "id": "smoking", "category": "risk_factors", "topics": ["smoking"], "weight": 1,
+        "label": { "mn": "Тамхи татдаг эсэх", "en": "Smoking" },
+        "rationale": { "mn": "Уушгины архаг бөглөрөлт өвчин, хавдрын эрсдэл.", "en": "COPD and cancer risk." },
+        "suggestedQuestion": { "mn": "Тамхи татдаг уу, татаж байсан уу?" }
+      },
+      {
+        "id": "exposure-vaccine", "category": "social_history", "topics": ["sick_contacts", "vaccination", "living_situation"], "weight": 1,
+        "label": { "mn": "Халдварын хавьтал, вакцин, амьдрах орчин", "en": "Contacts, vaccination, living situation" },
+        "rationale": { "mn": "Халдварын эх үүсвэр, урьдчилан сэргийлэлт, гэрээр эмчлэх боломжийг үнэлнэ.", "en": "Source, prevention and home-care feasibility." },
+        "suggestedQuestion": { "mn": "Ойр орчинд тань ханиад томуутай хүн байсан уу? Вакцин хийлгэсэн үү? Хэнтэй амьдардаг вэ?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Хэдэн хоногийн цочмог явцтай, идээт цэртэй ханиалгах, өндөр халууралт, чичрэлт, нэг талын амьсгалын үеийн хатгах өвдөлт, шинээр үүссэн амьсгаадалт нь гаднын уушгины хатгалгааг илтгэнэ. Ахмад нас, чихрийн шижин нь хүнд явцын эрсдэлийг нэмэгдүүлнэ. Пенициллины харшлыг асуух нь антибиотик сонголтод шийдвэрлэх ач холбогдолтой. Монголд сүрьеэгийн тархалт өндөр тул илрүүлэг асуултуудыг (жин буурах, шөнө хөлрөх, хавьтал) заавал асууна.",
+      "en": "Acute productive cough, high fever with rigors, unilateral pleuritic pain and new dyspnoea indicate community-acquired pneumonia. Age and diabetes raise risk; penicillin allergy changes antibiotic choice; TB screening is essential in Mongolia."
+    },
+    "learningPoints": [
+      { "mn": "Ханиалгалттай өвчтөнөөс цэрний шинж, цус байгаа эсэхийг тодруулах.", "en": "Characterise sputum and ask about haemoptysis." },
+      { "mn": "Сүрьеэгийн илрүүлэг асуултуудыг (жин, шөнийн хөлрөлт, хавьтал) заавал асуух.", "en": "Always screen for TB." },
+      { "mn": "Антибиотик эмчилгээний өмнө эмийн харшлыг асуух.", "en": "Ask about drug allergies before antibiotics." },
+      { "mn": "Хүндийн зэргийг (CURB-65: ухаан, амьсгал, даралт, нас) үнэлэх.", "en": "Assess severity with CURB-65." }
+    ]
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-20",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

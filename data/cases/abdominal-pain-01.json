@@ -1,0 +1,367 @@
+{
+  "schemaVersion": 1,
+  "id": "abdominal-pain-01",
+  "version": 1,
+  "internalTitle": "Acute appendicitis in a 24-year-old woman (ectopic pregnancy must be excluded)",
+  "public": {
+    "displayTitle": { "mn": "Гэдэс өвдсөн 24 настай эмэгтэй", "en": "24-year-old woman with abdominal pain" },
+    "specialty": "Мэс засал",
+    "difficulty": "intermediate",
+    "tags": ["цочмог хэвлий", "эмэгтэй"],
+    "setting": { "mn": "Яаралтай тусламжийн тасаг, орой 18:00", "en": "Emergency department, 18:00" },
+    "patient": {
+      "name": "Сарангэрэл",
+      "age": 24,
+      "sex": "female",
+      "occupation": { "mn": "Их сургуулийн оюутан", "en": "University student" }
+    },
+    "chiefComplaint": { "mn": "Гэдэс өвдөх", "en": "Abdominal pain" },
+    "openingLine": { "mn": "Сайн байна уу, эмч ээ. Гэдэс өвдөөд байна.", "en": "Hello doctor. My stomach hurts." },
+    "estimatedMinutes": 15,
+    "timeCritical": false
+  },
+  "persona": {
+    "personality": { "mn": "Эелдэг, бага зэрэг ичимхий залуу эмэгтэй. Асуултад үнэнчээр хариулдаг.", "en": "Polite, slightly shy young woman; answers honestly." },
+    "speakingStyle": { "mn": "Энгийн ярианы хэлээр, дунд зэргийн урттай өгүүлбэрээр ярьдаг.", "en": "Plain colloquial Mongolian, medium-length sentences." },
+    "emotionalState": { "mn": "Өвдөлттэй, хөдлөхөөс айж байгаа, шалгалтаа санаа зовсон.", "en": "In pain, afraid to move, worried about exams." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Мухар олгойн цочмог үрэвсэл", "en": "Acute appendicitis" },
+      "icd10": "K35",
+      "acceptedAliases": [
+        "acute appendicitis", "appendicitis",
+        "мухар олгойн цочмог үрэвсэл", "мухар олгойн үрэвсэл", "цочмог аппендицит", "аппендицит", "мухар олгой"
+      ],
+      "partialAliases": ["acute abdomen", "цочмог хэвлий", "перитонит", "peritonitis"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Умайн гадуурх жирэмслэлт", "en": "Ectopic pregnancy" },
+        "aliases": ["ectopic pregnancy", "умайн гадуурх жирэмслэлт", "умайн гаднах жирэмслэлт"],
+        "rationale": { "mn": "Нөхөн үржихүйн насны эмэгтэйн доод хэвлийн өвдөлтөд сарын тэмдэг, жирэмслэлтийг заавал асууж, тест хийнэ.", "en": "Any woman of reproductive age with lower abdominal pain needs LMP and a pregnancy test." }
+      },
+      {
+        "label": { "mn": "Өндгөвчийн мушгиралт / уйланхайн хагарал", "en": "Ovarian torsion / ruptured cyst" },
+        "aliases": ["ovarian torsion", "ovarian cyst", "өндгөвчийн мушгиралт", "өндгөвчийн уйланхай"],
+        "rationale": { "mn": "Гэнэт эхэлсэн, нэг талын хүчтэй өвдөлт, бөөлжилт.", "en": "Sudden unilateral severe pain with vomiting." }
+      },
+      {
+        "label": { "mn": "Аарцгийн эрхтний үрэвсэлт өвчин", "en": "Pelvic inflammatory disease" },
+        "aliases": ["pid", "pelvic inflammatory disease", "аарцгийн үрэвсэл"],
+        "rationale": { "mn": "Үтрээний ялгадас, хоёр талын өвдөлт, бэлгийн замын халдварын эрсдэл.", "en": "Discharge, bilateral pain, STI risk." }
+      },
+      {
+        "label": { "mn": "Шээсний замын халдвар / бөөрний үрэвсэл", "en": "UTI / pyelonephritis" },
+        "aliases": ["uti", "pyelonephritis", "шээсний замын халдвар", "бөөрний үрэвсэл", "пиелонефрит"],
+        "rationale": { "mn": "Шээхэд хорсох, ойр ойрхон шээх, нурууны өвдөлт.", "en": "Dysuria, frequency, flank pain." }
+      },
+      {
+        "label": { "mn": "Ходоод гэдэсний цочмог үрэвсэл", "en": "Gastroenteritis" },
+        "aliases": ["gastroenteritis", "гастроэнтерит", "хордлого"],
+        "rationale": { "mn": "Суулгалт давамгайлсан, сарнисан өвдөлт, ойр орчинд ижил өвчтэй хүн.", "en": "Diarrhoea-predominant diffuse pain, sick contacts." }
+      }
+    ],
+    "summary": {
+      "mn": "24 настай эмэгтэйд өчигдөр орой хүйсний орчим эхэлсэн өвдөлт баруун доод хэвлий рүү шилжиж, хөдлөх, ханиалгахад ихэсдэг болсон. Хоолны дуршилгүй, дотор муухайрч нэг удаа бөөлжсөн, бага зэрэг халуурсан. Сарын тэмдэг 2 долоо хоногийн өмнө хэвийн ирсэн, шээс, өтгөн хэвийн.",
+      "en": "24-year-old woman: periumbilical pain since last night migrating to the right lower quadrant, worse with movement/coughing, anorexia, nausea, one episode of vomiting, low-grade fever. LMP 2 weeks ago, normal urine and bowels."
+    },
+    "facts": [
+      {
+        "id": "onset",
+        "kind": "positive",
+        "topics": ["onset"],
+        "patientKnows": true,
+        "answer": { "mn": "Өчигдөр орой арван цагийн үед өвдөж эхэлсэн. Эхэндээ бүдэг өвдөж байсан.", "en": "Last night around 10 pm. At first it was a dull ache." },
+        "leakTerms": ["арван цаг"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "migration",
+        "kind": "positive",
+        "topics": ["location", "progression", "radiation"],
+        "patientKnows": true,
+        "answer": { "mn": "Эхлээд хүйсний орчим өвдөж байсан, өнөө өглөөнөөс баруун доод тал руу шилжээд, одоо яг энд л өвдөөд байна.", "en": "It started around my belly button, and since this morning it moved to the lower right side — now it hurts right here." },
+        "significance": { "mn": "Хүйсний орчмоос баруун доод хэвлий рүү шилжсэн өвдөлт нь мухар олгойн үрэвслийн сонгодог шинж.", "en": "Periumbilical-to-RLQ migration is the classic appendicitis pattern." },
+        "leakTerms": ["хүйс", "баруун доод"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "character",
+        "kind": "positive",
+        "topics": ["character", "duration"],
+        "patientKnows": true,
+        "answer": { "mn": "Тасралтгүй, хутгалаад байх шиг өвдөж байна. Ирж буцдаггүй.", "en": "Constant, stabbing. It doesn't come and go." },
+        "significance": { "mn": "Тасралтгүй, нэг цэгт төвлөрсөн өвдөлт нь гялтан хальсны цочролыг илтгэнэ.", "en": "Constant localised pain suggests parietal peritoneal irritation." },
+        "leakTerms": ["хутгалаад"]
+      },
+      {
+        "id": "severity",
+        "kind": "positive",
+        "topics": ["severity"],
+        "patientKnows": true,
+        "answer": { "mn": "Арваас долоо орчим байх.", "en": "About 7 out of 10." },
+        "leakTerms": ["долоо орчим"]
+      },
+      {
+        "id": "aggravating",
+        "kind": "positive",
+        "topics": ["aggravating"],
+        "patientKnows": true,
+        "answer": { "mn": "Алхах, ханиалгахад улам их өвддөг. Энд ирэхэд машин хонхорт орох бүрт өвдсөн.", "en": "Walking and coughing make it much worse. Every bump in the car on the way here hurt." },
+        "significance": { "mn": "Хөдөлгөөн, ханиалгалтаар ихсэх нь хэвлийн гялтангийн цочролын шинж.", "en": "Pain with movement/cough indicates peritonism." },
+        "leakTerms": ["хонхор"]
+      },
+      {
+        "id": "relieving",
+        "kind": "positive",
+        "topics": ["relieving", "medications"],
+        "patientKnows": true,
+        "answer": { "mn": "Хөдлөхгүй хэвтэхэд арай гайгүй. Өчигдөр парацетамол нэгийг уусан, нэг их нөлөөлөөгүй.", "en": "Lying still helps a little. I took one paracetamol yesterday; it didn't help much." },
+        "leakTerms": ["парацетамол"]
+      },
+      {
+        "id": "appetite",
+        "kind": "positive",
+        "topics": ["appetite", "associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Өчигдрөөс хойш хоолны дуршил огт алга. Юм идмээргүй байна.", "en": "No appetite at all since yesterday." },
+        "significance": { "mn": "Хоолны дуршилгүй болох (анорекси) нь мухар олгойн үрэвсэлд маш түгээмэл.", "en": "Anorexia is very common in appendicitis." },
+        "leakTerms": ["дуршил огт"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "nausea-vomiting",
+        "kind": "positive",
+        "topics": ["nausea", "vomiting", "associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Дотор муухайраад, өнөө өглөө нэг удаа бөөлжсөн.", "en": "I feel sick and vomited once this morning." },
+        "significance": { "mn": "Өвдөлтийн дараа бөөлжих дараалал мухар олгойн үрэвсэлд түгээмэл.", "en": "Vomiting after onset of pain is typical." },
+        "leakTerms": ["нэг удаа бөөлжсөн"]
+      },
+      {
+        "id": "fever",
+        "kind": "positive",
+        "topics": ["fever", "chills"],
+        "patientKnows": true,
+        "answer": { "mn": "Жаахан халуурсан. Гэртээ хэмжихэд 37.8 байсан. Чичрээгүй.", "en": "A little feverish — 37.8 at home. No shivering." },
+        "significance": { "mn": "Бага зэргийн халуурал үрэвслийн процессыг илтгэнэ.", "en": "Low-grade fever indicates inflammation." },
+        "leakTerms": ["37.8"]
+      },
+      {
+        "id": "bowels",
+        "kind": "negative",
+        "topics": ["diarrhea", "constipation"],
+        "patientKnows": true,
+        "answer": { "mn": "Өтгөн хэвийн, суулгаагүй. Өчигдөр өглөө бие засаад хэвийн байсан.", "en": "Bowels normal, no diarrhoea." },
+        "significance": { "mn": "Суулгалт байхгүй нь гастроэнтеритын магадлалыг бууруулна.", "en": "No diarrhoea makes gastroenteritis less likely." }
+      },
+      {
+        "id": "urinary",
+        "kind": "negative",
+        "topics": ["urinary"],
+        "patientKnows": true,
+        "answer": { "mn": "Шээхэд өвдөхгүй, хорсохгүй. Ойр ойрхон шээхгүй байна.", "en": "No pain or burning on urination, no frequency." },
+        "significance": { "mn": "Шээсний зовиургүй нь шээсний замын халдварыг бууруулна.", "en": "No urinary symptoms makes UTI less likely." }
+      },
+      {
+        "id": "lmp",
+        "kind": "history",
+        "topics": ["lmp"],
+        "patientKnows": true,
+        "answer": { "mn": "Сарын тэмдэг хоёр долоо хоногийн өмнө ирсэн, хэвийн, цагтаа ирдэг.", "en": "My period came two weeks ago, normal and regular." },
+        "significance": { "mn": "Сарын тэмдэг хэвийн байгаа ч жирэмсний тестээр умайн гадуурх жирэмслэлтийг заавал хасна.", "en": "Normal LMP, but pregnancy test is still mandatory." },
+        "leakTerms": ["хоёр долоо хоног"]
+      },
+      {
+        "id": "pregnancy-sexual",
+        "kind": "history",
+        "topics": ["pregnancy", "sexual_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Жирэмсэн биш гэж бодож байна. Найз залуутай, бэлгэвч хэрэглэдэг.", "en": "I don't think I'm pregnant. I have a boyfriend; we use condoms." },
+        "significance": { "mn": "Бэлгийн идэвхтэй тул жирэмслэлт, аарцгийн халдварын эрсдэлийг үнэлэх шаардлагатай.", "en": "Sexually active — pregnancy and PID must be considered." },
+        "leakTerms": ["бэлгэвч", "найз залуу"]
+      },
+      {
+        "id": "vaginal",
+        "kind": "negative",
+        "topics": ["vaginal_symptoms"],
+        "patientKnows": true,
+        "answer": { "mn": "Үгүй, үтрээнээс ялгадас, цус гараагүй.", "en": "No vaginal discharge or bleeding." },
+        "significance": { "mn": "Аарцгийн эрхтний үрэвсэл, умайн гадуурх жирэмслэлтийн магадлалыг бууруулна.", "en": "Lowers suspicion of PID/ectopic." }
+      },
+      {
+        "id": "pmh",
+        "kind": "history",
+        "topics": ["pmh", "hospitalizations", "heart_disease", "lung_disease", "diabetes", "hypertension"],
+        "patientKnows": true,
+        "answer": { "mn": "Өмнө нь томоохон өвчин тусаж байгаагүй. Эмнэлэгт хэвтэж байгаагүй.", "en": "No significant illnesses, never hospitalised." }
+      },
+      {
+        "id": "surgeries",
+        "kind": "history",
+        "topics": ["surgeries"],
+        "patientKnows": true,
+        "answer": { "mn": "Хагалгаа хийлгэж байгаагүй.", "en": "Never had surgery." },
+        "significance": { "mn": "Мухар олгойг өмнө нь авахуулаагүй нь оношийг боломжтой болгоно.", "en": "No prior appendicectomy." }
+      },
+      {
+        "id": "regular-meds",
+        "kind": "history",
+        "topics": ["medications"],
+        "patientKnows": true,
+        "answer": { "mn": "Байнга уудаг эм байхгүй.", "en": "No regular medications." }
+      },
+      {
+        "id": "allergies",
+        "kind": "history",
+        "topics": ["allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Харшил байхгүй.", "en": "No allergies." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Гэр бүлд онцгой өвчин байхгүй. Ээж маань цөсний чулуутай гэж байсан.", "en": "Nothing special. My mother has gallstones." }
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["occupation", "smoking", "alcohol", "living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Их сургуульд сурдаг, дотуур байранд амьдардаг. Тамхи татдаггүй, архи бараг уудаггүй.", "en": "University student living in a dormitory. Don't smoke, barely drink." }
+      },
+      {
+        "id": "contacts-food",
+        "kind": "negative",
+        "topics": ["sick_contacts", "diet", "travel"],
+        "patientKnows": true,
+        "answer": { "mn": "Өрөөний охид эрүүл. Сэжигтэй хоол идээгүй, хаашаа ч аялаагүй.", "en": "My roommates are fine. No suspicious food, no travel." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Ирэх долоо хоногт шалгалттай болохоор хэвтэх вий гэж санаа зовж байна.", "en": "I have exams next week; I'm worried I'll have to stay in hospital." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 38.1°C, зүрхний цохилт 102/мин, АД 118/74 мм.муб, амьсгал 18/мин, SpO₂ 99%.", "en": "T 38.1°C, HR 102, BP 118/74, RR 18, SpO₂ 99%." }
+      },
+      {
+        "id": "abdominal-exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Хэвлий амьсгалд бага оролцоно. Баруун доод хэсэгт (Мак-Бурнейн цэг) тэмтрэлтээр хүчтэй эмзэглэлтэй, гараа огцом авахад өвдөлт ихэсдэг (Щеткин-Блюмбергийн шинж эерэг). Ровзингийн шинж эерэг.", "en": "RLQ tenderness at McBurney's point with rebound; Rovsing's sign positive." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "onset-migration", "category": "hpi", "topics": ["onset", "location", "progression"], "weight": 2, "critical": true,
+        "label": { "mn": "Өвдөлтийн эхлэл ба байршлын шилжилт", "en": "Onset and migration of pain" },
+        "rationale": { "mn": "Хүйснээс баруун доод хэвлий рүү шилжих нь хамгийн чухал онош тогтоох шинж.", "en": "Migration is the most informative historical feature." },
+        "suggestedQuestion": { "mn": "Өвдөлт хэзээ, хаанаас эхэлсэн бэ? Одоо хаана өвдөж байна вэ?" }
+      },
+      {
+        "id": "lmp-pregnancy", "category": "red_flags", "topics": ["lmp", "pregnancy", "sexual_history"], "weight": 2, "critical": true,
+        "label": { "mn": "Сарын тэмдэг ба жирэмслэлтийн боломж", "en": "LMP and pregnancy possibility" },
+        "rationale": { "mn": "Умайн гадуурх жирэмслэлт амь насанд аюултай тул нөхөн үржихүйн насны эмэгтэйд заавал асууна.", "en": "Ectopic pregnancy is life-threatening and must be excluded." },
+        "suggestedQuestion": { "mn": "Сүүлийн сарын тэмдэг хэзээ ирсэн бэ? Жирэмсэн байх боломжтой юу?" }
+      },
+      {
+        "id": "gi-symptoms", "category": "associated_symptoms", "topics": ["appetite", "nausea", "vomiting", "associated_general"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Хоолны дуршил, дотор муухайрах, бөөлжих", "en": "Anorexia, nausea, vomiting" },
+        "rationale": { "mn": "Анорекси, бөөлжилт нь мухар олгойн үрэвслийн магадлалыг (Альварадо оноо) нэмэгдүүлнэ.", "en": "Contribute to the Alvarado score." },
+        "suggestedQuestion": { "mn": "Хоолны дуршил ямар байна? Дотор муухайрсан, бөөлжсөн үү?" }
+      },
+      {
+        "id": "fever", "category": "associated_symptoms", "topics": ["fever", "chills"], "weight": 1, "critical": true,
+        "label": { "mn": "Халуурсан эсэх", "en": "Fever" },
+        "rationale": { "mn": "Үрэвслийн шинж, хүндрэлийн (цоорол) эрсдэлийг үнэлнэ.", "en": "Inflammation; risk of perforation." },
+        "suggestedQuestion": { "mn": "Халуурсан уу? Хэмжсэн бол хэд байсан бэ?" }
+      },
+      {
+        "id": "character-severity", "category": "hpi", "topics": ["character", "severity", "duration"], "weight": 1,
+        "label": { "mn": "Өвдөлтийн шинж, хүч", "en": "Character and severity" },
+        "rationale": { "mn": "Тасралтгүй, хүчтэй өвдөлт нь колик өвдөлтөөс ялгагдана.", "en": "Constant pain differs from colic." },
+        "suggestedQuestion": { "mn": "Ямар маягийн өвдөлт вэ? Ирж буцдаг уу, тасралтгүй юу? 10-аас хэдэн оноо вэ?" }
+      },
+      {
+        "id": "modifying", "category": "hpi", "topics": ["aggravating", "relieving"], "weight": 1,
+        "label": { "mn": "Ихэсгэх, намдаах хүчин зүйлс", "en": "Aggravating / relieving factors" },
+        "rationale": { "mn": "Хөдлөх, ханиалгахад ихсэх нь гялтан хальсны цочролыг илтгэнэ.", "en": "Pain with movement suggests peritonism." },
+        "suggestedQuestion": { "mn": "Юу хийхэд өвдөлт ихэсдэг, юунаас намддаг вэ?" }
+      },
+      {
+        "id": "urinary", "category": "pertinent_negatives", "topics": ["urinary"], "weight": 1,
+        "label": { "mn": "Шээсний зовиур", "en": "Urinary symptoms" },
+        "rationale": { "mn": "Шээсний замын халдвар, бөөрний чулууг ялгана.", "en": "Distinguish UTI / renal colic." },
+        "suggestedQuestion": { "mn": "Шээхэд хорсох, өвдөх, ойр ойрхон шээх зүйл байна уу?" }
+      },
+      {
+        "id": "bowels", "category": "pertinent_negatives", "topics": ["diarrhea", "constipation"], "weight": 1,
+        "label": { "mn": "Өтгөний өөрчлөлт", "en": "Bowel habit" },
+        "rationale": { "mn": "Гастроэнтеритыг ялгана.", "en": "Distinguish gastroenteritis." },
+        "suggestedQuestion": { "mn": "Суулгасан, өтгөн хатсан уу?" }
+      },
+      {
+        "id": "gynae", "category": "pertinent_negatives", "topics": ["vaginal_symptoms"], "weight": 1,
+        "label": { "mn": "Үтрээний ялгадас, цус", "en": "Vaginal discharge / bleeding" },
+        "rationale": { "mn": "Аарцгийн үрэвсэл, умайн гадуурх жирэмслэлтийг ялгана.", "en": "Distinguish PID / ectopic." },
+        "suggestedQuestion": { "mn": "Үтрээнээс ялгадас эсвэл цус гарсан уу?" }
+      },
+      {
+        "id": "past-history", "category": "past_history", "topics": ["pmh", "surgeries"], "weight": 1,
+        "label": { "mn": "Өмнөх өвчин, мэс засал", "en": "Past medical / surgical history" },
+        "rationale": { "mn": "Өмнө мухар олгойгоо авахуулсан эсэх, бусад өвчнийг тодруулна.", "en": "Prior appendicectomy, comorbidities." },
+        "suggestedQuestion": { "mn": "Өмнө нь хагалгаа хийлгэж байсан уу? Ямар нэг архаг өвчтэй юу?" }
+      },
+      {
+        "id": "meds-allergies", "category": "medications_allergies", "topics": ["medications", "allergies"], "weight": 1,
+        "label": { "mn": "Эм ба харшил", "en": "Medications and allergies" },
+        "rationale": { "mn": "Мэс засал, антибиотик эмчилгээнд шаардлагатай.", "en": "Needed before surgery/antibiotics." },
+        "suggestedQuestion": { "mn": "Ямар нэг эм уусан уу? Харшилтай юу?" }
+      },
+      {
+        "id": "social", "category": "social_history", "topics": ["occupation", "smoking", "alcohol", "sick_contacts", "living_situation"], "weight": 0.5,
+        "label": { "mn": "Нийгмийн түүх, ойр орчны өвчлөл", "en": "Social history / sick contacts" },
+        "rationale": { "mn": "Хоолны хордлого, халдварын эх үүсвэрийг тодруулна.", "en": "Food poisoning / infection sources." },
+        "suggestedQuestion": { "mn": "Ойр орчинд тань ижил зовиуртай хүн байна уу? Хаана амьдардаг вэ?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Хүйсний орчмоос эхэлж баруун доод хэвлий рүү шилжсэн тасралтгүй өвдөлт, хөдөлгөөнөөр ихсэх, анорекси, дотор муухайрах, бөөлжих, бага зэргийн халуурал нь мухар олгойн цочмог үрэвслийн сонгодог хэлбэр. Нөхөн үржихүйн насны эмэгтэйд умайн гадуурх жирэмслэлтийг сарын тэмдэг, бэлгийн амьдралын асуумж болон жирэмсний тестээр заавал хасна. Шээс, өтгөн, үтрээний зовиургүй нь бусад ялган оношийн магадлалыг бууруулна.",
+      "en": "Periumbilical pain migrating to the RLQ, worse with movement, with anorexia, nausea, vomiting and low-grade fever is classic acute appendicitis. Ectopic pregnancy must be excluded in women of reproductive age."
+    },
+    "learningPoints": [
+      { "mn": "Хэвлийн өвдөлтийн байршлын шилжилтийг заавал асуух.", "en": "Ask about migration of pain." },
+      { "mn": "Нөхөн үржихүйн насны эмэгтэй бүрээс сүүлийн сарын тэмдэг, жирэмслэлтийн боломжийг асуух.", "en": "Always ask LMP/pregnancy in women of reproductive age." },
+      { "mn": "Шээс, өтгөн, эмэгтэйчүүдийн зовиурыг сөрөг шинж болгон тодруулах.", "en": "Document urinary, bowel and gynaecological negatives." }
+    ]
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-20",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

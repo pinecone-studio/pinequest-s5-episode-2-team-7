@@ -1,0 +1,945 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"
+    },
+    "version": {
+      "default": 1,
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "internalTitle": {
+      "type": "string",
+      "minLength": 3
+    },
+    "public": {
+      "type": "object",
+      "properties": {
+        "displayTitle": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "specialty": {
+          "type": "string",
+          "minLength": 2
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ]
+        },
+        "tags": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "setting": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "patient": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "age": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 120
+            },
+            "sex": {
+              "type": "string",
+              "enum": [
+                "male",
+                "female"
+              ]
+            },
+            "occupation": {
+              "type": "object",
+              "properties": {
+                "mn": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "en": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "mn"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "age",
+            "sex"
+          ]
+        },
+        "chiefComplaint": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "openingLine": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "initialVitals": {
+          "type": "object",
+          "properties": {
+            "bloodPressure": {
+              "type": "string"
+            },
+            "heartRate": {
+              "type": "number"
+            },
+            "respiratoryRate": {
+              "type": "number"
+            },
+            "temperatureC": {
+              "type": "number"
+            },
+            "spo2": {
+              "type": "number"
+            }
+          }
+        },
+        "estimatedMinutes": {
+          "default": 15,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "timeCritical": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "displayTitle",
+        "specialty",
+        "difficulty",
+        "setting",
+        "patient",
+        "chiefComplaint",
+        "openingLine"
+      ]
+    },
+    "persona": {
+      "type": "object",
+      "properties": {
+        "personality": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "speakingStyle": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "emotionalState": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        }
+      },
+      "required": [
+        "personality",
+        "speakingStyle",
+        "emotionalState"
+      ]
+    },
+    "hidden": {
+      "type": "object",
+      "properties": {
+        "diagnosis": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "object",
+              "properties": {
+                "mn": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "en": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "mn"
+              ]
+            },
+            "icd10": {
+              "type": "string"
+            },
+            "acceptedAliases": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 2
+              }
+            },
+            "partialAliases": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 2
+              }
+            }
+          },
+          "required": [
+            "label",
+            "acceptedAliases"
+          ]
+        },
+        "differentials": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "object",
+                "properties": {
+                  "mn": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "mn"
+                ]
+              },
+              "aliases": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "rationale": {
+                "type": "object",
+                "properties": {
+                  "mn": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "mn"
+                ]
+              }
+            },
+            "required": [
+              "label",
+              "rationale"
+            ]
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "facts": {
+          "minItems": 3,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 80,
+                "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "positive",
+                  "negative",
+                  "history",
+                  "exam",
+                  "vital",
+                  "investigation"
+                ]
+              },
+              "topics": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "onset",
+                    "duration",
+                    "location",
+                    "character",
+                    "severity",
+                    "radiation",
+                    "progression",
+                    "aggravating",
+                    "relieving",
+                    "previous_episodes",
+                    "trigger",
+                    "chest_pain",
+                    "abdominal_pain",
+                    "headache",
+                    "back_pain",
+                    "dyspnea",
+                    "sweating",
+                    "nausea",
+                    "vomiting",
+                    "dizziness",
+                    "palpitations",
+                    "fever",
+                    "chills",
+                    "cough",
+                    "sputum",
+                    "hemoptysis",
+                    "appetite",
+                    "diarrhea",
+                    "constipation",
+                    "urinary",
+                    "vaginal_symptoms",
+                    "fatigue",
+                    "weight_loss",
+                    "night_sweats",
+                    "leg_swelling",
+                    "rash",
+                    "jaundice",
+                    "trauma",
+                    "pmh",
+                    "hypertension",
+                    "diabetes",
+                    "hyperlipidemia",
+                    "heart_disease",
+                    "lung_disease",
+                    "surgeries",
+                    "hospitalizations",
+                    "medications",
+                    "allergies",
+                    "family_history",
+                    "smoking",
+                    "alcohol",
+                    "substance_use",
+                    "occupation",
+                    "living_situation",
+                    "exercise",
+                    "diet",
+                    "lmp",
+                    "pregnancy",
+                    "sexual_history",
+                    "travel",
+                    "sick_contacts",
+                    "vaccination",
+                    "vitals",
+                    "physical_exam",
+                    "investigations",
+                    "greeting",
+                    "identity",
+                    "concerns",
+                    "associated_general",
+                    "broad",
+                    "diagnosis_request",
+                    "injection"
+                  ]
+                }
+              },
+              "patientKnows": {
+                "type": "boolean"
+              },
+              "answer": {
+                "type": "object",
+                "properties": {
+                  "mn": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "mn"
+                ]
+              },
+              "significance": {
+                "type": "object",
+                "properties": {
+                  "mn": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "mn"
+                ]
+              },
+              "leakTerms": {
+                "default": [],
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                }
+              },
+              "volunteerOnBroad": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "topics",
+              "patientKnows",
+              "answer"
+            ]
+          }
+        },
+        "investigationsAvailable": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "diagnosis",
+        "summary",
+        "facts"
+      ]
+    },
+    "rubric": {
+      "type": "object",
+      "properties": {
+        "weights": {
+          "type": "object",
+          "properties": {
+            "diagnosis": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "history": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "critical": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "diagnosis",
+            "history",
+            "critical"
+          ]
+        },
+        "items": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 80,
+                "pattern": "^[a-z0-9]+(?:[-_][a-z0-9]+)*$"
+              },
+              "label": {
+                "type": "object",
+                "properties": {
+                  "mn": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "mn"
+                ]
+              },
+              "category": {
+                "type": "string",
+                "enum": [
+                  "hpi",
+                  "associated_symptoms",
+                  "pertinent_negatives",
+                  "past_history",
+                  "medications_allergies",
+                  "family_history",
+                  "social_history",
+                  "risk_factors",
+                  "red_flags"
+                ]
+              },
+              "topics": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "onset",
+                    "duration",
+                    "location",
+                    "character",
+                    "severity",
+                    "radiation",
+                    "progression",
+                    "aggravating",
+                    "relieving",
+                    "previous_episodes",
+                    "trigger",
+                    "chest_pain",
+                    "abdominal_pain",
+                    "headache",
+                    "back_pain",
+                    "dyspnea",
+                    "sweating",
+                    "nausea",
+                    "vomiting",
+                    "dizziness",
+                    "palpitations",
+                    "fever",
+                    "chills",
+                    "cough",
+                    "sputum",
+                    "hemoptysis",
+                    "appetite",
+                    "diarrhea",
+                    "constipation",
+                    "urinary",
+                    "vaginal_symptoms",
+                    "fatigue",
+                    "weight_loss",
+                    "night_sweats",
+                    "leg_swelling",
+                    "rash",
+                    "jaundice",
+                    "trauma",
+                    "pmh",
+                    "hypertension",
+                    "diabetes",
+                    "hyperlipidemia",
+                    "heart_disease",
+                    "lung_disease",
+                    "surgeries",
+                    "hospitalizations",
+                    "medications",
+                    "allergies",
+                    "family_history",
+                    "smoking",
+                    "alcohol",
+                    "substance_use",
+                    "occupation",
+                    "living_situation",
+                    "exercise",
+                    "diet",
+                    "lmp",
+                    "pregnancy",
+                    "sexual_history",
+                    "travel",
+                    "sick_contacts",
+                    "vaccination",
+                    "vitals",
+                    "physical_exam",
+                    "investigations",
+                    "greeting",
+                    "identity",
+                    "concerns",
+                    "associated_general",
+                    "broad",
+                    "diagnosis_request",
+                    "injection"
+                  ]
+                }
+              },
+              "weight": {
+                "default": 1,
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 10
+              },
+              "critical": {
+                "default": false,
+                "type": "boolean"
+              },
+              "rationale": {
+                "type": "object",
+                "properties": {
+                  "mn": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "mn"
+                ]
+              },
+              "suggestedQuestion": {
+                "type": "object",
+                "properties": {
+                  "mn": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "mn"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "category",
+              "topics",
+              "rationale",
+              "suggestedQuestion"
+            ]
+          }
+        }
+      },
+      "required": [
+        "items"
+      ]
+    },
+    "education": {
+      "type": "object",
+      "properties": {
+        "explanation": {
+          "type": "object",
+          "properties": {
+            "mn": {
+              "type": "string",
+              "minLength": 1
+            },
+            "en": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "mn"
+          ]
+        },
+        "learningPoints": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mn": {
+                "type": "string",
+                "minLength": 1
+              },
+              "en": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "mn"
+            ]
+          }
+        },
+        "emergency": {
+          "type": "object",
+          "properties": {
+            "escalation": {
+              "type": "object",
+              "properties": {
+                "mn": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "en": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "mn"
+              ]
+            }
+          },
+          "required": [
+            "escalation"
+          ]
+        }
+      },
+      "required": [
+        "explanation",
+        "learningPoints"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "synthetic",
+            "agentclinic",
+            "meditod",
+            "patientsim",
+            "other"
+          ]
+        },
+        "sourceId": {
+          "type": "string"
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "authors": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attribution": {
+          "type": "string"
+        },
+        "redistributable": {
+          "type": "boolean"
+        },
+        "trainingUseAllowed": {
+          "type": "boolean"
+        },
+        "clinicalReview": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "unreviewed",
+                "in_review",
+                "reviewed"
+              ]
+            },
+            "reviewer": {
+              "type": "string"
+            },
+            "reviewedAt": {
+              "type": "string"
+            },
+            "notes": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ]
+        },
+        "translation": {
+          "type": "object",
+          "properties": {
+            "sourceLanguage": {
+              "type": "string",
+              "enum": [
+                "mn",
+                "en"
+              ]
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "original",
+                "machine",
+                "ai_drafted",
+                "human_reviewed"
+              ]
+            },
+            "translator": {
+              "type": "string"
+            },
+            "reviewer": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sourceLanguage",
+            "status"
+          ]
+        }
+      },
+      "required": [
+        "source",
+        "synthetic",
+        "authors",
+        "createdAt",
+        "license",
+        "redistributable",
+        "trainingUseAllowed",
+        "clinicalReview",
+        "translation"
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "internalTitle",
+    "public",
+    "persona",
+    "hidden",
+    "rubric",
+    "education",
+    "provenance"
+  ]
+}
