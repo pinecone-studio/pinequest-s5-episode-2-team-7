@@ -12,6 +12,7 @@ import { POST as sendMessage } from "@/app/api/sessions/[id]/messages/route";
 import { POST as submitDiagnosis } from "@/app/api/sessions/[id]/diagnosis/route";
 import { GET as getEvaluation } from "@/app/api/sessions/[id]/evaluation/route";
 import { POST as startAvatarRoute } from "@/app/api/sessions/[id]/avatar/route";
+import { GET as fillerRoute } from "@/app/api/sessions/[id]/filler/route";
 import { GET as replyAudio } from "@/app/api/sessions/[id]/messages/[messageId]/audio/route";
 import { POST as transcribeRoute } from "@/app/api/speech/transcribe/route";
 import { resetConfigForTests } from "@/lib/config";
@@ -362,6 +363,33 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
     const view = await (await getSession(req(`/api/sessions/${id}`, { cookie: studentCookie }), ctx(id))).json();
     const studentMsg = view.session.messages.find((m: { role: string }) => m.role === "student");
     expect((await replyAudio(req(`/api/sessions/${id}/messages/${studentMsg.id}/audio`, { cookie: studentCookie }), audioCtx(id, studentMsg.id))).status).toBe(404);
+  });
+
+  it("voices a reply sentence by sentence and caches hesitation sounds", async () => {
+    useVoiceEnv();
+    const id = await newSession("abdominal-pain-01");
+    const { body } = await ask(id, "Хэзээнээс өвдөж эхэлсэн бэ?");
+    const reply = body.messages.find((m: { role: string }) => m.role === "patient");
+
+    const first = await replyAudio(req(`/api/sessions/${id}/messages/${reply.id}/audio?part=0`, { cookie: studentCookie }), audioCtx(id, reply.id));
+    expect(first.status).toBe(200);
+    const parts = Number(first.headers.get("x-speech-parts"));
+    expect(parts).toBeGreaterThanOrEqual(1);
+    const outOfRange = await replyAudio(req(`/api/sessions/${id}/messages/${reply.id}/audio?part=${parts}`, { cookie: studentCookie }), audioCtx(id, reply.id));
+    expect(outOfRange.status).toBe(404);
+    // Each part is synthesized from its own sentence, not the whole reply.
+    const sent = calls.filter((c) => c.url.includes("/synthesize")).map((c) => String(c.init?.body));
+    expect(sent[0].length).toBeLessThanOrEqual(reply.content.length);
+
+    const before = calls.length;
+    for (let i = 0; i < 2; i++) {
+      const filler = await fillerRoute(req(`/api/sessions/${id}/filler?i=1`, { cookie: studentCookie }), ctx(id));
+      expect(filler.status).toBe(200);
+    }
+    expect(calls.length - before).toBe(1); // synthesized once, then cached
+    expect((calls.at(-1)?.init?.headers as Record<string, string>)["voice-id"]).toBe("FEMALE3v2");
+    expect((await fillerRoute(req(`/api/sessions/${id}/filler?i=9`, { cookie: studentCookie }), ctx(id))).status).toBe(400);
+    expect((await fillerRoute(req(`/api/sessions/${id}/filler?i=0`, { cookie: otherStudentCookie }), ctx(id))).status).toBe(404);
   });
 
   it("issues avatar tokens only for the owner's active session", async () => {

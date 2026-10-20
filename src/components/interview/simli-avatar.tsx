@@ -12,6 +12,8 @@ export interface AvatarHandle {
   ready: boolean;
   /** Lip-sync a 16 kHz PCM16 WAV (the patient's Chimege voice). */
   speak(wav: ArrayBuffer): void;
+  /** Stop talking now and drop queued audio (the student interrupted). */
+  interrupt(): void;
 }
 
 type Status = "off" | "connecting" | "live" | "error";
@@ -20,7 +22,17 @@ type Status = "off" | "connecting" | "live" | "error";
  * Simli talking-head video of the patient. Started on demand (it is billed
  * per minute) and stopped when the interview page unmounts.
  */
-export function SimliAvatar({ sessionId, name, ref }: { sessionId: string; name: string; ref?: Ref<AvatarHandle> }) {
+export function SimliAvatar({
+  sessionId,
+  name,
+  onSpeakingChange,
+  ref,
+}: {
+  sessionId: string;
+  name: string;
+  onSpeakingChange?: (speaking: boolean) => void;
+  ref?: Ref<AvatarHandle>;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const clientRef = useRef<SimliClient | null>(null);
@@ -38,11 +50,15 @@ export function SimliAvatar({ sessionId, name, ref }: { sessionId: string; name:
         // 0.2 s chunks; Simli queues and plays them in order.
         for (let at = 0; at < pcm.length; at += 6400) client.sendAudioData(pcm.subarray(at, at + 6400));
       },
+      interrupt() {
+        if (status === "live") clientRef.current?.ClearBuffer();
+      },
     }),
     [status],
   );
 
   useEffect(() => () => void clientRef.current?.stop(), []);
+  useEffect(() => onSpeakingChange?.(speaking), [speaking, onSpeakingChange]);
 
   async function start() {
     if (!videoRef.current || !audioRef.current) return;

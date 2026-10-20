@@ -1,15 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { apiFetch } from "@/lib/fetcher";
 import { SEX_LABELS } from "@/lib/i18n";
 import type { MessageView, ProviderBadge, SessionView, VoiceFeatures } from "@/lib/views";
 import { Alert, Badge, Button, Card, Spinner, cn } from "../ui";
 import { DiagnosisDialog } from "./diagnosis-dialog";
 import { PatientAvatar } from "./patient-avatar";
-import { MAX_RECORD_SECONDS, Recorder } from "./recorder";
+import { Listener, MAX_RECORD_SECONDS, Recorder } from "./recorder";
 import { SimliAvatar, type AvatarHandle } from "./simli-avatar";
+import { SpeechPlayer } from "./speech-player";
+
+/** Number of hesitation sounds served by /api/sessions/[id]/filler. */
+const FILLER_COUNT = 3;
 
 const MAX_CHARS = 500;
 
@@ -36,8 +40,17 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
   const [speakReplies, setSpeakReplies] = useState(voice.speechOutput);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
+  const [handsFree, setHandsFree] = useState(false);
+  const [studentSpeaking, setStudentSpeaking] = useState(false);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [avatarSpeaking, setAvatarSpeaking] = useState(false);
   const recorderRef = useRef<Recorder | null>(null);
+  const listenerRef = useRef<Listener | null>(null);
   const avatarRef = useRef<AvatarHandle>(null);
+  const playerRef = useRef<SpeechPlayer | null>(null);
+  const fillersRef = useRef<Promise<ArrayBuffer | null>[] | null>(null);
+  /** Latest versions of handlers the long-lived microphone listener calls. */
+  const onUtteranceRef = useRef<(wav: Blob) => void>(() => {});
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const c = initial.case;
@@ -47,20 +60,111 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, pending]);
 
-  // Release the microphone if the page is left while recording.
-  useEffect(() => () => void recorderRef.current?.stop(), []);
+  // Release the microphone if the page is left while recording or listening.
+  useEffect(
+    () => () => {
+      void recorderRef.current?.stop();
+      void listenerRef.current?.stop();
+    },
+    [],
+  );
 
-  /** Speak one patient reply: through the video avatar when it is live, otherwise as plain audio. */
+  const patientSpeaking = audioPlaying || avatarSpeaking;
+  // While the patient talks, its voice may leak from the speakers into the
+  // microphone; require a louder voice before treating it as the student.
+  useEffect(() => {
+    if (listenerRef.current) listenerRef.current.vad.sensitivity = patientSpeaking ? 2.5 : 1;
+  }, [patientSpeaking]);
+
+  function player(): SpeechPlayer {
+    playerRef.current ??= new SpeechPlayer(() => avatarRef.current, setAudioPlaying);
+    return playerRef.current;
+  }
+
+  /**
+   * Speak one patient reply sentence by sentence: the first sentence starts
+   * playing as soon as it is voiced while the rest are fetched in parallel.
+   */
   async function playReply(messageId: string) {
-    try {
-      const response = await fetch(`/api/sessions/${initial.id}/messages/${messageId}/audio`);
+    const p = player();
+    const generation = p.generation;
+    const url = (part: number) => `/api/sessions/${initial.id}/messages/${messageId}/audio?part=${part}`;
+    const wavOf = async (response: Response) => {
       if (!response.ok) throw new Error();
-      const wav = await response.arrayBuffer();
-      if (avatarRef.current?.ready) avatarRef.current.speak(wav);
-      else await new Audio(URL.createObjectURL(new Blob([wav], { type: "audio/wav" }))).play();
+      return response.arrayBuffer();
+    };
+    try {
+      const first = await fetch(url(0));
+      const parts = Number(first.headers.get("x-speech-parts") ?? 1);
+      const rest = Array.from({ length: parts - 1 }, (_, i) => fetch(url(i + 1)).then(wavOf));
+      p.enqueue(await wavOf(first), generation);
+      for (const next of rest) p.enqueue(await next, generation);
     } catch {
       setError("Хариултыг дуугаар тоглуулж чадсангүй.");
     }
+  }
+
+  /** "Ммм...", "За...": played the moment a question is sent so the pause before the answer feels natural. */
+  async function playFiller() {
+    fillersRef.current ??= Array.from({ length: FILLER_COUNT }, (_, i) =>
+      fetch(`/api/sessions/${initial.id}/filler?i=${i}`)
+        .then((r) => (r.ok ? r.arrayBuffer() : null))
+        .catch(() => null),
+    );
+    const p = player();
+    const generation = p.generation;
+    const wav = await fillersRef.current[Math.floor(Math.random() * FILLER_COUNT)];
+    if (wav) p.enqueue(wav, generation);
+  }
+
+  /** The student started talking: the patient stops mid-sentence, like a person would. */
+  const interruptPatient = useCallback(() => {
+    setStudentSpeaking(true);
+    playerRef.current?.stop();
+  }, []);
+
+  async function transcribe(wav: Blob): Promise<string | null> {
+    const { text } = await apiFetch<{ text: string }>("/api/speech/transcribe", { method: "POST", body: wav, headers: { "content-type": "audio/wav" } });
+    return text || null;
+  }
+
+  // Hands-free: each utterance is transcribed and sent without pressing anything.
+  useEffect(() => {
+    onUtteranceRef.current = async (wav: Blob) => {
+      setStudentSpeaking(false);
+      setTranscribing(true);
+      try {
+        const text = await transcribe(wav);
+        if (!text) return;
+        if (pending || limitReached) setDraft((prev) => (prev ? `${prev} ${text}` : text).slice(0, MAX_CHARS));
+        else void send(undefined, text);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Яриа танигдсангүй.");
+      } finally {
+        setTranscribing(false);
+      }
+    };
+  });
+
+  async function toggleHandsFree() {
+    if (listenerRef.current) {
+      const listener = listenerRef.current;
+      listenerRef.current = null;
+      setHandsFree(false);
+      setStudentSpeaking(false);
+      await listener.stop();
+      return;
+    }
+    const listener = new Listener({ onSpeechStart: interruptPatient, onUtterance: (wav) => onUtteranceRef.current(wav) });
+    try {
+      await listener.start();
+    } catch {
+      setError("Микрофон нээгдсэнгүй. Хөтчийн зөвшөөрлийг шалгана уу.");
+      return;
+    }
+    listenerRef.current = listener;
+    setHandsFree(true);
+    setError(null);
   }
 
   /** Mic button: first press records, second press (or the time limit) transcribes into the input. */
@@ -84,8 +188,7 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
     setRecording(false);
     setTranscribing(true);
     try {
-      const wav = await recorder.stop();
-      const { text } = await apiFetch<{ text: string }>("/api/speech/transcribe", { method: "POST", body: wav, headers: { "content-type": "audio/wav" } });
+      const text = await transcribe(await recorder.stop());
       if (!text) setError("Үг танигдсангүй. Дахин ярина уу.");
       else setDraft((prev) => (prev ? `${prev} ${text}` : text).slice(0, MAX_CHARS));
     } catch (err) {
@@ -96,15 +199,19 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
     }
   }
 
-  async function send(event?: FormEvent) {
+  async function send(event?: FormEvent, spoken?: string) {
     event?.preventDefault();
-    const content = draft.trim();
+    const content = (spoken ?? draft).trim().slice(0, MAX_CHARS);
     if (!content || pending || limitReached) return;
     setPending(true);
     setError(null);
+    if (speakReplies) {
+      playerRef.current?.stop(); // a new question replaces whatever the patient was saying
+      void playFiller();
+    }
     const tempId = `pending-${Date.now()}`;
     setMessages((prev) => [...prev, { id: tempId, role: "student", content, createdAt: new Date().toISOString() }]);
-    setDraft("");
+    if (spoken === undefined) setDraft("");
     try {
       const result = await apiFetch<{ messages: MessageView[]; questionCount: number; provider: ProviderBadge }>(`/api/sessions/${initial.id}/messages`, {
         method: "POST",
@@ -248,7 +355,7 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
         {voice.avatar && (
           <div className="border-b border-slate-100 px-4 py-3">
             <div className="mx-auto w-40 sm:w-56">
-              <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} />
+              <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} />
             </div>
           </div>
         )}
@@ -281,6 +388,19 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
               <Alert>{error}</Alert>
             </div>
           )}
+          {voice.speechInput && (
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+              <Button type="button" size="sm" variant={handsFree ? "primary" : "ghost"} onClick={() => void toggleHandsFree()} aria-pressed={handsFree}>
+                {handsFree ? "Чөлөөт яриа: асаалттай" : "Чөлөөт яриа асаах"}
+              </Button>
+              {handsFree && (
+                <span className="flex items-center gap-1.5 text-slate-500" role="status">
+                  <span className={cn("h-2 w-2 rounded-full", studentSpeaking ? "animate-pulse bg-red-500" : transcribing || pending ? "bg-amber-400" : "bg-emerald-500")} />
+                  {studentSpeaking ? "Та ярьж байна…" : transcribing ? "Таны яриаг бичиж байна…" : pending ? "Өвчтөн бодож байна…" : patientSpeaking ? "Өвчтөн ярьж байна (ярьвал таслана)" : "Сонсож байна — асуултаа хэлээрэй"}
+                </span>
+              )}
+            </div>
+          )}
           {limitReached ? (
             <Alert tone="amber">Асуултын дээд хязгаарт хүрлээ. Оношоо илгээнэ үү.</Alert>
           ) : (
@@ -300,7 +420,7 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
                 disabled={pending || recording || transcribing}
                 autoFocus
               />
-              {voice.speechInput && (
+              {voice.speechInput && !handsFree && (
                 <Button
                   type="button"
                   variant={recording ? "primary" : "ghost"}

@@ -6,7 +6,7 @@ import type { SessionData } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/client";
 import { messages } from "@/lib/db/schema";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { isSpeechWav, MAX_STT_BYTES, synthesize, transcribe } from "@/lib/speech/chimege";
+import { isSpeechWav, MAX_STT_BYTES, splitSentences, synthesize, transcribe } from "@/lib/speech/chimege";
 import { createAvatarToken, voiceFor } from "@/lib/speech/features";
 import { loadOwnedSession } from "./sessions";
 
@@ -22,18 +22,28 @@ export async function transcribeQuestion(auth: SessionData, wav: Uint8Array<Arra
   return transcribe(wav);
 }
 
+function remember(key: string, wav: Uint8Array<ArrayBuffer>) {
+  if (audioCache.size >= AUDIO_CACHE_LIMIT) audioCache.delete(audioCache.keys().next().value!);
+  audioCache.set(key, wav);
+}
+
 /**
  * The spoken version of one of the patient's replies in the student's own
  * session. Only stored patient messages can be voiced, so the endpoint cannot
  * be used to synthesize arbitrary text.
+ *
+ * With `part`, only that sentence group is voiced (see splitSentences), so
+ * the client can start playing the first sentence sooner. `parts` is the
+ * total number of parts either way.
  */
-export async function patientReplyAudio(auth: SessionData, sessionId: string, messageId: string): Promise<Uint8Array<ArrayBuffer>> {
+export async function patientReplyAudio(
+  auth: SessionData,
+  sessionId: string,
+  messageId: string,
+  part?: number,
+): Promise<{ wav: Uint8Array<ArrayBuffer>; parts: number }> {
   if (!z.string().uuid().safeParse(messageId).success) throw Errors.notFound("Хариулт");
   const session = await loadOwnedSession(auth, sessionId);
-  // Keyed by session too: a cached reply must never be served to another session.
-  const key = `${session.id}:${messageId}`;
-  const cached = audioCache.get(key);
-  if (cached) return cached;
 
   const db = await getDb();
   const [row] = await db
@@ -42,11 +52,39 @@ export async function patientReplyAudio(auth: SessionData, sessionId: string, me
     .where(and(eq(messages.id, messageId), eq(messages.sessionId, session.id)));
   if (!row || row.role !== "patient") throw Errors.notFound("Хариулт");
 
-  const limit = checkRateLimit(`tts:${auth.userId}`, 30);
+  const sentences = splitSentences(row.content);
+  if (part !== undefined && (part < 0 || part >= sentences.length)) throw Errors.notFound("Хариултын хэсэг");
+  // Keyed by session too: a cached reply must never be served to another session.
+  const key = `${session.id}:${messageId}:${part ?? "all"}`;
+  const cached = audioCache.get(key);
+  if (cached) return { wav: cached, parts: sentences.length };
+
+  const limit = checkRateLimit(`tts:${auth.userId}`, 60);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
-  const wav = await synthesize(row.content, voiceFor(session.caseSnapshot.public.patient.sex));
-  if (audioCache.size >= AUDIO_CACHE_LIMIT) audioCache.delete(audioCache.keys().next().value!);
-  audioCache.set(key, wav);
+  const wav = await synthesize(part === undefined ? row.content : sentences[part], voiceFor(session.caseSnapshot.public.patient.sex));
+  remember(key, wav);
+  return { wav, parts: sentences.length };
+}
+
+/**
+ * Short hesitation sounds played the moment a question is sent, so the
+ * patient seems to react while the real answer is being prepared. They are
+ * fixed phrases, cached per voice (synthesized once per server instance).
+ */
+export const FILLERS = ["Ммм...", "За...", "Өө..."] as const;
+
+export async function fillerAudio(auth: SessionData, sessionId: string, index: number): Promise<Uint8Array<ArrayBuffer>> {
+  const filler = FILLERS[index];
+  if (filler === undefined) throw Errors.notFound("Дуу");
+  const session = await loadOwnedSession(auth, sessionId);
+  const voice = voiceFor(session.caseSnapshot.public.patient.sex);
+  const key = `filler:${voice}:${index}`;
+  const cached = audioCache.get(key);
+  if (cached) return cached;
+  const limit = checkRateLimit(`tts:${auth.userId}`, 60);
+  if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
+  const wav = await synthesize(filler, voice);
+  remember(key, wav);
   return wav;
 }
 
