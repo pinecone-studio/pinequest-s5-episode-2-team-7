@@ -243,6 +243,18 @@ describe("LLM provider safety net", () => {
     expect(result.validationIssues.map((i) => i.code)).toContain("contradiction");
   });
 
+  it("does not mistake words starting with 'гүй' (to run) for a denial", async () => {
+    const session = interview(chest, fakeProvider("Тийм ээ, гүйж явахад толгой өвдөнө."));
+    const result = await session.ask("Толгой өвдөж байна уу?");
+    expect(result.validationIssues.map((i) => i.code)).toContain("contradiction");
+  });
+
+  it("accepts a natural Mongolian denial with the -гүй suffix", async () => {
+    const session = interview(chest, fakeProvider("Толгой өвдөхгүй ээ."));
+    const result = await session.ask("Толгой өвдөж байна уу?");
+    expect(result.validationIssues.map((i) => i.code)).not.toContain("contradiction");
+  });
+
   it("17. handles provider failures gracefully", async () => {
     const failing = fakeProvider(new ProviderError("quota exceeded", "gemini", "rate_limit"));
     const result = await interview(chest, failing).ask("Тамхи татдаг уу?");

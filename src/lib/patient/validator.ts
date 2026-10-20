@@ -45,7 +45,12 @@ const OUT_OF_CHARACTER = [
   /##/,
 ];
 
-const NEGATION = /(үгүй|байхгүй|гүй|алга|биш|ч үгүй|\bno\b|\bnot\b)/;
+/**
+ * Negation: the "-гүй" suffix must end a word ("өвдөхгүй", "үгүй", optionally
+ * "-гүй ээ/гээ"), so words that merely start with "гүй" ("гүйх" = to run) do
+ * not count as a denial.
+ */
+const NEGATION = /\p{L}гүй(?=\s|$|ээ|гээ)|(^|\s)(алга|биш|no|not)(?=\s|$)/u;
 
 function containsTerm(haystack: string, term: string): boolean {
   const t = normalizeQuestion(term);

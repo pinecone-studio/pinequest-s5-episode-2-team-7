@@ -13,7 +13,8 @@ import { POST as submitDiagnosis } from "@/app/api/sessions/[id]/diagnosis/route
 import { GET as getEvaluation } from "@/app/api/sessions/[id]/evaluation/route";
 import { hashPassword } from "@/lib/auth/session";
 import { DEMO_CASE_SOURCES, loadDemoCase } from "@/lib/cases/demo";
-import { createPgliteDb, setDbForTests } from "@/lib/db/client";
+import { eq } from "drizzle-orm";
+import { createPgliteDb, getDb, setDbForTests } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
 import { setPatientProviderForTests } from "@/lib/patient/providers";
 import { MockPatientProvider } from "@/lib/patient/providers/mock";
@@ -78,6 +79,14 @@ async function ask(sessionId: string, content: string, cookie = studentCookie) {
 }
 
 describe("authentication", () => {
+  it("limits login attempts per client across many accounts", async () => {
+    let last = 0;
+    for (let i = 0; i < 31; i++) {
+      last = (await login(req("/api/auth/login", { body: { email: `spray${i}@test.mn`, password: "wrongpass" } }), noCtx)).status;
+    }
+    expect(last).toBe(429);
+  });
+
   it("rejects wrong passwords with a generic message", async () => {
     const response = await login(req("/api/auth/login", { body: { email: "student@test.mn", password: "wrong-password" } }), noCtx);
     expect(response.status).toBe(400);
@@ -141,6 +150,17 @@ describe("14. administrative endpoints", () => {
     const response = await adminCases(req("/api/admin/cases", { cookie: adminCookie }), noCtx);
     expect(response.status).toBe(200);
     expect((await response.json()).cases.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("a demoted admin's old cookie can no longer read other users' sessions", async () => {
+    const db = await getDb();
+    await db.insert(users).values({ email: "former@test.mn", name: "Хуучин админ", role: "admin", passwordHash: await hashPassword("formerpass123") });
+    const formerCookie = cookieFrom(await login(req("/api/auth/login", { body: { email: "former@test.mn", password: "formerpass123" } }), noCtx));
+    const id = await newSession();
+    expect((await getSession(req(`/api/sessions/${id}`, { cookie: formerCookie }), ctx(id))).status).toBe(200);
+
+    await db.update(users).set({ role: "student" }).where(eq(users.email, "former@test.mn"));
+    expect((await getSession(req(`/api/sessions/${id}`, { cookie: formerCookie }), ctx(id))).status).toBe(404);
   });
 });
 
