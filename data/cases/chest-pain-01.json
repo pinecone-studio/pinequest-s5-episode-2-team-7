@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 1,
+  "id": "chest-pain-01",
+  "version": 1,
+  "internalTitle": "Acute anterior myocardial infarction (ACS) in a 58-year-old smoker",
+  "public": {
+    "displayTitle": { "mn": "Цээжний өвдөлттэй 58 настай эрэгтэй", "en": "58-year-old man with chest pain" },
+    "specialty": "Зүрх судас",
+    "difficulty": "beginner",
+    "tags": ["яаралтай тусламж", "цээжний өвдөлт"],
+    "setting": { "mn": "Яаралтай тусламжийн тасаг, өглөө 09:30", "en": "Emergency department, 09:30" },
+    "patient": {
+      "name": "Батбаяр",
+      "age": 58,
+      "sex": "male",
+      "occupation": { "mn": "Таксины жолооч", "en": "Taxi driver" }
+    },
+    "chiefComplaint": { "mn": "Цээж өвдөх", "en": "Chest pain" },
+    "chiefComplaintTopics": ["chest_pain"],
+    "openingLine": { "mn": "Эмч ээ, цээж өвдөөд байна.", "en": "Doctor, my chest hurts." },
+    "estimatedMinutes": 15,
+    "timeCritical": true
+  },
+  "persona": {
+    "personality": { "mn": "Даруу, бага ярьдаг, өвдөлтөө дарж тэвчдэг эрэгтэй. Эмчид итгэдэг.", "en": "Reserved, stoic man who downplays pain; trusts doctors." },
+    "speakingStyle": { "mn": "Богино, энгийн өгүүлбэрээр, ярианы хэлээр хариулдаг. Эмчийг 'эмч ээ' гэж дууддаг.", "en": "Short, plain colloquial sentences; addresses the doctor as 'эмч ээ'." },
+    "emotionalState": { "mn": "Өвдөлттэй, бага зэрэг айсан, санаа зовсон.", "en": "In pain, somewhat frightened and worried." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Миокардын цочмог шигдээс (титэм судасны цочмог хам шинж)", "en": "Acute myocardial infarction (acute coronary syndrome)" },
+      "icd10": "I21",
+      "acceptedAliases": [
+        "acute myocardial infarction", "myocardial infarction", "acute mi", "ami", "stemi", "nstemi", "mi",
+        "heart attack", "acute coronary syndrome", "acs",
+        "миокардын шигдээс", "миокардын цочмог шигдээс", "цочмог миокардын шигдээс", "зүрхний шигдээс",
+        "зүрхний булчингийн шигдээс", "зүрхний цочмог шигдээс", "титэм судасны цочмог хам шинж", "тцхш"
+      ],
+      "partialAliases": [
+        "unstable angina", "angina", "ischemic heart disease", "ischaemic heart disease", "coronary artery disease",
+        "тогтворгүй бах", "бах", "стенокарди", "зүрхний ишеми", "зүрхний ишемийн өвчин", "титэм судасны өвчин"
+      ]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Гол судасны ховхрол", "en": "Aortic dissection" },
+        "aliases": ["aortic dissection", "гол судасны ховхрол", "аортын ховхрол"],
+        "rationale": { "mn": "Гэнэт эхэлсэн, урах мэт, нуруу руу дамжсан өвдөлт, гарын даралтын зөрүү байвал сэжиглэнэ.", "en": "Sudden tearing pain radiating to the back, BP differential between arms." }
+      },
+      {
+        "label": { "mn": "Уушгины артерийн тромбоэмболи", "en": "Pulmonary embolism" },
+        "aliases": ["pulmonary embolism", "pe", "уушгины тромбоэмболи", "уушгины артерийн тромбоэмболи"],
+        "rationale": { "mn": "Гэнэтийн амьсгаадалт, хатгах өвдөлт, хөл хавагнах, удаан хөдөлгөөнгүй байсан түүх.", "en": "Sudden dyspnoea, pleuritic pain, leg swelling, immobility." }
+      },
+      {
+        "label": { "mn": "Перикардит", "en": "Pericarditis" },
+        "aliases": ["pericarditis", "перикардит"],
+        "rationale": { "mn": "Урагш бөхийхөд намддаг, хэвтэхэд ихэсдэг хатгах өвдөлт, саяхны вирусийн халдвар.", "en": "Sharp pain relieved by leaning forward, recent viral illness." }
+      },
+      {
+        "label": { "mn": "Улаан хоолойн рефлюкс", "en": "Gastro-oesophageal reflux" },
+        "aliases": ["gerd", "reflux", "рефлюкс", "ходоодны рефлюкс"],
+        "rationale": { "mn": "Хоолны дараа түлэгдэх мэт өвдөлт, исгэлэн оргилт.", "en": "Burning post-prandial pain, acid regurgitation." }
+      }
+    ],
+    "summary": {
+      "mn": "58 настай, 30 гаруй жил тамхи татсан, даралт ихсэлттэй эрэгтэйд өнөө өглөө тайван үед гэнэт цээжний голд дарж шахсан, зүүн гар болон эрүү рүү дамжсан, 2 цаг гаруй үргэлжилж буй өвдөлт хүйтэн хөлс, дотор муухайрах, амьсгаадалттай хавсарч илэрсэн. Сүүлийн сард ачаалалд үүсдэг цээжний базалт байсан.",
+      "en": "58-year-old smoker with hypertension: sudden central pressure-like chest pain since this morning, radiating to the left arm and jaw, >2 hours, with diaphoresis, nausea and mild dyspnoea; exertional chest tightness over the past month."
+    },
+    "facts": [
+      {
+        "id": "onset",
+        "kind": "positive",
+        "topics": ["onset", "trigger"],
+        "patientKnows": true,
+        "answer": { "mn": "Өнөө өглөө долоон цагийн үед, гадаа машинаа халааж байхад гэнэт өвдөж эхэлсэн.", "en": "This morning around 7, while warming up my car, it started suddenly." },
+        "significance": { "mn": "Тайван үед гэнэт эхэлсэн, 20 минутаас удаан үргэлжилсэн өвдөлт нь титэм судасны цочмог хам шинжийн шинж.", "en": "Sudden onset at rest lasting >20 min suggests ACS." },
+        "leakTerms": ["долоон цаг", "машинаа халааж"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "duration",
+        "kind": "positive",
+        "topics": ["duration"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр цаг гаруй болж байна. Тасрахгүй, байнга өвдөөд байна.", "en": "Over two hours now. It's constant." },
+        "significance": { "mn": "20 минутаас удаан, амралтаар намдахгүй өвдөлт тогтвортой бахаас ялгагдана.", "en": "Pain >20 min unrelieved by rest differs from stable angina." },
+        "leakTerms": ["хоёр цаг"]
+      },
+      {
+        "id": "location",
+        "kind": "positive",
+        "topics": ["location"],
+        "patientKnows": true,
+        "answer": { "mn": "Яг цээжний голд, өвчүүний ард өвдөөд байна.", "en": "Right in the middle of my chest, behind the breastbone." },
+        "significance": { "mn": "Өвчүүний ард байрлалтай өвдөлт нь зүрхний ишемийн сонгодог байршил.", "en": "Retrosternal pain is the classic ischaemic location." },
+        "leakTerms": ["өвчүү"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "character",
+        "kind": "positive",
+        "topics": ["character"],
+        "patientKnows": true,
+        "answer": { "mn": "Хүнд юм цээжин дээр тавьчихсан юм шиг, дарж шахаад байна.", "en": "Like something heavy on my chest, pressing and squeezing." },
+        "significance": { "mn": "Дарж шахах, хүндрэх мэдрэмж нь ишемийн өвдөлтөд түгээмэл.", "en": "Pressure/heaviness is typical of ischaemic pain." },
+        "leakTerms": ["хүнд юм", "шахаад"]
+      },
+      {
+        "id": "severity",
+        "kind": "positive",
+        "topics": ["severity"],
+        "patientKnows": true,
+        "answer": { "mn": "Араваас бол найм орчим байх. Ийм хүчтэй өвдөж байгаагүй.", "en": "About 8 out of 10. Never had pain this bad." },
+        "leakTerms": ["найм"]
+      },
+      {
+        "id": "radiation",
+        "kind": "positive",
+        "topics": ["radiation"],
+        "patientKnows": true,
+        "answer": { "mn": "Тийм ээ, зүүн гар руу дамжаад байх шиг байна. Эрүү рүү ч бас жаахан өвдөөд байгаа.", "en": "Yes, it seems to go into my left arm, and a bit into my jaw." },
+        "significance": { "mn": "Зүүн гар, эрүү рүү дамжих нь миокардын ишемийн магадлалыг ихэсгэнэ.", "en": "Radiation to the left arm/jaw increases likelihood of ischaemia." },
+        "leakTerms": ["зүүн гар", "эрүү"]
+      },
+      {
+        "id": "aggravating",
+        "kind": "positive",
+        "topics": ["aggravating"],
+        "patientKnows": true,
+        "answer": { "mn": "Хөдлөхөд арай дордох шиг. Амьсгаа авахад нэг их өөрчлөгдөхгүй, дарахад ч өвдөхгүй.", "en": "A bit worse when I move. Breathing in doesn't change it, and pressing on my chest doesn't hurt." },
+        "significance": { "mn": "Амьсгал, тэмтрэлтээс хамаарахгүй байгаа нь гялтан, булчин-ясны шалтгааныг багасгана.", "en": "Not pleuritic or reproducible — less likely pleural or musculoskeletal." },
+        "leakTerms": ["хөдлөхөд"]
+      },
+      {
+        "id": "relieving",
+        "kind": "positive",
+        "topics": ["relieving"],
+        "patientKnows": true,
+        "answer": { "mn": "Юу ч хийгээд намдахгүй байна. Суугаад амарсан ч хэвээрээ.", "en": "Nothing helps. Even sitting and resting, it's the same." },
+        "leakTerms": ["намдахгүй"]
+      },
+      {
+        "id": "progression",
+        "kind": "positive",
+        "topics": ["progression"],
+        "patientKnows": true,
+        "answer": { "mn": "Эхэндээ арай гайгүй байсан, одоо улам хүчтэй болоод байна.", "en": "It was milder at first, now it's getting stronger." },
+        "leakTerms": ["улам хүчтэй"]
+      },
+      {
+        "id": "previous-episodes",
+        "kind": "positive",
+        "topics": ["previous_episodes", "heart_disease"],
+        "patientKnows": true,
+        "answer": { "mn": "Сүүлийн нэг сар шатаар өгсөхөд цээж базлаад, хэдэн минут амрахаар өнгөрдөг байсан. Ингэж удаан өвдсөн нь анх удаа.", "en": "Over the past month my chest got tight climbing stairs and eased after a few minutes' rest. This is the first time it's lasted so long." },
+        "significance": { "mn": "Ачааллын үеийн шинээр үүссэн бах нь шигдээсийн өмнөх тогтворгүй явцыг илтгэнэ.", "en": "New exertional angina preceding the event suggests an unstable prodrome." },
+        "leakTerms": ["шатаар", "базлаад"]
+      },
+      {
+        "id": "sweating",
+        "kind": "positive",
+        "topics": ["sweating", "associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Тийм, хүйтэн хөлс их гарсан. Цамц маань норчихсон.", "en": "Yes, I broke out in a cold sweat. My shirt got soaked." },
+        "significance": { "mn": "Хүйтэн хөлс (диафорез) нь зүрхний шигдээсийн хүчтэй хавсарсан шинж.", "en": "Diaphoresis is a strong associated feature of MI." },
+        "leakTerms": ["хүйтэн хөлс", "норчихсон"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "nausea",
+        "kind": "positive",
+        "topics": ["nausea", "vomiting"],
+        "patientKnows": true,
+        "answer": { "mn": "Дотор жаахан муухай оргиод байгаа. Бөөлжөөгүй.", "en": "I feel a bit nauseous. I haven't vomited." },
+        "leakTerms": ["муухай оргиод"]
+      },
+      {
+        "id": "dyspnea",
+        "kind": "positive",
+        "topics": ["dyspnea", "associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Амьсгаа жаахан давчдаад байна. Өвдөлт эхэлснээс хойш.", "en": "I'm a little short of breath, since the pain started." },
+        "leakTerms": ["давчдаад"]
+      },
+      {
+        "id": "no-fever-cough",
+        "kind": "negative",
+        "topics": ["fever", "cough", "sputum"],
+        "patientKnows": true,
+        "answer": { "mn": "Үгүй, халуураагүй, ханиалгахгүй байна.", "en": "No fever, no cough." },
+        "significance": { "mn": "Халдварын шинж байхгүй нь хатгалгаа, перикардитын магадлалыг бууруулна.", "en": "No infective features makes pneumonia/pericarditis less likely." }
+      },
+      {
+        "id": "no-trauma",
+        "kind": "negative",
+        "topics": ["trauma"],
+        "patientKnows": true,
+        "answer": { "mn": "Үгүй, унаж бэртээгүй, юманд цохиулаагүй.", "en": "No, I didn't fall or hit anything." }
+      },
+      {
+        "id": "no-back-tearing",
+        "kind": "negative",
+        "topics": ["back_pain"],
+        "patientKnows": true,
+        "answer": { "mn": "Нуруу өвдөхгүй байна. Урж тасдах мэт өвдөлт биш.", "en": "My back doesn't hurt. It's not a tearing pain." },
+        "significance": { "mn": "Урах мэт, нуруу руу дамжсан өвдөлт байхгүй нь гол судасны ховхролын магадлалыг бууруулна.", "en": "No tearing back pain lowers suspicion of aortic dissection." }
+      },
+      {
+        "id": "no-leg-swelling",
+        "kind": "negative",
+        "topics": ["leg_swelling", "travel"],
+        "patientKnows": true,
+        "answer": { "mn": "Хөл хавдаагүй. Саяхан хол аялаагүй.", "en": "No leg swelling. No recent long trips." },
+        "significance": { "mn": "Тромбоэмболийн эрсдэлт хүчин зүйл илрээгүй.", "en": "No VTE risk factors elicited." }
+      },
+      {
+        "id": "no-syncope",
+        "kind": "negative",
+        "topics": ["dizziness"],
+        "patientKnows": true,
+        "answer": { "mn": "Толгой жаахан хөнгөрөх шиг болсон ч ухаан алдаагүй.", "en": "Felt a bit light-headed but didn't pass out." }
+      },
+      {
+        "id": "hypertension",
+        "kind": "history",
+        "topics": ["hypertension", "pmh"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралт ихсэлттэй. Таван жилийн өмнө оношлогдсон. Эмээ тогтмол уудаггүй ээ.", "en": "I have high blood pressure, diagnosed five years ago. I don't take my pills regularly." },
+        "significance": { "mn": "Хяналтгүй артерийн гипертензи — зүрх судасны гол эрсдэлт хүчин зүйл.", "en": "Poorly controlled hypertension is a major cardiovascular risk factor." },
+        "leakTerms": ["таван жил"]
+      },
+      {
+        "id": "lipids",
+        "kind": "history",
+        "topics": ["hyperlipidemia"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр жилийн өмнө шинжилгээ өгөхөд холестерин өндөр гэсэн. Эм уугаагүй.", "en": "Two years ago they said my cholesterol was high. I never took medicine for it." },
+        "significance": { "mn": "Эмчлэгдээгүй гиперлипидеми — атеросклерозын эрсдэл.", "en": "Untreated hyperlipidaemia — atherosclerotic risk." },
+        "leakTerms": ["холестерин"]
+      },
+      {
+        "id": "no-diabetes",
+        "kind": "negative",
+        "topics": ["diabetes"],
+        "patientKnows": true,
+        "answer": { "mn": "Чихрийн шижин байхгүй гэж байсан.", "en": "I was told I don't have diabetes." }
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралтын эм амлодипин гэж байгаа, гэхдээ заримдаа л уудаг. Өөр эм уудаггүй.", "en": "Amlodipine for blood pressure, but only sometimes. No other medicines." },
+        "significance": { "mn": "Эмчилгээг тогтмол хийдэггүй — хяналт муу.", "en": "Poor adherence to antihypertensive therapy." },
+        "leakTerms": ["амлодипин"]
+      },
+      {
+        "id": "allergies",
+        "kind": "history",
+        "topics": ["allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Эмийн харшил байхгүй.", "en": "No drug allergies." },
+        "significance": { "mn": "Аспирин, бусад эмчилгээ өгөхөөс өмнө харшлыг заавал асууна.", "en": "Allergies must be checked before aspirin and other treatment." }
+      },
+      {
+        "id": "family-history",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Аав маань жаран хоёр настайдаа зүрхээрээ өвдөөд гэнэт нас барсан.", "en": "My father died suddenly of a heart problem at 62." },
+        "significance": { "mn": "Гэр бүлд зүрхний өвчин — эрсдэлт хүчин зүйл.", "en": "Family history of cardiac death." },
+        "leakTerms": ["жаран хоёр"]
+      },
+      {
+        "id": "smoking",
+        "kind": "history",
+        "topics": ["smoking"],
+        "patientKnows": true,
+        "answer": { "mn": "Тийм ээ, гучаад жил татаж байна. Өдөрт нэг хайрцаг орчим.", "en": "Yes, for about thirty years. Around a pack a day." },
+        "significance": { "mn": "Тамхи (~30 хайрцаг-жил) — титэм судасны өвчний хүчтэй эрсдэлт хүчин зүйл.", "en": "~30 pack-years — strong coronary risk factor." },
+        "leakTerms": ["хайрцаг", "гучаад жил"]
+      },
+      {
+        "id": "alcohol",
+        "kind": "history",
+        "topics": ["alcohol"],
+        "patientKnows": true,
+        "answer": { "mn": "Баяр ёслолоор л бага зэрэг уудаг.", "en": "Only a little on holidays." }
+      },
+      {
+        "id": "occupation",
+        "kind": "history",
+        "topics": ["occupation", "exercise"],
+        "patientKnows": true,
+        "answer": { "mn": "Такси барьдаг. Өдөржин машинд суудаг болохоор бараг хөдөлгөөн хийдэггүй.", "en": "I drive a taxi. I sit in the car all day and barely exercise." },
+        "leakTerms": ["такси"]
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Аав шиг болчих вий гэж айж байна, эмч ээ.", "en": "I'm afraid it will end up like my father, doctor." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "АД 152/94 мм.муб (хоёр гарт ойролцоо), зүрхний цохилт 104/мин, амьсгал 22/мин, SpO₂ 94% (агаараар), биеийн халуун 36.7°C.", "en": "BP 152/94 (similar both arms), HR 104, RR 22, SpO₂ 94% RA, T 36.7°C." }
+      },
+      {
+        "id": "general-exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Ерөнхий байдал хүндэвтэр, хөлөрсөн, цайвар, зовиуртай харагдана. Зүрхний авиа тод, нэмэлт шуугиангүй. Уушгинд хэржигнүүргүй. Цээжийг тэмтрэхэд эмзэглэлгүй.", "en": "Unwell, diaphoretic, pale. Heart sounds normal, no murmurs. Lungs clear. Chest wall non-tender." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "onset-timing", "category": "hpi", "topics": ["onset", "duration"], "weight": 2, "critical": true,
+        "label": { "mn": "Өвдөлт хэзээ эхэлж, хэр удаан үргэлжилж буйг асуусан", "en": "Onset and duration" },
+        "rationale": { "mn": "Эхэлсэн цаг нь реперфузийн эмчилгээний цонхыг тодорхойлно.", "en": "Onset time defines the reperfusion window." },
+        "suggestedQuestion": { "mn": "Өвдөлт яг хэзээ эхэлсэн бэ? Одоог хүртэл хэр удаан үргэлжилж байна?" }
+      },
+      {
+        "id": "radiation", "category": "hpi", "topics": ["radiation"], "weight": 2, "critical": true,
+        "label": { "mn": "Өвдөлтийн дамжилтыг асуусан", "en": "Radiation of pain" },
+        "rationale": { "mn": "Зүүн гар, эрүү рүү дамжих нь ишемийн чухал шинж.", "en": "Radiation to arm/jaw is a key ischaemic feature." },
+        "suggestedQuestion": { "mn": "Өвдөлт өөр газар, жишээ нь гар, эрүү, нуруу руу дамждаг уу?" }
+      },
+      {
+        "id": "associated-autonomic", "category": "associated_symptoms", "topics": ["sweating", "nausea", "vomiting", "dyspnea", "associated_general"], "weight": 2, "critical": true,
+        "label": { "mn": "Хавсарсан шинж (хөлрөх, дотор муухайрах, амьсгаадах)", "en": "Associated symptoms (sweating, nausea, dyspnoea)" },
+        "rationale": { "mn": "Хүйтэн хөлс, дотор муухайрах, амьсгаадалт нь шигдээсийн магадлалыг ихэсгэнэ.", "en": "Diaphoresis, nausea and dyspnoea raise the probability of MI." },
+        "suggestedQuestion": { "mn": "Хөлрөх, дотор муухайрах, амьсгаадах зэрэг зовиур байна уу?" }
+      },
+      {
+        "id": "cv-risk-factors", "category": "risk_factors", "topics": ["smoking", "hypertension", "hyperlipidemia", "diabetes"], "weight": 2, "critical": true,
+        "label": { "mn": "Зүрх судасны эрсдэлт хүчин зүйлс (тамхи, даралт, холестерин, шижин)", "en": "Cardiovascular risk factors" },
+        "rationale": { "mn": "Эрсдэлт хүчин зүйлс нь урьдчилсан магадлалыг тодорхойлно.", "en": "Risk factors set the pre-test probability." },
+        "suggestedQuestion": { "mn": "Тамхи татдаг уу? Даралт ихсэх, чихрийн шижин, холестерин өндөр гэж хэлж байсан уу?" }
+      },
+      {
+        "id": "location", "category": "hpi", "topics": ["location"], "weight": 1,
+        "label": { "mn": "Өвдөлтийн байршил", "en": "Location" },
+        "rationale": { "mn": "Өвчүүний ард байрлал нь ишемийн сонгодог хэлбэр.", "en": "Retrosternal location is classic for ischaemia." },
+        "suggestedQuestion": { "mn": "Яг хаана өвдөж байна вэ? Гараараа зааж өгөөч." }
+      },
+      {
+        "id": "character", "category": "hpi", "topics": ["character"], "weight": 1,
+        "label": { "mn": "Өвдөлтийн шинж чанар", "en": "Character" },
+        "rationale": { "mn": "Дарж шахах мэдрэмж нь хатгах, түлэгдэх өвдөлтөөс ялгагдана.", "en": "Pressure-like pain differs from sharp or burning pain." },
+        "suggestedQuestion": { "mn": "Ямар маягийн өвдөлт вэ — дарж шахах уу, хатгах уу, түлэгдэх үү?" }
+      },
+      {
+        "id": "severity", "category": "hpi", "topics": ["severity"], "weight": 0.5,
+        "label": { "mn": "Өвдөлтийн хүч", "en": "Severity" },
+        "rationale": { "mn": "Өвдөлтийн хүчийг хянах, өвдөлт намдаах эмчилгээний үнэлгээнд хэрэгтэй.", "en": "Baseline for monitoring and analgesia." },
+        "suggestedQuestion": { "mn": "0-ээс 10 хүртэл үнэлбэл хэдэн оноо вэ?" }
+      },
+      {
+        "id": "modifying-factors", "category": "hpi", "topics": ["aggravating", "relieving"], "weight": 1,
+        "label": { "mn": "Ихэсгэх, намдаах хүчин зүйлс", "en": "Aggravating / relieving factors" },
+        "rationale": { "mn": "Амралтаар намдахгүй, амьсгалаас хамаарахгүй байгаа нь ишемийг дэмжинэ.", "en": "Unrelieved by rest and non-pleuritic supports ischaemia." },
+        "suggestedQuestion": { "mn": "Юунаас болж өвдөлт ихэсдэг, юу хийхэд намддаг вэ?" }
+      },
+      {
+        "id": "previous-episodes", "category": "hpi", "topics": ["previous_episodes", "heart_disease"], "weight": 1.5,
+        "label": { "mn": "Өмнө ийм өвдөлт байсан эсэх", "en": "Previous episodes" },
+        "rationale": { "mn": "Сүүлийн үеийн ачааллын бах нь тогтворгүй явцыг илтгэнэ.", "en": "Recent exertional angina indicates an unstable course." },
+        "suggestedQuestion": { "mn": "Өмнө нь иймэрхүү өвдөлт гарч байсан уу? Ачаалал өгөхөд цээж базалдаг уу?" }
+      },
+      {
+        "id": "dissection-pe-negatives", "category": "pertinent_negatives", "topics": ["back_pain", "leg_swelling", "travel"], "weight": 1,
+        "label": { "mn": "Аюултай ялган оношийн сөрөг шинж (ховхрол, тромбоэмболи)", "en": "Negatives for dissection / PE" },
+        "rationale": { "mn": "Гол судасны ховхрол, тромбоэмболийг хасах нь эмчилгээг (антикоагулянт, тромболиз) аюулгүй болгоно.", "en": "Excluding dissection/PE matters before antithrombotic therapy." },
+        "suggestedQuestion": { "mn": "Нуруу руу урах мэт өвдөлт байна уу? Хөл хавдсан, саяхан хол аялсан уу?" }
+      },
+      {
+        "id": "infection-negatives", "category": "pertinent_negatives", "topics": ["fever", "cough"], "weight": 0.5,
+        "label": { "mn": "Халдварын шинж (халуурах, ханиалгах)", "en": "Fever / cough" },
+        "rationale": { "mn": "Хатгалгаа, перикардитыг ялгахад тусална.", "en": "Helps exclude pneumonia and pericarditis." },
+        "suggestedQuestion": { "mn": "Халуурсан, ханиалгасан уу?" }
+      },
+      {
+        "id": "medications-allergies", "category": "medications_allergies", "topics": ["medications", "allergies"], "weight": 1.5,
+        "label": { "mn": "Хэрэглэдэг эм ба харшил", "en": "Medications and allergies" },
+        "rationale": { "mn": "Аспирин, антикоагулянт өгөхөөс өмнө зайлшгүй асуух.", "en": "Required before aspirin/anticoagulation." },
+        "suggestedQuestion": { "mn": "Ямар эм уудаг вэ? Эмийн харшил бий юу?" }
+      },
+      {
+        "id": "family-history", "category": "family_history", "topics": ["family_history"], "weight": 1,
+        "label": { "mn": "Гэр бүлийн зүрхний өвчин", "en": "Family history" },
+        "rationale": { "mn": "Эрт үеийн зүрхний өвчин гэр бүлд байх нь эрсдэл.", "en": "Premature cardiac disease in family is a risk factor." },
+        "suggestedQuestion": { "mn": "Гэр бүлд тань зүрхний өвчтэй, гэнэт нас барсан хүн бий юу?" }
+      },
+      {
+        "id": "social", "category": "social_history", "topics": ["occupation", "alcohol", "exercise"], "weight": 0.5,
+        "label": { "mn": "Нийгмийн түүх (ажил, архи, хөдөлгөөн)", "en": "Social history" },
+        "rationale": { "mn": "Суурин амьдралын хэв маяг нь эрсдэлийг нэмэгдүүлнэ.", "en": "Sedentary lifestyle adds risk." },
+        "suggestedQuestion": { "mn": "Ямар ажил хийдэг вэ? Архи хэрэглэдэг үү? Дасгал хөдөлгөөн хийдэг үү?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Тайван үед гэнэт эхэлсэн, 20 минутаас удаан үргэлжилсэн, өвчүүний ард дарж шахах, зүүн гар ба эрүү рүү дамжсан өвдөлт хүйтэн хөлс, дотор муухайрах, амьсгаадалттай хавсарсан нь олон эрсдэлт хүчин зүйлтэй (тамхи, хяналтгүй даралт, холестерин, гэр бүлийн түүх) эрэгтэйд титэм судасны цочмог хам шинж, ялангуяа миокардын цочмог шигдээсийг илтгэнэ. Асуумжаар энэ оношийг сэжиглэж, 10 минутын дотор ЭКГ хийлгэх нь шийдвэрлэх ач холбогдолтой.",
+      "en": "Sudden rest pain >20 min, retrosternal pressure radiating to the left arm/jaw, with diaphoresis, nausea and dyspnoea in a man with multiple risk factors strongly suggests ACS/acute MI. History should prompt an ECG within 10 minutes."
+    },
+    "learningPoints": [
+      { "mn": "Цээжний өвдөлтийг OPQRST (эхлэл, өдөөгч, шинж, дамжилт, хүч, хугацаа) бүтцээр асуух.", "en": "Use OPQRST for chest pain." },
+      { "mn": "Хавсарсан автономит шинж (хөлрөх, дотор муухайрах) болон эрсдэлт хүчин зүйлсийг заавал асуух.", "en": "Always ask about autonomic features and risk factors." },
+      { "mn": "Гол судасны ховхрол, уушгины тромбоэмболи зэрэг аюултай ялган оношийг сөрөг шинжээр хасах.", "en": "Rule out dissection and PE with pertinent negatives." },
+      { "mn": "Эмчилгээ эхлэхээс өмнө харшил, хэрэглэдэг эмийг асуух.", "en": "Check allergies and medications before treatment." }
+    ],
+    "emergency": {
+      "escalation": {
+        "mn": "Бодит нөхцөлд: яаралтай ЭКГ (10 минутын дотор), ахлах эмчид мэдэгдэх, зүрхний мониторинг, тромбоцитын эсрэг эмчилгээ болон реперфузийн шийдвэрийг протоколын дагуу. Энэ симуляц нь эмнэлзүйн хяналтыг орлохгүй."
+      }
+    }
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-20",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

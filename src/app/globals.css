@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", "Noto Sans", sans-serif;
+  --color-brand-50: #effaf8;
+  --color-brand-100: #d7f2ee;
+  --color-brand-200: #afe4dc;
+  --color-brand-300: #7ecfc4;
+  --color-brand-400: #4bb3a7;
+  --color-brand-500: #2b978c;
+  --color-brand-600: #1f7a72;
+  --color-brand-700: #1c625c;
+  --color-brand-800: #1a4f4b;
+  --color-brand-900: #183f3c;
+  --color-ink: #0f1d2b;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #f6f8fa;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  text-rendering: optimizeLegibility;
+}
+
+/* Comfortable reading for Mongolian Cyrillic (long agglutinative words). */
+.prose-mn {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
+@keyframes typing {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-2px); }
+}
+.typing-dot {
+  animation: typing 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dot { animation: none; opacity: 0.6; }
+}

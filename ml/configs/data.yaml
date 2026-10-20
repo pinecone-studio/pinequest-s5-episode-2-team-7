@@ -1,0 +1,28 @@
+# Dataset build configuration — `python -m pinequest_ml build --config configs/data.yaml`
+
+# Exclude cases unless a clinician / translator has reviewed them.
+# The bundled demo cases are unreviewed, so keep these false for the demo build
+# and set them to true for any model meant for students.
+require_clinical_review: false
+require_translation_review: false
+
+# Additional directories with canonical case JSON (e.g. adapted + translated sources).
+extra_case_dirs: []
+
+# Different seeds produce different synthetic dialogues from the same cases.
+seeds: [0, 1]
+
+dialogues:
+  dialogues_per_case: 30
+  min_turns: 6
+  max_turns: 14
+
+split:
+  # Split by underlying case — never by turn — to prevent leakage.
+  ratios: { train: 0.8, validation: 0.1, test: 0.1 }
+  salt: pinequest-v1
+  # Pin specific cases to a split (useful while there are only a few cases).
+  overrides:
+    chest-pain-01: train
+    abdominal-pain-01: validation
+    cough-malaise-01: test

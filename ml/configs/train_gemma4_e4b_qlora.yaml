@@ -1,0 +1,26 @@
+# Alternative: Gemma 4 E4B instruction-tuned (Apache-2.0 per its Hugging Face model card).
+# It is a multimodal ("any-to-any") architecture — verify that AutoModelForCausalLM
+# loads it with your transformers version (run with --dry-run first) and compare
+# Mongolian quality against Qwen with `python -m pinequest_ml evaluate` before choosing.
+base_model: google/gemma-4-E4B-it
+adapter_id: pq-gemma4-e4b-lora-v1
+output_dir: outputs/gemma4-e4b-lora-v1
+purpose: "Experimental alternative base model."
+quantization: 4bit
+max_seq_length: 2048
+chat_template_kwargs: {}
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules: all-linear
+training:
+  epochs: 2
+  batch_size: 1
+  grad_accum: 16
+  learning_rate: 1.0e-4
+  logging_steps: 10
+  eval_steps: 50
+  save_steps: 50
+  gradient_checkpointing: true
+  seed: 42

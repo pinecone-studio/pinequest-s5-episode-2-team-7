@@ -1,0 +1,605 @@
+[
+  {
+    "id": "onset",
+    "kind": "hpi",
+    "label": {
+      "mn": "Эхэлсэн хугацаа",
+      "en": "Onset"
+    }
+  },
+  {
+    "id": "duration",
+    "kind": "hpi",
+    "label": {
+      "mn": "Үргэлжилсэн хугацаа",
+      "en": "Duration"
+    }
+  },
+  {
+    "id": "location",
+    "kind": "hpi",
+    "label": {
+      "mn": "Байршил",
+      "en": "Location"
+    }
+  },
+  {
+    "id": "character",
+    "kind": "hpi",
+    "label": {
+      "mn": "Өвдөлтийн шинж",
+      "en": "Character"
+    }
+  },
+  {
+    "id": "severity",
+    "kind": "hpi",
+    "label": {
+      "mn": "Хүч, зэрэг",
+      "en": "Severity"
+    }
+  },
+  {
+    "id": "radiation",
+    "kind": "hpi",
+    "label": {
+      "mn": "Дамжилт",
+      "en": "Radiation"
+    }
+  },
+  {
+    "id": "progression",
+    "kind": "hpi",
+    "label": {
+      "mn": "Явц",
+      "en": "Progression"
+    }
+  },
+  {
+    "id": "aggravating",
+    "kind": "hpi",
+    "label": {
+      "mn": "Ихэсгэдэг хүчин зүйл",
+      "en": "Aggravating factors"
+    }
+  },
+  {
+    "id": "relieving",
+    "kind": "hpi",
+    "label": {
+      "mn": "Намдаадаг хүчин зүйл",
+      "en": "Relieving factors"
+    }
+  },
+  {
+    "id": "previous_episodes",
+    "kind": "hpi",
+    "label": {
+      "mn": "Өмнөх ижил тохиолдол",
+      "en": "Previous episodes"
+    }
+  },
+  {
+    "id": "trigger",
+    "kind": "hpi",
+    "label": {
+      "mn": "Өдөөгч нөхцөл",
+      "en": "Trigger / context"
+    }
+  },
+  {
+    "id": "chest_pain",
+    "kind": "symptom",
+    "label": {
+      "mn": "Цээжний өвдөлт",
+      "en": "Chest pain"
+    },
+    "defaultNegative": "Үгүй, цээж өвдөхгүй байна."
+  },
+  {
+    "id": "abdominal_pain",
+    "kind": "symptom",
+    "label": {
+      "mn": "Хэвлийн өвдөлт",
+      "en": "Abdominal pain"
+    },
+    "defaultNegative": "Үгүй, гэдэс өвдөхгүй байна."
+  },
+  {
+    "id": "headache",
+    "kind": "symptom",
+    "label": {
+      "mn": "Толгой өвдөх",
+      "en": "Headache"
+    },
+    "defaultNegative": "Үгүй, толгой өвдөхгүй байна."
+  },
+  {
+    "id": "back_pain",
+    "kind": "symptom",
+    "label": {
+      "mn": "Нуруу өвдөх",
+      "en": "Back pain"
+    },
+    "defaultNegative": "Үгүй, нуруу өвдөхгүй байна."
+  },
+  {
+    "id": "dyspnea",
+    "kind": "symptom",
+    "label": {
+      "mn": "Амьсгаадалт",
+      "en": "Shortness of breath"
+    },
+    "defaultNegative": "Үгүй, амьсгаа давчдахгүй байна."
+  },
+  {
+    "id": "sweating",
+    "kind": "symptom",
+    "label": {
+      "mn": "Хөлрөх",
+      "en": "Sweating"
+    },
+    "defaultNegative": "Үгүй, хөлрөөгүй."
+  },
+  {
+    "id": "nausea",
+    "kind": "symptom",
+    "label": {
+      "mn": "Дотор муухайрах",
+      "en": "Nausea"
+    },
+    "defaultNegative": "Үгүй, дотор муухайраагүй."
+  },
+  {
+    "id": "vomiting",
+    "kind": "symptom",
+    "label": {
+      "mn": "Бөөлжих",
+      "en": "Vomiting"
+    },
+    "defaultNegative": "Үгүй, бөөлжөөгүй."
+  },
+  {
+    "id": "dizziness",
+    "kind": "symptom",
+    "label": {
+      "mn": "Толгой эргэх, ухаан алдах",
+      "en": "Dizziness / syncope"
+    },
+    "defaultNegative": "Үгүй, толгой эргээгүй, ухаан алдаагүй."
+  },
+  {
+    "id": "palpitations",
+    "kind": "symptom",
+    "label": {
+      "mn": "Зүрх дэлсэх",
+      "en": "Palpitations"
+    },
+    "defaultNegative": "Үгүй, зүрх дэлсэх юм алга."
+  },
+  {
+    "id": "fever",
+    "kind": "symptom",
+    "label": {
+      "mn": "Халуурах",
+      "en": "Fever"
+    },
+    "defaultNegative": "Үгүй, халуураагүй."
+  },
+  {
+    "id": "chills",
+    "kind": "symptom",
+    "label": {
+      "mn": "Жихүүдэс, чичрэх",
+      "en": "Chills"
+    },
+    "defaultNegative": "Үгүй, чичрээгүй."
+  },
+  {
+    "id": "cough",
+    "kind": "symptom",
+    "label": {
+      "mn": "Ханиалгах",
+      "en": "Cough"
+    },
+    "defaultNegative": "Үгүй, ханиалгахгүй байна."
+  },
+  {
+    "id": "sputum",
+    "kind": "symptom",
+    "label": {
+      "mn": "Цэр",
+      "en": "Sputum"
+    },
+    "defaultNegative": "Үгүй, цэр гарахгүй байна."
+  },
+  {
+    "id": "hemoptysis",
+    "kind": "symptom",
+    "label": {
+      "mn": "Цус ханиах",
+      "en": "Haemoptysis"
+    },
+    "defaultNegative": "Үгүй, цус гараагүй."
+  },
+  {
+    "id": "appetite",
+    "kind": "symptom",
+    "label": {
+      "mn": "Хоолны дуршил",
+      "en": "Appetite"
+    },
+    "defaultNegative": "Хоолны дуршил хэвийн."
+  },
+  {
+    "id": "diarrhea",
+    "kind": "symptom",
+    "label": {
+      "mn": "Суулгах",
+      "en": "Diarrhoea"
+    },
+    "defaultNegative": "Үгүй, суулгаагүй."
+  },
+  {
+    "id": "constipation",
+    "kind": "symptom",
+    "label": {
+      "mn": "Өтгөн хатах",
+      "en": "Constipation"
+    },
+    "defaultNegative": "Үгүй, бие засах хэвийн."
+  },
+  {
+    "id": "urinary",
+    "kind": "symptom",
+    "label": {
+      "mn": "Шээсний зовиур",
+      "en": "Urinary symptoms"
+    },
+    "defaultNegative": "Үгүй, шээх хэвийн, шээхэд өвддөггүй."
+  },
+  {
+    "id": "vaginal_symptoms",
+    "kind": "symptom",
+    "label": {
+      "mn": "Үтрээний ялгадас, цус",
+      "en": "Vaginal discharge / bleeding"
+    },
+    "defaultNegative": "Үгүй, тийм юм байхгүй."
+  },
+  {
+    "id": "fatigue",
+    "kind": "symptom",
+    "label": {
+      "mn": "Ядрах, сульдах",
+      "en": "Fatigue"
+    },
+    "defaultNegative": "Тийм ч их ядраагүй."
+  },
+  {
+    "id": "weight_loss",
+    "kind": "symptom",
+    "label": {
+      "mn": "Жин буурах",
+      "en": "Weight loss"
+    },
+    "defaultNegative": "Үгүй, жин хаяагүй."
+  },
+  {
+    "id": "night_sweats",
+    "kind": "symptom",
+    "label": {
+      "mn": "Шөнө хөлрөх",
+      "en": "Night sweats"
+    },
+    "defaultNegative": "Үгүй, шөнө хөлрөөгүй."
+  },
+  {
+    "id": "leg_swelling",
+    "kind": "symptom",
+    "label": {
+      "mn": "Хөл хавагнах",
+      "en": "Leg swelling"
+    },
+    "defaultNegative": "Үгүй, хөл хавдаагүй."
+  },
+  {
+    "id": "rash",
+    "kind": "symptom",
+    "label": {
+      "mn": "Тууралт",
+      "en": "Rash"
+    },
+    "defaultNegative": "Үгүй, тууралт гараагүй."
+  },
+  {
+    "id": "jaundice",
+    "kind": "symptom",
+    "label": {
+      "mn": "Шарлах",
+      "en": "Jaundice"
+    },
+    "defaultNegative": "Үгүй, шарлаагүй."
+  },
+  {
+    "id": "trauma",
+    "kind": "symptom",
+    "label": {
+      "mn": "Гэмтэл",
+      "en": "Trauma / injury"
+    },
+    "defaultNegative": "Үгүй, унаж бэртээгүй, гэмтээгүй."
+  },
+  {
+    "id": "pmh",
+    "kind": "history",
+    "label": {
+      "mn": "Өмнөх өвчин",
+      "en": "Past medical history"
+    }
+  },
+  {
+    "id": "hypertension",
+    "kind": "history",
+    "label": {
+      "mn": "Артерийн даралт ихсэх",
+      "en": "Hypertension"
+    }
+  },
+  {
+    "id": "diabetes",
+    "kind": "history",
+    "label": {
+      "mn": "Чихрийн шижин",
+      "en": "Diabetes"
+    }
+  },
+  {
+    "id": "hyperlipidemia",
+    "kind": "history",
+    "label": {
+      "mn": "Холестерин",
+      "en": "Hyperlipidaemia"
+    }
+  },
+  {
+    "id": "heart_disease",
+    "kind": "history",
+    "label": {
+      "mn": "Зүрхний өвчин",
+      "en": "Known heart disease"
+    }
+  },
+  {
+    "id": "lung_disease",
+    "kind": "history",
+    "label": {
+      "mn": "Уушгины өвчин",
+      "en": "Lung disease / asthma / TB"
+    }
+  },
+  {
+    "id": "surgeries",
+    "kind": "history",
+    "label": {
+      "mn": "Мэс засал",
+      "en": "Previous surgery"
+    }
+  },
+  {
+    "id": "hospitalizations",
+    "kind": "history",
+    "label": {
+      "mn": "Эмнэлэгт хэвтсэн",
+      "en": "Hospitalisations"
+    }
+  },
+  {
+    "id": "medications",
+    "kind": "history",
+    "label": {
+      "mn": "Хэрэглэдэг эм",
+      "en": "Medications"
+    }
+  },
+  {
+    "id": "allergies",
+    "kind": "history",
+    "label": {
+      "mn": "Харшил",
+      "en": "Allergies"
+    }
+  },
+  {
+    "id": "family_history",
+    "kind": "history",
+    "label": {
+      "mn": "Удамшил, гэр бүлийн өвчин",
+      "en": "Family history"
+    }
+  },
+  {
+    "id": "smoking",
+    "kind": "history",
+    "label": {
+      "mn": "Тамхи",
+      "en": "Smoking"
+    }
+  },
+  {
+    "id": "alcohol",
+    "kind": "history",
+    "label": {
+      "mn": "Архи, согтууруулах ундаа",
+      "en": "Alcohol"
+    }
+  },
+  {
+    "id": "substance_use",
+    "kind": "history",
+    "label": {
+      "mn": "Мансууруулах бодис",
+      "en": "Recreational drugs"
+    }
+  },
+  {
+    "id": "occupation",
+    "kind": "history",
+    "label": {
+      "mn": "Ажил мэргэжил",
+      "en": "Occupation"
+    }
+  },
+  {
+    "id": "living_situation",
+    "kind": "history",
+    "label": {
+      "mn": "Амьдрах орчин",
+      "en": "Living situation"
+    }
+  },
+  {
+    "id": "exercise",
+    "kind": "history",
+    "label": {
+      "mn": "Хөдөлгөөн, дасгал",
+      "en": "Physical activity"
+    }
+  },
+  {
+    "id": "diet",
+    "kind": "history",
+    "label": {
+      "mn": "Хооллолт",
+      "en": "Diet"
+    }
+  },
+  {
+    "id": "lmp",
+    "kind": "history",
+    "label": {
+      "mn": "Сарын тэмдэг",
+      "en": "Last menstrual period"
+    }
+  },
+  {
+    "id": "pregnancy",
+    "kind": "history",
+    "label": {
+      "mn": "Жирэмслэлт",
+      "en": "Pregnancy"
+    }
+  },
+  {
+    "id": "sexual_history",
+    "kind": "history",
+    "label": {
+      "mn": "Бэлгийн амьдрал",
+      "en": "Sexual history"
+    }
+  },
+  {
+    "id": "travel",
+    "kind": "history",
+    "label": {
+      "mn": "Аялал, удаан суусан",
+      "en": "Recent travel / immobility"
+    }
+  },
+  {
+    "id": "sick_contacts",
+    "kind": "history",
+    "label": {
+      "mn": "Өвчтэй хүнтэй харьцсан",
+      "en": "Sick contacts"
+    }
+  },
+  {
+    "id": "vaccination",
+    "kind": "history",
+    "label": {
+      "mn": "Вакцинжуулалт",
+      "en": "Vaccination"
+    }
+  },
+  {
+    "id": "vitals",
+    "kind": "exam",
+    "label": {
+      "mn": "Амин үзүүлэлт",
+      "en": "Vital signs"
+    }
+  },
+  {
+    "id": "physical_exam",
+    "kind": "exam",
+    "label": {
+      "mn": "Бодит үзлэг",
+      "en": "Physical examination"
+    }
+  },
+  {
+    "id": "investigations",
+    "kind": "exam",
+    "label": {
+      "mn": "Шинжилгээ",
+      "en": "Investigations"
+    }
+  },
+  {
+    "id": "greeting",
+    "kind": "meta",
+    "label": {
+      "mn": "Мэндчилгээ",
+      "en": "Greeting"
+    }
+  },
+  {
+    "id": "identity",
+    "kind": "meta",
+    "label": {
+      "mn": "Нэр, нас",
+      "en": "Name / age"
+    }
+  },
+  {
+    "id": "concerns",
+    "kind": "meta",
+    "label": {
+      "mn": "Санаа зовнил, хүлээлт",
+      "en": "Ideas, concerns, expectations"
+    }
+  },
+  {
+    "id": "associated_general",
+    "kind": "meta",
+    "label": {
+      "mn": "Бусад шинж тэмдэг",
+      "en": "Other symptoms (open question)"
+    }
+  },
+  {
+    "id": "broad",
+    "kind": "meta",
+    "label": {
+      "mn": "Ерөнхий асуулт",
+      "en": "Broad question"
+    }
+  },
+  {
+    "id": "diagnosis_request",
+    "kind": "meta",
+    "label": {
+      "mn": "Онош асуух",
+      "en": "Asking for the diagnosis"
+    }
+  },
+  {
+    "id": "injection",
+    "kind": "meta",
+    "label": {
+      "mn": "Системийн заавар руу халдах оролдлого",
+      "en": "Prompt-injection attempt"
+    }
+  }
+]
