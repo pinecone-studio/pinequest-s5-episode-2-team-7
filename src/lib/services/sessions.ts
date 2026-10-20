@@ -65,7 +65,7 @@ async function isCurrentAdmin(auth: SessionData): Promise<boolean> {
   return row?.role === "admin";
 }
 
-async function loadOwnedSession(auth: SessionData, sessionId: string, opts: { allowAdmin?: boolean } = {}): Promise<SessionRow> {
+export async function loadOwnedSession(auth: SessionData, sessionId: string, opts: { allowAdmin?: boolean } = {}): Promise<SessionRow> {
   if (!z.string().uuid().safeParse(sessionId).success) throw Errors.notFound("Ярилцлага");
   const db = await getDb();
   const [row] = await db.select().from(interviewSessions).where(eq(interviewSessions.id, sessionId));

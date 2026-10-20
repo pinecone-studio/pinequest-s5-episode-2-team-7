@@ -7,6 +7,16 @@ import type { EvaluationResult } from "@/lib/evaluation/evaluator";
 
 export type { PublicCase };
 
+/** Optional voice features available for an interview (see lib/speech/features). */
+export interface VoiceFeatures {
+  /** Student can ask by voice (Chimege STT). */
+  speechInput: boolean;
+  /** Patient replies can be spoken (Chimege TTS). */
+  speechOutput: boolean;
+  /** A talking video avatar is available for this patient (Simli). */
+  avatar: boolean;
+}
+
 export interface MessageView {
   id: string;
   role: "student" | "patient" | "narrator";

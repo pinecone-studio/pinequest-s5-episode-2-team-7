@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { POST as login } from "@/app/api/auth/login/route";
 import { POST as register } from "@/app/api/auth/register/route";
 import { GET as adminCases, POST as adminCreateCase } from "@/app/api/admin/cases/route";
@@ -11,6 +11,11 @@ import { GET as getSession } from "@/app/api/sessions/[id]/route";
 import { POST as sendMessage } from "@/app/api/sessions/[id]/messages/route";
 import { POST as submitDiagnosis } from "@/app/api/sessions/[id]/diagnosis/route";
 import { GET as getEvaluation } from "@/app/api/sessions/[id]/evaluation/route";
+import { POST as startAvatarRoute } from "@/app/api/sessions/[id]/avatar/route";
+import { GET as replyAudio } from "@/app/api/sessions/[id]/messages/[messageId]/audio/route";
+import { POST as transcribeRoute } from "@/app/api/speech/transcribe/route";
+import { resetConfigForTests } from "@/lib/config";
+import { wavFromPcm } from "@/lib/speech/chimege";
 import { hashPassword } from "@/lib/auth/session";
 import { DEMO_CASE_SOURCES, loadDemoCase } from "@/lib/cases/demo";
 import { eq } from "drizzle-orm";
@@ -284,5 +289,89 @@ describe("17. model-provider failures", () => {
     } finally {
       setPatientProviderForTests(new MockPatientProvider());
     }
+  });
+});
+
+describe("voice features (Chimege speech, Simli avatar)", () => {
+  const VOICE_ENV = { CHIMEGE_STT_TOKEN: "stt-test", CHIMEGE_TTS_TOKEN: "tts-test", SIMLI_API_KEY: "simli-test", SIMLI_FACE_ID_MALE: "face-m", SIMLI_FACE_ID_FEMALE: "face-f" };
+  const wav = () => wavFromPcm(new Uint8Array(3200)); // 0.1 s of silence, 16 kHz
+  const audioCtx = (id: string, messageId: string) => ({ params: Promise.resolve({ id, messageId }) });
+  let calls: { url: string; init?: RequestInit }[];
+
+  function useVoiceEnv() {
+    Object.assign(process.env, VOICE_ENV);
+    resetConfigForTests();
+    calls = [];
+    vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
+      calls.push({ url, init });
+      if (url.includes("/transcribe")) return new Response("Хэзээнээс өвдсөн бэ?");
+      if (url.includes("/synthesize")) return new Response(wav());
+      if (url.includes("simli")) return Response.json({ session_token: "simli-session" });
+      return new Response("unexpected", { status: 500 });
+    });
+  }
+
+  afterEach(() => {
+    for (const key of Object.keys(VOICE_ENV)) delete process.env[key];
+    resetConfigForTests();
+    vi.unstubAllGlobals();
+  });
+
+  async function patientReplyId(id: string): Promise<string> {
+    const { body } = await ask(id, "Тамхи татдаг уу?");
+    return body.messages.find((m: { role: string }) => m.role === "patient").id;
+  }
+
+  it("is off without keys: speech endpoints answer 503, text interview unaffected", async () => {
+    const id = await newSession();
+    const transcribe = await transcribeRoute(new Request(`${BASE}/api/speech/transcribe`, { method: "POST", body: wav(), headers: { cookie: studentCookie } }), noCtx);
+    expect(transcribe.status).toBe(503);
+    expect((await ask(id, "Тамхи татдаг уу?")).status).toBe(201);
+  });
+
+  it("transcribes a 16 kHz WAV and rejects other uploads", async () => {
+    useVoiceEnv();
+    const ok = await transcribeRoute(new Request(`${BASE}/api/speech/transcribe`, { method: "POST", body: wav(), headers: { cookie: studentCookie } }), noCtx);
+    expect(ok.status).toBe(200);
+    expect((await ok.json()).text).toBe("Хэзээнээс өвдсөн бэ?");
+    const bad = await transcribeRoute(new Request(`${BASE}/api/speech/transcribe`, { method: "POST", body: "not audio", headers: { cookie: studentCookie } }), noCtx);
+    expect(bad.status).toBe(400);
+    const anonymous = await transcribeRoute(new Request(`${BASE}/api/speech/transcribe`, { method: "POST", body: wav() }), noCtx);
+    expect(anonymous.status).toBe(401);
+  });
+
+  it("voices only the owner's patient replies, once per reply", async () => {
+    useVoiceEnv();
+    const id = await newSession();
+    const replyId = await patientReplyId(id);
+
+    const first = await replyAudio(req(`/api/sessions/${id}/messages/${replyId}/audio`, { cookie: studentCookie }), audioCtx(id, replyId));
+    expect(first.status).toBe(200);
+    expect(first.headers.get("content-type")).toBe("audio/wav");
+    await replyAudio(req(`/api/sessions/${id}/messages/${replyId}/audio`, { cookie: studentCookie }), audioCtx(id, replyId));
+    expect(calls.filter((c) => c.url.includes("/synthesize"))).toHaveLength(1);
+    // Male patient → male voice.
+    expect((calls[0].init?.headers as Record<string, string>)["voice-id"]).toBe("MALE1v2");
+
+    // Another student cannot get it, not even through their own session id.
+    const otherId = await newSession("chest-pain-01", otherStudentCookie);
+    expect((await replyAudio(req(`/api/sessions/${id}/messages/${replyId}/audio`, { cookie: otherStudentCookie }), audioCtx(id, replyId))).status).toBe(404);
+    expect((await replyAudio(req(`/api/sessions/${otherId}/messages/${replyId}/audio`, { cookie: otherStudentCookie }), audioCtx(otherId, replyId))).status).toBe(404);
+
+    // Student messages are never synthesized.
+    const view = await (await getSession(req(`/api/sessions/${id}`, { cookie: studentCookie }), ctx(id))).json();
+    const studentMsg = view.session.messages.find((m: { role: string }) => m.role === "student");
+    expect((await replyAudio(req(`/api/sessions/${id}/messages/${studentMsg.id}/audio`, { cookie: studentCookie }), audioCtx(id, studentMsg.id))).status).toBe(404);
+  });
+
+  it("issues avatar tokens only for the owner's active session", async () => {
+    useVoiceEnv();
+    const id = await newSession();
+    const ok = await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: {}, cookie: studentCookie }), ctx(id));
+    expect(ok.status).toBe(200);
+    expect((await ok.json()).sessionToken).toBe("simli-session");
+    const simli = calls.find((c) => c.url.includes("simli"));
+    expect(JSON.parse(String(simli?.init?.body)).faceId).toBe("face-m");
+    expect((await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: {}, cookie: otherStudentCookie }), ctx(id))).status).toBe(404);
   });
 });

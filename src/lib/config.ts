@@ -31,6 +31,15 @@ const EnvSchema = z.object({
   FINETUNED_EXPECTED_ADAPTER: z.string().optional(),
 
   RATE_LIMIT_MESSAGES_PER_MINUTE: z.coerce.number().int().positive().default(20),
+
+  // Optional voice features (all off when unset).
+  CHIMEGE_STT_TOKEN: z.string().optional(),
+  CHIMEGE_TTS_TOKEN: z.string().optional(),
+  CHIMEGE_VOICE_MALE: z.string().default("MALE1v2"),
+  CHIMEGE_VOICE_FEMALE: z.string().default("FEMALE3v2"),
+  SIMLI_API_KEY: z.string().optional(),
+  SIMLI_FACE_ID_MALE: z.string().optional(),
+  SIMLI_FACE_ID_FEMALE: z.string().optional(),
 });
 
 export type AppConfig = z.infer<typeof EnvSchema> & { sessionSecret: string };
