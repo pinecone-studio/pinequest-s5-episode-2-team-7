@@ -29,7 +29,7 @@ To use Neon locally instead, put its connection string in `DATABASE_URL` and run
 | Variable | Where | Required | Notes |
 |---|---|---|---|
 | `SESSION_SECRET` | local, Vercel | yes (prod) | ≥ 32 chars; `openssl rand -base64 32` |
-| `DATABASE_URL` | local (optional), Vercel | yes on Vercel | Neon **pooled** URL with `sslmode=require` |
+| `DATABASE_URL` | local (optional), Vercel | yes on Vercel | Neon **pooled** URL with `sslmode=verify-full` (Neon shows `require`; change it to avoid the pg SSL warning) |
 | `APP_URL` | Vercel | recommended | e.g. `https://pinequest.vercel.app` |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | where you run `npm run db:seed` | for seeding | not needed at runtime |
 | `SEED_STUDENT_EMAIL` / `SEED_STUDENT_PASSWORD` | same | optional | demo student |
