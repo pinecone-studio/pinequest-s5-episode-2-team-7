@@ -17,7 +17,7 @@ import { GET as replyAudio } from "@/app/api/sessions/[id]/messages/[messageId]/
 import { POST as transcribeRoute } from "@/app/api/speech/transcribe/route";
 import { resetConfigForTests } from "@/lib/config";
 import { wavFromPcm } from "@/lib/speech/chimege";
-import { hashPassword } from "@/lib/auth/session";
+import { hashPassword, sealSession } from "@/lib/auth/session";
 import { DEMO_CASE_SOURCES, loadDemoCase } from "@/lib/cases/demo";
 import { eq } from "drizzle-orm";
 import { createPgliteDb, getDb, setDbForTests } from "@/lib/db/client";
@@ -105,6 +105,13 @@ describe("authentication", () => {
 
   it("rejects a tampered session cookie", async () => {
     const response = await listCases(req("/api/cases", { cookie: "pq_session=Fe26.2**forged" }), noCtx);
+    expect(response.status).toBe(401);
+  });
+
+  it("treats a valid cookie for a user that no longer exists as signed out", async () => {
+    // e.g. a cookie issued by the local database before switching to Neon
+    const cookie = `pq_session=${await sealSession({ userId: "99444504-f1da-4066-95e0-067c7dde09da", role: "student", name: "Оюутан" })}`;
+    const response = await startSession(req("/api/sessions", { body: { caseId: "chest-pain-01" }, cookie }), noCtx);
     expect(response.status).toBe(401);
   });
 });

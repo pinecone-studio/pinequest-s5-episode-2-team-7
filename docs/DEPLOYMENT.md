@@ -29,7 +29,7 @@ To use Neon locally instead, put its connection string in `DATABASE_URL` and run
 | Variable | Where | Required | Notes |
 |---|---|---|---|
 | `SESSION_SECRET` | local, Vercel | yes (prod) | ≥ 32 chars; `openssl rand -base64 32` |
-| `DATABASE_URL` | local (optional), Vercel | yes on Vercel | Neon **pooled** URL with `sslmode=require` |
+| `DATABASE_URL` | local (optional), Vercel | yes on Vercel | Neon **pooled** URL with `sslmode=verify-full` (Neon shows `require`; change it to avoid the pg SSL warning) |
 | `APP_URL` | Vercel | recommended | e.g. `https://pinequest.vercel.app` |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | where you run `npm run db:seed` | for seeding | not needed at runtime |
 | `SEED_STUDENT_EMAIL` / `SEED_STUDENT_PASSWORD` | same | optional | demo student |
@@ -72,8 +72,13 @@ are short and the provider timeout defaults to 20 s (`PROVIDER_TIMEOUT_MS`).
 ## 5. Switching the patient AI
 
 - **Free (recommended):** `PATIENT_PROVIDER=gemini`, `GEMINI_API_KEY=...`,
-  `GEMINI_MODEL=gemini-2.5-flash` (check AI Studio for current free models).
+  `GEMINI_MODEL=gemini-3.8-flash` (check AI Studio for current free models).
   Free-tier prompts may be used by Google — only synthetic cases are sent.
+- **Free and fast (tested 2026-10-20):** Groq — `PATIENT_PROVIDER=openai_compatible`,
+  `OPENAI_COMPAT_BASE_URL=https://api.groq.com/openai/v1`, `OPENAI_COMPAT_MODEL=qwen/qwen3.8-27b`,
+  `OPENAI_COMPAT_API_KEY=gsk_...`. Answers in ~0.5–2 s and stays close to the case wording;
+  `openai/gpt-oss-120b`/`-20b` made factual errors in Mongolian. The free tier allows 8,000
+  tokens/min (≈ one interview at a time); beyond that answers fall back to templates.
 - **Paid later:** `PATIENT_PROVIDER=anthropic`, `ANTHROPIC_API_KEY=...`,
   `ANTHROPIC_MODEL` (defaults to `claude-opus-5-5`; a cheaper model can be set).
 - **Local/open model:** run Ollama, `PATIENT_PROVIDER=openai_compatible`,

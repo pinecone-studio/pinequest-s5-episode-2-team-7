@@ -1,0 +1,12 @@
+# Upload only the web app to Vercel. Secrets and local data never leave the machine.
+.env*
+!.env.example
+.data
+.next
+node_modules
+coverage
+*.tsbuildinfo
+
+# Python training pipeline and model server run elsewhere (see docs/DEPLOYMENT.md)
+ml
+inference

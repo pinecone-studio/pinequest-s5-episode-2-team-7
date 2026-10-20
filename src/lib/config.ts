@@ -19,7 +19,7 @@ const EnvSchema = z.object({
   PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
 
   GEMINI_API_KEY: z.string().optional(),
-  GEMINI_MODEL: z.string().default("gemini-2.5-flash"),
+  GEMINI_MODEL: z.string().default("gemini-3.8-flash"),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default("claude-opus-5-5"),
   OPENAI_COMPAT_BASE_URL: z.string().optional(),

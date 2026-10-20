@@ -96,7 +96,7 @@ def _gemini(text: str, glossary: list[tuple[str, str]], api_key: str, model: str
     return "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"]).strip()
 
 
-def machine_translate(csv_path: Path, model: str = "gemini-2.5-flash", delay_s: float = 4.5, limit: int | None = None) -> int:
+def machine_translate(csv_path: Path, model: str = "gemini-3.8-flash", delay_s: float = 4.5, limit: int | None = None) -> int:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise SystemExit("Set GEMINI_API_KEY to use machine translation (or fill mn_reviewed manually).")
