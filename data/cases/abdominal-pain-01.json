@@ -16,6 +16,7 @@
       "occupation": { "mn": "Их сургуулийн оюутан", "en": "University student" }
     },
     "chiefComplaint": { "mn": "Гэдэс өвдөх", "en": "Abdominal pain" },
+    "chiefComplaintTopics": ["abdominal_pain"],
     "openingLine": { "mn": "Сайн байна уу, эмч ээ. Гэдэс өвдөөд байна.", "en": "Hello doctor. My stomach hurts." },
     "estimatedMinutes": 15,
     "timeCritical": false

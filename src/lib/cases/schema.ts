@@ -195,6 +195,8 @@ export const PatientCase = z
         occupation: LocalizedText.optional(),
       }),
       chiefComplaint: LocalizedText,
+      /** Topics that ARE the chief complaint (never answered negatively). */
+      chiefComplaintTopics: z.array(TopicIdSchema).min(1),
       /** First words of the patient — chief complaint only. */
       openingLine: LocalizedText,
       /** Vitals shown in the patient panel from the start (optional). */

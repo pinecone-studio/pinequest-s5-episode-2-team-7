@@ -34,6 +34,9 @@ export interface TopicDefinition {
 
 const t = (def: TopicDefinition) => def;
 
+/** "When/how long" words inside these questions refer to the history item, not the complaint. */
+const HISTORY_TIME_TOPICS = ["lmp", "pregnancy", "smoking", "alcohol", "surgeries", "hospitalizations", "vaccination", "pmh", "hypertension", "diabetes", "hyperlipidemia", "medications", "travel", "sick_contacts", "occupation", "previous_episodes"];
+
 export const TOPICS = [
   // ---------------------------------------------------------------- HPI ----
   t({
@@ -41,12 +44,14 @@ export const TOPICS = [
     kind: "hpi",
     label: { mn: "Эхэлсэн хугацаа", en: "Onset" },
     patterns: [/хэзээ/, /хэзээнээс/, /эхэлс/, /эхлэс/, /эхэлсэн/, /хэдэн (цаг|хоног|өдөр|долоо хоног)/, /\bwhen\b/, /\bstart/, /\bonset\b/, /\bbegan\b/],
+    suppressedBy: HISTORY_TIME_TOPICS,
   }),
   t({
     id: "duration",
     kind: "hpi",
     label: { mn: "Үргэлжилсэн хугацаа", en: "Duration" },
     patterns: [/хэр удаа?н/, /хэдий (удаа?н|хугацаа)/, /үргэлж(лэ|ил)/, /тасралт/, /хэдэн минут/, /how long/, /duration/, /constant/],
+    suppressedBy: HISTORY_TIME_TOPICS,
   }),
   t({
     id: "location",
@@ -150,7 +155,8 @@ export const TOPICS = [
     id: "sweating",
     kind: "symptom",
     label: { mn: "Хөлрөх", en: "Sweating" },
-    patterns: [/хөлр/, /хөлс/, /sweat/, /diaphore/],
+    patterns: [/хөлө?р/, /хөлс/, /sweat/, /diaphore/],
+    suppressedBy: ["night_sweats"],
     defaultNegative: "Үгүй, хөлрөөгүй.",
   }),
   t({
@@ -209,6 +215,7 @@ export const TOPICS = [
     kind: "symptom",
     label: { mn: "Цэр", en: "Sputum" },
     patterns: [/цэр/, /sputum/, /phlegm/],
+    suppressedBy: ["hemoptysis"],
     defaultNegative: "Үгүй, цэр гарахгүй байна.",
   }),
   t({
@@ -265,14 +272,14 @@ export const TOPICS = [
     id: "weight_loss",
     kind: "symptom",
     label: { mn: "Жин буурах", en: "Weight loss" },
-    patterns: [/жин/, /тура(лт|сан|ж)/, /weight/],
+    patterns: [/(^|\s)жин/, /тура(лт|сан|ж)/, /weight/],
     defaultNegative: "Үгүй, жин хаяагүй.",
   }),
   t({
     id: "night_sweats",
     kind: "symptom",
     label: { mn: "Шөнө хөлрөх", en: "Night sweats" },
-    patterns: [/шөнө.*хөлр/, /night sweat/],
+    patterns: [/шөнө.*хөлө?р/, /night sweat/],
     defaultNegative: "Үгүй, шөнө хөлрөөгүй.",
   }),
   t({
@@ -318,31 +325,35 @@ export const TOPICS = [
     kind: "history",
     label: { mn: "Артерийн даралт ихсэх", en: "Hypertension" },
     patterns: [/даралт/, /hypertens/, /blood pressure/],
-    suppressedBy: ["vitals"],
+    suppressedBy: ["vitals", "family_history"],
   }),
   t({
     id: "diabetes",
     kind: "history",
     label: { mn: "Чихрийн шижин", en: "Diabetes" },
     patterns: [/чихрийн шижин/, /шижин/, /сахар/, /цусан дахь чихэр/, /diabet/, /blood sugar/],
+    suppressedBy: ["family_history"],
   }),
   t({
     id: "hyperlipidemia",
     kind: "history",
     label: { mn: "Холестерин", en: "Hyperlipidaemia" },
     patterns: [/холестерин/, /өөх тос/, /липид/, /cholesterol/, /lipid/],
+    suppressedBy: ["family_history"],
   }),
   t({
     id: "heart_disease",
     kind: "history",
     label: { mn: "Зүрхний өвчин", en: "Known heart disease" },
     patterns: [/зүрх(ний)? (өвчин|өвчтэй|асуудал|муу)/, /heart (disease|problem|condition)/],
+    suppressedBy: ["family_history"],
   }),
   t({
     id: "lung_disease",
     kind: "history",
     label: { mn: "Уушгины өвчин", en: "Lung disease / asthma / TB" },
     patterns: [/уушги/, /астма/, /багтраа/, /сүрьеэ/, /asthma/, /copd/, /tubercul/, /\btb\b/],
+    suppressedBy: ["family_history"],
   }),
   t({
     id: "surgeries",
@@ -373,7 +384,7 @@ export const TOPICS = [
     id: "family_history",
     kind: "history",
     label: { mn: "Удамшил, гэр бүлийн өвчин", en: "Family history" },
-    patterns: [/гэр бүл/, /ээж/, /(^|\s)аав/, /эцэг эх/, /ах дүү/, /эгч/, /удам/, /төрөл садан/, /family/, /father/, /mother/, /parents/, /sibling/],
+    patterns: [/гэр бүл/, /(^|\s)ээж/, /(^|\s)аав/, /эцэг эх/, /ах дүү/, /эгч/, /удам/, /төрөл садан/, /family/, /father/, /mother/, /parents/, /sibling/],
   }),
   t({
     id: "smoking",
@@ -448,7 +459,7 @@ export const TOPICS = [
     id: "sick_contacts",
     kind: "history",
     label: { mn: "Өвчтэй хүнтэй харьцсан", en: "Sick contacts" },
-    patterns: [/(ойр|хажуу|гэр).*(өвчтэй|ханиад|ханиалга)/, /хэн нэг.*(өвчтэй|ханиад)/, /халдвар/, /хавьтал/, /sick contact/, /anyone (else )?(sick|ill)/, /exposure/],
+    patterns: [/(ойр|хажуу|хамт|орчин).*(өвчтэй|ханиад|ханиалга|томуу)/, /гэр.*(ханиад|ханиалга|томуу)/, /хэн нэг.*(өвчтэй|ханиад)/, /халдвар/, /хавьтал/, /sick contact/, /anyone (else )?(sick|ill)/, /exposure/],
   }),
   t({
     id: "vaccination",
@@ -507,14 +518,14 @@ export const TOPICS = [
     id: "broad",
     kind: "meta",
     label: { mn: "Ерөнхий асуулт", en: "Broad question" },
-    patterns: [/бүгдийг/, /бүх (зүйл|юм|мэдээлэл)/, /дэлгэрэнгүй (ярь|хэл)/, /(ярьж|хэлж) өгөөч/, /юу болсныг (ярь|хэл)/, /тайлбарлаад/, /tell me (everything|more|about)/, /what (brings|brought) you/, /what happened/],
+    patterns: [/бүгдийг/, /бүх (зүйл|юм|мэдээлэл)/, /дэлгэрэнгүй (ярь|хэл)/, /(ярьж|хэлж) өгөөч/, /юу болсныг (ярь|хэл)/, /юу болсон (юм )?(бэ|вэ)/, /юугаар (зов|өвд)/, /яагаад ирсэн/, /юу (зовоож|санаа зовоож) байна/, /ямар зовиур(тай|аар)/, /тайлбарлаад/, /tell me (everything|more|about)/, /what (brings|brought) you/, /what happened/],
     suppressedBy: ["associated_general"],
   }),
   t({
     id: "diagnosis_request",
     kind: "meta",
     label: { mn: "Онош асуух", en: "Asking for the diagnosis" },
-    patterns: [/онош/, /ямар өвчин (бэ|вэ|байна|тусс|болсон)/, /юу болсон (юм )?(бэ|вэ)/, /(та|чи) юу гэж (бодож|бодно)/, /яг юу (болсон|вэ)/, /diagnos/, /what('s| is) wrong/, /what do you (think|have)/, /what disease/],
+    patterns: [/онош/, /ямар өвчин (бэ|вэ|байна|тусс|болсон)/, /юу болсон гэж (бодож|бодно|санаж)/, /(та|чи) юу гэж (бодож|бодно)/, /ямар өвчин(тэй)? (юм бол|байх)/, /diagnos/, /what('s| is) wrong/, /what do you (think|have)/, /what disease/],
   }),
   t({
     id: "injection",
@@ -533,12 +544,12 @@ export const TOPICS = [
       /(reveal|print|show|output) (the |your )?(case|diagnosis|rubric|system|instructions)/,
       /you are (now )?(a|an) (doctor|assistant|ai|language model)/,
       /as an ai/,
-      /заавар(чилгаа)?/,
+      /заав(а)?р/,
       /дүрэм(ээ)? (март|зөрч)/,
       /нууц (мэдээлэл|онош)/,
       /кейс(ийн)? (файл|мэдээлэл)/,
       /рубрик/,
-      /систем(ийн)? (мессеж|заавар|промпт)/,
+      /систем(ийн)? (мессеж|заав|промпт)/,
       /промпт/,
       /хиймэл оюун/,
       /чи (ai|бот|робот|загвар)/,

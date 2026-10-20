@@ -16,6 +16,7 @@
       "occupation": { "mn": "Таксины жолооч", "en": "Taxi driver" }
     },
     "chiefComplaint": { "mn": "Цээж өвдөх", "en": "Chest pain" },
+    "chiefComplaintTopics": ["chest_pain"],
     "openingLine": { "mn": "Эмч ээ, цээж өвдөөд байна.", "en": "Doctor, my chest hurts." },
     "estimatedMinutes": 15,
     "timeCritical": true

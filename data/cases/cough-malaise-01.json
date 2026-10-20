@@ -16,6 +16,7 @@
       "occupation": { "mn": "Тэтгэвэрт гарсан багш", "en": "Retired teacher" }
     },
     "chiefComplaint": { "mn": "Ханиалгах, бие тавгүйрхэх", "en": "Cough and feeling unwell" },
+    "chiefComplaintTopics": ["cough", "fatigue"],
     "openingLine": { "mn": "Эмч ээ, хэд хоног ханиалгаад, бие тавгүй байна.", "en": "Doctor, I've been coughing for a few days and feel unwell." },
     "estimatedMinutes": 15,
     "timeCritical": false
