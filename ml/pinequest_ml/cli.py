@@ -135,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--drafts", default=str(INTERIM_DIR / "agentclinic"))
     p.add_argument("--csv", default=str(INTERIM_DIR / "translation_worksheet.csv"))
     p.add_argument("--out", default=str(INTERIM_DIR / "translated"))
-    p.add_argument("--model", default="gemini-2.5-flash")
+    p.add_argument("--model", default="gemini-3.8-flash")
     p.add_argument("--limit", type=int)
     p.set_defaults(func=cmd_translate)
 
