@@ -43,6 +43,8 @@ const EnvSchema = z.object({
   ELEVENLABS_MODEL: z.string().default("eleven_v4_turbo"),
   ELEVENLABS_VOICE_MALE: z.string().optional(),
   ELEVENLABS_VOICE_FEMALE: z.string().optional(),
+  /** Parallel ElevenLabs requests allowed by the plan (Free 2, Starter 3, ...). */
+  ELEVENLABS_CONCURRENCY: z.coerce.number().int().positive().default(2),
   // Which service renders the talking face: Simli or Anam (both lip-sync to our own TTS audio).
   AVATAR_PROVIDER: z.enum(["simli", "anam"]).default("simli"),
   ANAM_API_KEY: z.string().optional(),

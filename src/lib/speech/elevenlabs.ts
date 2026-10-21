@@ -12,7 +12,29 @@ import { SAMPLE_RATE, wavFromPcm } from "./chimege";
  */
 const API = "https://api.elevenlabs.io/v1";
 
-export async function synthesizeElevenLabs(text: string, voiceId: string, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
+/**
+ * ElevenLabs caps parallel requests per plan (2 on Free); replies, sentence
+ * parts and fillers are requested together, so calls wait their turn here.
+ */
+let active = 0;
+const waiting: (() => void)[] = [];
+
+async function withSlot<T>(limit: number, run: () => Promise<T>): Promise<T> {
+  if (active >= limit) await new Promise<void>((resolve) => waiting.push(resolve));
+  active++;
+  try {
+    return await run();
+  } finally {
+    active--;
+    waiting.shift()?.();
+  }
+}
+
+export function synthesizeElevenLabs(text: string, voiceId: string, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
+  return withSlot(getConfig().ELEVENLABS_CONCURRENCY, () => request(text, voiceId, signal));
+}
+
+async function request(text: string, voiceId: string, signal?: AbortSignal, retried = false): Promise<Uint8Array<ArrayBuffer>> {
   const c = getConfig();
   if (!c.ELEVENLABS_API_KEY || !voiceId) throw new ApiError(503, "speech_unavailable", "Дуу гаргах үйлчилгээ тохируулагдаагүй байна.");
   let response: Response;
@@ -31,6 +53,11 @@ export async function synthesizeElevenLabs(text: string, voiceId: string, signal
     });
   } catch {
     throw new ApiError(503, "speech_unavailable", "Дуу гаргах үйлчилгээнд холбогдож чадсангүй.");
+  }
+  if (response.status === 429 && !retried) {
+    // Concurrency or rate limit: one short retry before giving up.
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    return request(text, voiceId, signal, true);
   }
   if (!response.ok) {
     // ElevenLabs explains missing permissions / quota in detail.message; keep it for the server log.
