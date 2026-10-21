@@ -25,6 +25,11 @@ const MAX_QUESTIONS = 30;
 const PROVIDER = { label: t.consult.offlineBadge, isDemo: true };
 const states = new Map<string, OfflineState>();
 const resultKey = (caseId: string) => `pq-offline-result:${caseId}`;
+// Same patterns and wording as the real engine (`diagnosis_request` in
+// src/lib/patient/topics.ts, DIAGNOSIS in providers/mock.ts): judges often try this.
+const DIAGNOSIS_REQUEST = [/онош/, /ямар өвчин (бэ|вэ|байна|тусс|болсон)/, /юу болсон гэж (бодож|бодно|санаж)/, /(та|чи) юу гэж (бодож|бодно)/, /ямар өвчин(тэй)? (юм бол|байх)/, /diagnos/, /what('s| is) wrong/, /what do you (think|have)/, /what disease/];
+const DIAGNOSIS_REPLY = "Мэдэхгүй ээ, эмч ээ. Тийм болохоор л танд үзүүлэх гэж ирсэн шүү дээ. Та л хэлж өгөөч.";
+export const DIAGNOSIS_INTENT = "diagnosis_request";
 
 const message = (role: MessageView["role"], content: string): MessageView => ({
   id: `${role}-${Math.random().toString(36).slice(2, 10)}`,
@@ -76,15 +81,17 @@ export function offlineBackend(caseId: string): ConsultBackend {
     async ask(content) {
       const s = state(caseId);
       const q = content.toLowerCase();
-      const matched = c.intents.filter((intent) => intent.patterns.some((re) => re.test(q)));
+      const asksDiagnosis = DIAGNOSIS_REQUEST.some((re) => re.test(q));
+      // A diagnosis request is answered in character and reveals nothing else.
+      const matched = asksDiagnosis ? [] : c.intents.filter((intent) => intent.patterns.some((re) => re.test(q)));
       // Answer at most two topics per question, like the real disclosure engine.
       const spoken = matched.filter((i) => !i.narrator).slice(0, 2);
       const exam = matched.find((i) => i.narrator);
       const student = message("student", content);
       const replies: MessageView[] = [];
       if (exam) replies.push(message("narrator", exam.reply));
-      if (spoken.length || !exam) replies.push(message("patient", spoken.length ? spoken.map((i) => i.reply).join(" ") : c.fallback));
-      s.questions.push({ id: student.id, text: content, intents: matched.map((i) => i.id) });
+      if (spoken.length || !exam) replies.push(message("patient", asksDiagnosis ? DIAGNOSIS_REPLY : spoken.length ? spoken.map((i) => i.reply).join(" ") : c.fallback));
+      s.questions.push({ id: student.id, text: content, intents: asksDiagnosis ? [DIAGNOSIS_INTENT] : matched.map((i) => i.id) });
       s.messages.push(student, ...replies);
       await wait(550 + Math.random() * 600);
       return { messages: [student, ...replies], questionCount: s.questions.length, provider: PROVIDER };
@@ -193,10 +200,10 @@ export function evaluateOffline(c: OfflineCase, questions: OfflineState["questio
     missedFindings: c.findings.filter((f) => !askedIntents.has(f.intent)).map((f) => ({ factId: f.intent, text: f.text, significance: f.significance })),
     questionStats: {
       total: questions.length,
-      clinical: questions.filter((q) => q.intents.some((i) => i !== "greeting")).length,
+      clinical: questions.filter((q) => q.intents.some((i) => i !== "greeting" && i !== DIAGNOSIS_INTENT)).length,
       repeated: texts.length - new Set(texts).size,
       unclear: questions.filter((q) => !q.intents.length).length,
-      diagnosisRequests: 0,
+      diagnosisRequests: questions.filter((q) => q.intents.includes(DIAGNOSIS_INTENT)).length,
     },
     learningPoints: c.learningPoints,
     differentials: c.differentials.map((d) => ({ label: d.label, rationale: d.rationale })),
