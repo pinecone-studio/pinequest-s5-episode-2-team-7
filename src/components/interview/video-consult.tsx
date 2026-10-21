@@ -121,6 +121,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
   const interruptPatient = useCallback(() => {
     setStudentSpeaking(true);
     playerRef.current?.stop();
+    avatarRef.current?.wake?.();
   }, []);
 
   async function transcribe(wav: Blob): Promise<string | null> {
@@ -205,6 +206,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
     if (!content || pending || limitReached) return;
     setPending(true);
     setError(null);
+    avatarRef.current?.wake?.(); // reconnects while the reply is being written
     if (speakReplies) {
       playerRef.current?.stop(); // a new question replaces whatever the patient was saying
       void playFiller();

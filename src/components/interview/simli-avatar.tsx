@@ -17,6 +17,8 @@ export interface AvatarHandle {
   interrupt(): void;
   /** Change the facial expression (no-op where the service cannot). */
   setEmotion(emotion: EmotionId): void;
+  /** The student is about to talk or ask: reopen a resting video session. */
+  wake?(): void;
 }
 
 type Status = "off" | "connecting" | "live" | "error";
