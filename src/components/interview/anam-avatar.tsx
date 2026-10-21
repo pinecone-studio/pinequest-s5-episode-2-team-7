@@ -121,7 +121,9 @@ export function AnamAvatar({
       setFailure(
         /concurrency/i.test(message)
           ? "Өөр цонхонд нээлттэй дуудлага байна (үнэгүй эрх нэг дуудлага зөвшөөрдөг). Бусад цонхыг хаагаад 1–2 минутын дараа дахин оролдоно уу."
-          : message,
+          : /usage limit/i.test(message)
+            ? "Anam-ийн сарын видео минут дууссан. Дуудлага дуу, хадмалаараа үргэлжилнэ; видеог дараа сард эсвэл төлбөртэй эрхээр сэргээнэ."
+            : message,
       );
       void clientRef.current?.stopStreaming();
       clientRef.current = null;
@@ -133,7 +135,7 @@ export function AnamAvatar({
     <div className={className ?? "relative aspect-square w-full overflow-hidden rounded-xl bg-slate-900"}>
       <video id={videoId} autoPlay playsInline className="h-full w-full object-cover" aria-label={`${name} — видео аватар`} />
       {status !== "live" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center text-sm text-slate-200">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center text-sm text-[#e2e8f0]">
           {status === "connecting" ? (
             <>
               <Spinner />
@@ -141,7 +143,7 @@ export function AnamAvatar({
             </>
           ) : (
             <>
-              {status === "error" && <span>Аватар холбогдсонгүй.{failure && <span className="mt-1 block text-xs text-slate-400">{failure}</span>}</span>}
+              {status === "error" && <span>Аватар холбогдсонгүй.{failure && <span className="mx-auto mt-1 block max-w-md text-xs text-[#cbd5e1]">{failure}</span>}</span>}
               <Button size="sm" onClick={start}>
                 {status === "error" ? "Дахин оролдох" : "Видео аватар асаах"}
               </Button>
