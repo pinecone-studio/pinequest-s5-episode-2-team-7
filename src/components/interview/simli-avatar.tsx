@@ -38,6 +38,7 @@ export function SimliAvatar({
   const clientRef = useRef<SimliClient | null>(null);
   const [status, setStatus] = useState<Status>("off");
   const [speaking, setSpeaking] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   useImperativeHandle(
     ref,
@@ -63,11 +64,13 @@ export function SimliAvatar({
   async function start() {
     if (!videoRef.current || !audioRef.current) return;
     setStatus("connecting");
+    setFailure(null);
     try {
-      const [{ SimliClient, LogLevel }, { sessionToken }] = await Promise.all([
+      const [{ SimliClient, LogLevel }, { sessionToken, provider }] = await Promise.all([
         import("simli-client/dist/client"),
-        apiFetch<{ sessionToken: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST" }),
+        apiFetch<{ sessionToken: string; provider: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST" }),
       ]);
+      if (provider !== "simli") throw new Error("Аватарын тохиргоо өөрчлөгдсөн байна. Хуудсаа дахин ачаална уу.");
       // LiveKit transport needs no ICE servers (P2P would). CRITICAL only: on page exit the
       // client logs a harmless "FAILED TO SEND FINAL MESSAGE" that Next.js shows as an issue;
       // real failures still arrive through the "error"/"startup_error" events below.
@@ -76,10 +79,15 @@ export function SimliAvatar({
       client.on("speaking", () => setSpeaking(true));
       client.on("silent", () => setSpeaking(false));
       client.on("error", () => setStatus("error"));
-      client.on("startup_error", () => setStatus("error"));
+      client.on("startup_error", (message) => {
+        setFailure(String(message));
+        setStatus("error");
+      });
       clientRef.current = client;
       await client.start();
-    } catch {
+    } catch (error) {
+      console.error("[avatar] Simli failed to start", error);
+      setFailure(error instanceof Error ? error.message : String(error));
       setStatus("error");
     }
   }
@@ -97,7 +105,7 @@ export function SimliAvatar({
             </>
           ) : (
             <>
-              {status === "error" && <span>Аватар холбогдсонгүй.</span>}
+              {status === "error" && <span>Аватар холбогдсонгүй.{failure && <span className="mt-1 block text-xs text-slate-400">{failure}</span>}</span>}
               <Button size="sm" onClick={start}>
                 {status === "error" ? "Дахин оролдох" : "Видео аватар асаах"}
               </Button>

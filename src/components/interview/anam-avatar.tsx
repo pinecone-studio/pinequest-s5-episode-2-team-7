@@ -34,6 +34,7 @@ export function AnamAvatar({
   const speakingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [status, setStatus] = useState<Status>("off");
   const [speaking, setSpeaking] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
 
   // Anam has no "finished talking" event in passthrough mode, so speaking
   // time is derived from the audio we sent (16 kHz PCM16 = 32 bytes per ms).
@@ -82,18 +83,24 @@ export function AnamAvatar({
 
   async function start() {
     setStatus("connecting");
+    setFailure(null);
     try {
-      const [{ createClient }, { sessionToken }] = await Promise.all([
+      const [{ createClient }, { sessionToken, provider }] = await Promise.all([
         import("@anam-ai/js-sdk"),
-        apiFetch<{ sessionToken: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST" }),
+        apiFetch<{ sessionToken: string; provider: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST" }),
       ]);
+      if (provider !== "anam") throw new Error("Аватарын тохиргоо өөрчлөгдсөн байна. Хуудсаа дахин ачаална уу.");
       // Our own microphone handling (Chimege STT) stays in charge.
       const client = createClient(sessionToken, { disableInputAudio: true });
       clientRef.current = client;
       await client.streamToVideoElement(videoId);
       streamRef.current = client.createAgentAudioInputStream({ encoding: "pcm_s16le", sampleRate: 16_000, channels: 1 });
       setStatus("live");
-    } catch {
+    } catch (error) {
+      console.error("[avatar] Anam failed to start", error);
+      setFailure(error instanceof Error ? error.message : String(error));
+      void clientRef.current?.stopStreaming();
+      clientRef.current = null;
       setStatus("error");
     }
   }
@@ -110,7 +117,7 @@ export function AnamAvatar({
             </>
           ) : (
             <>
-              {status === "error" && <span>Аватар холбогдсонгүй.</span>}
+              {status === "error" && <span>Аватар холбогдсонгүй.{failure && <span className="mt-1 block text-xs text-slate-400">{failure}</span>}</span>}
               <Button size="sm" onClick={start}>
                 {status === "error" ? "Дахин оролдох" : "Видео аватар асаах"}
               </Button>
