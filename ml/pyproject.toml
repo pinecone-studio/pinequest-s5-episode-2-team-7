@@ -2,7 +2,7 @@
 name = "pinequest-ml"
 version = "0.1.0"
 description = "Dataset preparation, LoRA/QLoRA fine-tuning and evaluation for the PineQuest Mongolian AI patient"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<3.14"
 dependencies = [
   "jsonschema>=4.21",
   "pyyaml>=6.0",

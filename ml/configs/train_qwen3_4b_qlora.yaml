@@ -1,12 +1,17 @@
 # Recommended starting point: Qwen3-4B-Instruct-2507 (Apache-2.0, text-only).
 # Hardware: one 16 GB NVIDIA GPU (free Kaggle T4/P100 or Colab T4) with QLoRA.
-# Expected time with the 3 demo cases (~600 train examples, 2 epochs): ~20-40 min on a T4.
+# Measured on Kaggle T4 x2 (2026-10-21): ~25 s per training sequence (~1,500
+# tokens), so a full epoch of ~5,300 examples (~37 h) does not fit Kaggle's
+# 12 h limit. The 9 training cases are learned quickly (loss 0.46 → 0.15 in
+# 20 steps of 16), so train a fixed 80 steps of 8 sequences (~640 examples,
+# ~4.5 h) and save every 20 steps so a cut-off run still leaves an adapter.
 base_model: Qwen/Qwen3-4B-Instruct-2507
 adapter_id: pq-qwen3-4b-lora-v1          # must match FINETUNED_EXPECTED_ADAPTER in the app
 output_dir: outputs/qwen3-4b-lora-v1
 purpose: "Pipeline demonstration on synthetic, unreviewed cases — NOT for students."
 quantization: 4bit                        # QLoRA (NF4); requires CUDA + bitsandbytes
 max_seq_length: 2048
+max_eval_examples: 100
 chat_template_kwargs: {}
 lora:
   r: 16
@@ -14,14 +19,15 @@ lora:
   dropout: 0.05
   target_modules: all-linear
 training:
-  epochs: 2
+  epochs: 1
+  max_steps: 80
   batch_size: 2
-  grad_accum: 8
+  grad_accum: 4
   learning_rate: 2.0e-4
   scheduler: cosine
   warmup_ratio: 0.05
   logging_steps: 10
-  eval_steps: 50
-  save_steps: 50
+  eval_steps: 20
+  save_steps: 20
   gradient_checkpointing: true
   seed: 42
