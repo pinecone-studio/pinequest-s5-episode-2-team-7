@@ -6,6 +6,7 @@ import { GET as adminCases, POST as adminCreateCase } from "@/app/api/admin/case
 import { POST as adminImport } from "@/app/api/admin/cases/import/route";
 import { GET as adminTrainingExport } from "@/app/api/admin/training/export/route";
 import { POST as approveTraining } from "@/app/api/admin/sessions/[id]/training/route";
+import { GET as adminDiagnostics } from "@/app/api/admin/diagnostics/route";
 import { GET as listCases } from "@/app/api/cases/route";
 import { GET as listSessions, POST as startSession } from "@/app/api/sessions/route";
 import { GET as getSession } from "@/app/api/sessions/[id]/route";
@@ -295,6 +296,9 @@ describe("17. model-provider failures", () => {
       expect(body.provider.label).toContain("хариулсангүй");
       const view = await (await getSession(req(`/api/sessions/${id}`, { cookie: studentCookie }), ctx(id))).json();
       expect(view.session.provider.isDemo).toBe(true);
+      // Admins can see why the configured model was not used.
+      const diag = await (await adminDiagnostics(req("/api/admin/diagnostics", { cookie: adminCookie }), noCtx)).json();
+      expect(diag.fallbackReasons).toContainEqual({ reason: expect.stringMatching(/^gemini: /), count: 1 });
     } finally {
       setPatientProviderForTests(new MockPatientProvider());
     }

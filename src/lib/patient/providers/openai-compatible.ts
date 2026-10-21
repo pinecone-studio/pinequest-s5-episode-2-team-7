@@ -5,6 +5,32 @@ interface ChatCompletionResponse {
   choices?: { message?: { content?: string | null }; finish_reason?: string }[];
 }
 
+const RATE_LIMIT_RETRIES = 2;
+const MAX_RETRY_WAIT_MS = 5_000;
+
+/** Wait from `Retry-After` (seconds) or 1 s, 2 s; null when the server asks for longer than is worth waiting. */
+export function retryDelayMs(retryAfter: string | null, attempt: number): number | null {
+  const seconds = retryAfter === null ? NaN : Number(retryAfter);
+  const ms = Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : 1000 * 2 ** attempt;
+  return ms <= MAX_RETRY_WAIT_MS ? ms : null;
+}
+
+/** Resolves after `ms`, or rejects as soon as `signal` aborts. */
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(signal.reason);
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(signal.reason);
+      },
+      { once: true },
+    );
+  });
+}
+
 /**
  * Any server that implements the OpenAI-style `/chat/completions` endpoint:
  * Ollama (http://localhost:11434/v1), vLLM, LM Studio, llama.cpp server,
@@ -32,23 +58,29 @@ export class OpenAICompatibleProvider extends ChatModelProvider {
   }
 
   async complete(request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string> {
+    const body = JSON.stringify({
+      model: this.model,
+      messages: [{ role: "system", content: request.system }, ...request.messages],
+      max_tokens: request.maxTokens,
+      temperature: request.temperature ?? 0.5,
+      stream: false,
+    });
     let response: Response;
-    try {
-      response = await this.fetchImpl(`${this.baseUrl}/chat/completions`, {
-        method: "POST",
-        headers: this.headers(),
-        body: JSON.stringify({
-          model: this.model,
-          messages: [{ role: "system", content: request.system }, ...request.messages],
-          max_tokens: request.maxTokens,
-          temperature: request.temperature ?? 0.5,
-          stream: false,
-        }),
-        signal: options?.signal,
+    for (let attempt = 0; ; attempt++) {
+      try {
+        response = await this.fetchImpl(`${this.baseUrl}/chat/completions`, { method: "POST", headers: this.headers(), body, signal: options?.signal });
+      } catch (error) {
+        if ((error as Error).name === "AbortError") throw new ProviderError("Model request timed out", this.id, "timeout");
+        throw new ProviderError(`Could not reach ${this.baseUrl}`, this.id, "network");
+      }
+      // Free tiers (e.g. Groq) return 429 when a few students ask at once;
+      // the limit usually clears within seconds, so wait briefly and retry.
+      if (response.status !== 429 || attempt >= RATE_LIMIT_RETRIES) break;
+      const waitMs = retryDelayMs(response.headers.get("retry-after"), attempt);
+      if (waitMs === null) break;
+      await sleep(waitMs, options?.signal).catch(() => {
+        throw new ProviderError("Model request timed out", this.id, "timeout");
       });
-    } catch (error) {
-      if ((error as Error).name === "AbortError") throw new ProviderError("Model request timed out", this.id, "timeout");
-      throw new ProviderError(`Could not reach ${this.baseUrl}`, this.id, "network");
     }
     if (response.status === 429) throw new ProviderError("Rate limited", this.id, "rate_limit");
     if (!response.ok) throw new ProviderError(`HTTP ${response.status}`, this.id, response.status === 401 || response.status === 404 ? "config" : "bad_response");

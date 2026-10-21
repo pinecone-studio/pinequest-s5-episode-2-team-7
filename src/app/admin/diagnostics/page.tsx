@@ -71,6 +71,19 @@ export default async function DiagnosticsPage() {
             ))}
           </tbody>
         </table>
+        {d.fallbackReasons.length > 0 && (
+          <>
+            <h3 className="mb-1 mt-4 text-sm font-semibold">Нөөц горимд шилжсэн шалтгаан</h3>
+            <ul className="space-y-1 text-sm">
+              {d.fallbackReasons.map((r, i) => (
+                <li key={i} className="flex justify-between gap-3 border-t border-slate-100 pt-1">
+                  <span className="break-all font-mono text-xs">{r.reason ?? "—"}</span>
+                  <span className="tabular-nums">{r.count}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </Card>
     </main>
   );

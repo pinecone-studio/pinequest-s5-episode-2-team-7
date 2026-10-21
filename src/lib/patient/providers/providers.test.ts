@@ -5,7 +5,7 @@ import { simulateTurn } from "../simulator";
 import { parseTopicList, TOPIC_CLASSIFIER_SYSTEM } from "./base";
 import { FineTunedPatientProvider } from "./finetuned";
 import { GeminiPatientProvider } from "./gemini";
-import { OpenAICompatibleProvider } from "./openai-compatible";
+import { OpenAICompatibleProvider, retryDelayMs } from "./openai-compatible";
 import { ProviderError } from "./types";
 
 type Handler = (url: string, init?: RequestInit) => Response | Promise<Response>;
@@ -63,6 +63,30 @@ describe("OpenAI-compatible provider", () => {
     const text = await provider.complete({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 });
     expect(text).toBe("Өнөө өглөө эхэлсэн.");
     expect(calls[0].url).toBe("http://localhost:11434/v1/chat/completions");
+  });
+
+  it("retries a brief rate limit, honouring Retry-After", async () => {
+    let n = 0;
+    const { impl, calls } = fakeFetch(() =>
+      ++n === 1 ? new Response("{}", { status: 429, headers: { "retry-after": "0" } }) : json({ choices: [{ message: { content: "Өчигдөр эхэлсэн." } }] }),
+    );
+    const provider = new OpenAICompatibleProvider("https://api.groq.com/openai/v1", "qwen/qwen3.8-27b", "key", impl);
+    await expect(provider.complete({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 })).resolves.toBe("Өчигдөр эхэлсэн.");
+    expect(calls).toHaveLength(2);
+  });
+
+  it("gives up on a rate limit that asks for a long wait", async () => {
+    const { impl, calls } = fakeFetch(() => new Response("{}", { status: 429, headers: { "retry-after": "60" } }));
+    const provider = new OpenAICompatibleProvider("https://api.groq.com/openai/v1", "qwen/qwen3.8-27b", "key", impl);
+    await expect(provider.complete({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 })).rejects.toMatchObject({ kind: "rate_limit" });
+    expect(calls).toHaveLength(1);
+  });
+
+  it("computes retry waits", () => {
+    expect(retryDelayMs("2", 0)).toBe(2000);
+    expect(retryDelayMs(null, 0)).toBe(1000);
+    expect(retryDelayMs(null, 1)).toBe(2000);
+    expect(retryDelayMs("30", 0)).toBeNull();
   });
 });
 
