@@ -19,7 +19,7 @@ export function createPatientProvider(config: AppConfig = getConfig()): PatientP
     case "gemini":
       return new GeminiPatientProvider(config.GEMINI_API_KEY ?? "", config.GEMINI_MODEL);
     case "anthropic":
-      return new AnthropicPatientProvider(config.ANTHROPIC_API_KEY ?? "", config.ANTHROPIC_MODEL);
+      return new AnthropicPatientProvider(config.ANTHROPIC_API_KEY ?? "", config.ANTHROPIC_MODEL, config.ANTHROPIC_CLASSIFIER_MODEL);
     case "openai_compatible":
       return new OpenAICompatibleProvider(config.OPENAI_COMPAT_BASE_URL ?? "", config.OPENAI_COMPAT_MODEL ?? "", config.OPENAI_COMPAT_API_KEY);
     case "finetuned":

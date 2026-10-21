@@ -31,6 +31,7 @@ missed and why it matters.
 | Hidden structured cases, strict disclosure engine, leak/consistency validation | ✅ |
 | Diagnosis submission and deterministic, case-specific evaluation + feedback | ✅ |
 | Admin: JSON case editor with validation, student preview, publish status, import/export, data-quality report, training-data approval, provider diagnostics | ✅ |
+| Voice (optional): ask by voice (Chimege STT), patient replies spoken (Chimege TTS), Simli talking video avatar lip-synced to the voice | ✅ implemented · off unless keys are set; verified live in the browser except microphone capture (tested with mocked HTTP) |
 | Providers: mock (no key), Gemini (free tier), Claude (paid), OpenAI-compatible (Ollama/vLLM), fine-tuned (verified) | ✅ implemented · Gemini/Claude/fine-tuned not exercised against live services in this environment (no keys) |
 | PostgreSQL (Neon) + embedded PGlite for local/tests | ✅ |
 | Fine-tuning data pipeline (synthetic dialogues, transcripts, splits, quality report, adapters, translation workflow) | ✅ |
@@ -123,13 +124,26 @@ PATIENT_PROVIDER=openai_compatible  OPENAI_COMPAT_BASE_URL=http://localhost:1143
 PATIENT_PROVIDER=finetuned   FINETUNED_BASE_URL=... FINETUNED_EXPECTED_ADAPTER=...
 ```
 
+Voice is optional and configured the same way (all keys stay on the server):
+
+```bash
+CHIMEGE_STT_TOKEN=...   # students ask by voice (🎤 next to the input, ≤ 14 s per recording)
+CHIMEGE_TTS_TOKEN=...   # patient replies are spoken (one Chimege credit per reply, cached)
+SIMLI_API_KEY=... SIMLI_FACE_ID_FEMALE=... SIMLI_FACE_ID_MALE=...   # video avatar (needs TTS; started on demand, billed per minute)
+```
+
+Only stored patient replies of the student's own session can be voiced, so the
+speech endpoints cannot be used to spend credits on arbitrary text.
+
 The provider that actually answered is stored on every message and shown in
 *Админ → AI загварын төлөв*; students see a "Демо горим" badge in mock mode.
 
 ## Scoring
 
 Default weights: **40% diagnosis, 40% history-taking coverage, 20% critical
-questions**, configurable per case (`rubric.weights`). A correct diagnosis alone
+questions**. A rubric item counts only when the patient actually answered its
+topic (the evaluator replays the interview through the disclosure engine), so
+cramming many keywords into one question does not earn credit, configurable per case (`rubric.weights`). A correct diagnosis alone
 cannot give a perfect score and a wrong diagnosis keeps the credit for good
 questions. Diagnoses match reviewed Mongolian/English aliases (with suffix and
 small-typo tolerance); partial credit for less specific answers. No language
@@ -172,7 +186,7 @@ separate GPU host running `inference/` (cannot run on Vercel). Step-by-step:
 ## Future work
 
 More reviewed cases per specialty; physical-exam and investigation modules;
-speech input (Mongolian ASR); teacher dashboards and cohorts; Redis-based rate
+teacher dashboards and cohorts; Redis-based rate
 limiting; Mongolian paraphrase augmentation reviewed by clinicians; a trained
 and evaluated Mongolian patient model.
 

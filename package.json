@@ -20,6 +20,7 @@
     "ml:fixtures": "tsx --conditions=react-server scripts/export-prompt-fixtures.ts"
   },
   "dependencies": {
+    "@anam-ai/js-sdk": "4.27.1",
     "@anthropic-ai/sdk": "^0.135.0",
     "@electric-sql/pglite": "^0.5.10",
     "bcryptjs": "^3.0.3",
@@ -32,6 +33,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",
+    "simli-client": "3.0.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {

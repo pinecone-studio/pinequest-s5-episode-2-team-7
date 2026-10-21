@@ -47,6 +47,13 @@ export interface TurnPlan {
   investigationsUnavailable: boolean;
   /** More topics were asked than answered in one turn. */
   overflow: boolean;
+  /**
+   * Topics the patient actually addressed this turn (stated a fact, denied an
+   * absent symptom, said "don't know", confirmed the complaint, or the
+   * narrator reported). Topics cut off by MAX_FACTS_PER_TURN are excluded, so
+   * the evaluator cannot be gamed with keyword-stuffed questions.
+   */
+  answeredTopics: TopicId[];
 }
 
 /** Max patient-known facts stated in one answer (prevents "info dumps"). */
@@ -69,6 +76,7 @@ function emptyPlan(mode: TurnMode, topics: TopicId[]): TurnPlan {
     narratorFacts: [],
     investigationsUnavailable: false,
     overflow: false,
+    answeredTopics: [],
   };
 }
 
@@ -97,15 +105,19 @@ export function planTurn(patientCase: PatientCase, classification: Classificatio
     const plan = emptyPlan("answer", topics);
     const chosen: CaseFact[] = [];
     const ccTopics = new Set<string>(patientCase.public.chiefComplaintTopics);
+    const factsByTopic = new Map<TopicId, CaseFact[]>();
+    const answered: TopicId[] = [];
     let ccOnly = true;
 
     for (const topicId of specific) {
       const matching = facts.filter((f) => f.patientKnows && f.topics.includes(topicId));
       if (matching.length > 0) {
         ccOnly = false;
+        factsByTopic.set(topicId, matching);
         for (const fact of matching) if (!chosen.includes(fact)) chosen.push(fact);
         continue;
       }
+      answered.push(topicId); // complaint confirmed, symptom denied or "don't know"
       if (ccTopics.has(topicId)) continue; // asking "do you have <chief complaint>?"
       ccOnly = false;
       const kind = getTopic(topicId)?.kind;
@@ -118,6 +130,9 @@ export function planTurn(patientCase: PatientCase, classification: Classificatio
       chosen.length = MAX_FACTS_PER_TURN;
     }
     plan.facts = chosen;
+    for (const [topicId, matching] of factsByTopic) {
+      if (matching.some((f) => chosen.includes(f))) answered.push(topicId);
+    }
 
     for (const topicId of examTopics) {
       if (topicId === "investigations" && !patientCase.hidden.investigationsAvailable) {
@@ -129,7 +144,9 @@ export function planTurn(patientCase: PatientCase, classification: Classificatio
           plan.narratorFacts.push(fact);
         }
       }
+      answered.push(topicId);
     }
+    plan.answeredTopics = topics.filter((t) => answered.includes(t));
 
     if (specific.length === 0) plan.mode = "exam";
     else if (ccOnly && plan.facts.length === 0) plan.mode = "chief_complaint";
@@ -147,6 +164,7 @@ export function planTurn(patientCase: PatientCase, classification: Classificatio
         (wantsAssociated ? f.topics.includes("associated_general") : f.volunteerOnBroad),
     );
     plan.facts = candidates.slice(0, MAX_BROAD_FACTS);
+    plan.answeredTopics = topics.filter((t) => t === "associated_general" || t === "broad");
     return finalize(plan, state);
   }
 

@@ -8,19 +8,26 @@ import { t } from "@/i18n";
 import { describeError, sessionBackend, type ConsultBackend } from "@/lib/api";
 import { offlineBackend } from "@/lib/demo/offline";
 import { useNow } from "@/lib/use-now";
-import type { MessageView, ProviderBadge, SessionView } from "@/lib/views";
+import type { MessageView, ProviderBadge, SessionView, VoiceFeatures } from "@/lib/views";
 import { useToast } from "../providers";
 import { MoodMeter, PatientView, moodForCase } from "../patient/patient-view";
 import { Badge, Button, cn } from "../ui";
 import { ClinicalNotes } from "./clinical-notes";
 import { DiagnosisDialog } from "./diagnosis-dialog";
+import { VideoConsult } from "./video-consult";
 import { VitalsMonitor } from "./vitals-monitor";
 import { VoiceInput } from "./voice-input";
 
 const MAX_CHARS = 500;
 type Tab = "chat" | "patient" | "notes";
 
-export function InterviewWorkspace({ initial, offlineCaseId }: { initial: SessionView; offlineCaseId?: string }) {
+export function InterviewWorkspace({ initial, offlineCaseId, voice }: { initial: SessionView; offlineCaseId?: string; voice?: VoiceFeatures }) {
+  // With a talking avatar configured, the consultation is a full-screen video call.
+  if (voice?.avatar && !offlineCaseId) return <VideoConsult initial={initial} voice={voice} />;
+  return <ConsultWorkspace initial={initial} offlineCaseId={offlineCaseId} />;
+}
+
+function ConsultWorkspace({ initial, offlineCaseId }: { initial: SessionView; offlineCaseId?: string }) {
   const router = useRouter();
   const toast = useToast();
   const backend: ConsultBackend = useMemo(() => (offlineCaseId ? offlineBackend(offlineCaseId) : sessionBackend(initial.id)), [offlineCaseId, initial.id]);

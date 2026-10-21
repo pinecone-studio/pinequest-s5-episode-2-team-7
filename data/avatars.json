@@ -1,0 +1,55 @@
+{
+  "$comment": "Case id → avatar per service. Anam ids are stock avatars (lab.anam.ai → Avatars); a case missing here uses ANAM_AVATAR_ID_FEMALE/MALE.",
+  "abdominal-pain-01": {
+    "anam": "cc97774e-853d-4ca0-b31c-d1d927251b00",
+    "name": "Hana"
+  },
+  "abdominal-pain-02": {
+    "anam": "32673c5e-f85f-4a87-a104-b92b7de9cb39",
+    "name": "Mei"
+  },
+  "fever-back-pain-01": {
+    "anam": "dc9aa3e1-32f2-499e-9921-ecabac1076fc",
+    "name": "Bella"
+  },
+  "palpitations-01": {
+    "anam": "ae2ea8c1-db28-47e3-b6ea-493e4ed3c554",
+    "name": "Layla"
+  },
+  "headache-dizziness-01": {
+    "anam": "edf6fdcb-acab-44b8-b974-ded72665ee26",
+    "name": "Mia"
+  },
+  "headache-01": {
+    "anam": "42675ef1-2342-45d8-9603-9bd92ed45699",
+    "name": "Kiara"
+  },
+  "dyspnea-swelling-01": {
+    "anam": "c98240cb-78df-4ddf-a042-000ffa1821e6",
+    "name": "Eleanor"
+  },
+  "chest-pain-01": {
+    "anam": "a64dd018-7dff-4f86-a623-0230f71fffa6",
+    "name": "Harold"
+  },
+  "cough-malaise-01": {
+    "anam": "19d18eb0-5346-4d50-a77f-26b3723ed79d",
+    "name": "Richard"
+  },
+  "cough-weight-loss-01": {
+    "anam": "ccf00c0e-7302-455b-ace2-057e0cf58127",
+    "name": "Kevin"
+  },
+  "flank-pain-01": {
+    "anam": "cdd5ceb2-3edc-4d2f-a013-82b885784dfd",
+    "name": "Jun"
+  },
+  "fever-joint-pain-01": {
+    "anam": "6cc28442-cccd-42a8-b6e4-24b7210a09c5",
+    "name": "Gabriel"
+  },
+  "vomiting-thirst-01": {
+    "anam": "400b9683-114e-4336-8348-f78a6860de54",
+    "name": "Mateo"
+  }
+}

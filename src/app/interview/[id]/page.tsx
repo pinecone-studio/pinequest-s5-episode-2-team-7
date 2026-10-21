@@ -4,6 +4,7 @@ import { InterviewWorkspace } from "@/components/interview/workspace";
 import { ApiError } from "@/lib/api/http";
 import { requirePageUser } from "@/lib/auth/server";
 import { getSessionView } from "@/lib/services/sessions";
+import { getVoiceFeatures } from "@/lib/speech/features";
 
 export const metadata: Metadata = { title: "Ярилцлага" };
 
@@ -18,5 +19,5 @@ export default async function InterviewPage({ params }: PageProps<"/interview/[i
     throw error;
   }
   if (view.status !== "active") redirect(`/sessions/${id}`);
-  return <InterviewWorkspace initial={view} />;
+  return <InterviewWorkspace initial={view} voice={getVoiceFeatures(view.case.patient.sex)} />;
 }

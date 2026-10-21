@@ -127,6 +127,26 @@ describe("interview scoring", () => {
     expect(result.items.find((i) => i.id === "cv-risk-factors")?.covered).toBe(false);
   });
 
+  it("does not credit a keyword-stuffed question the patient could not answer in full", () => {
+    const shotgun = "Хаана, ямар өвдөлт, хэр хүчтэй, хаашаа дамждаг, юунаас ихэсдэг, тамхи, даралт, эм, харшил, удамшил, ажил, хөлөрсөн, амьсгаадах уу?";
+    const stuffed = run("chest", [shotgun]);
+    const thorough = run("chest", THOROUGH_CHEST);
+    const a = evaluateInterview({ patientCase: chest, questions: stuffed.asked, disclosedFactIds: stuffed.disclosed, diagnosisText: "MI" });
+    const b = evaluateInterview({ patientCase: chest, questions: thorough.asked, disclosedFactIds: thorough.disclosed, diagnosisText: "MI" });
+
+    // The patient states at most MAX_FACTS_PER_TURN facts, so only the topics
+    // it actually answered may count as asked.
+    expect(stuffed.asked[0].topics.length).toBeGreaterThan(8);
+    expect(a.items.filter((i) => i.covered).length).toBeLessThanOrEqual(4);
+    expect(a.totalScore).toBeLessThan(b.totalScore - 25);
+  });
+
+  it("credits topics the patient denied (they were answered)", () => {
+    const { asked, disclosed } = run("chest", ["Халуурсан, ханиалгасан уу?"]);
+    const result = evaluateInterview({ patientCase: chest, questions: asked, disclosedFactIds: disclosed, diagnosisText: "MI" });
+    expect(result.items.find((i) => i.id === "infection-negatives")?.covered).toBe(true);
+  });
+
   it("uses configurable weights", () => {
     const { asked, disclosed } = run("abdomen", ["Сарын тэмдэг хэзээ ирсэн бэ?"]);
     const result = evaluateInterview({

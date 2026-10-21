@@ -1,6 +1,6 @@
 import { renderPatientPrompt, type PatientTurnContext } from "../context";
 import { TOPICS, isTopicId, type TopicId } from "../topics";
-import type { PatientProvider, ProviderHealth, ProviderId } from "./types";
+import type { GenerateOptions, PatientProvider, ProviderHealth, ProviderId } from "./types";
 
 export interface ChatRequest {
   system: string;
@@ -23,9 +23,18 @@ export abstract class ChatModelProvider implements PatientProvider {
   abstract complete(request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string>;
   abstract health(): Promise<ProviderHealth>;
 
-  async generate(ctx: PatientTurnContext, options?: { signal?: AbortSignal }): Promise<string> {
+  /** Streaming variant of `complete`; models without streaming deliver the whole text at once. */
+  async completeStream(request: ChatRequest, options: { signal?: AbortSignal; onText: (soFar: string) => void }): Promise<string> {
+    const text = await this.complete(request, options);
+    options.onText(text);
+    return text;
+  }
+
+  async generate(ctx: PatientTurnContext, options?: GenerateOptions): Promise<string> {
     const prompt = renderPatientPrompt(ctx);
-    const text = await this.complete({ system: prompt.system, messages: prompt.messages, maxTokens: 300, temperature: 0.5 }, options);
+    const request: ChatRequest = { system: prompt.system, messages: prompt.messages, maxTokens: 300, temperature: 0.5 };
+    const onText = options?.onText;
+    const text = onText ? await this.completeStream(request, { signal: options?.signal, onText }) : await this.complete(request, options);
     return cleanReply(text);
   }
 
