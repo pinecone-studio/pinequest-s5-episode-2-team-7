@@ -52,6 +52,7 @@ const EnvSchema = z.object({
   // Which service renders the talking face: Simli or Anam (both lip-sync to our own TTS audio).
   AVATAR_PROVIDER: z.enum(["simli", "anam"]).default("simli"),
   ANAM_API_KEY: z.string().optional(),
+  /** One id, or several separated by commas (each case then gets one of them). */
   ANAM_AVATAR_ID_MALE: z.string().optional(),
   ANAM_AVATAR_ID_FEMALE: z.string().optional(),
   /** Optional Anam avatar model, e.g. "cara-4"; empty = the avatar's default. */

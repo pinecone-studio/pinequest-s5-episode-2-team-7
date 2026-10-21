@@ -99,5 +99,5 @@ export async function startAvatar(auth: SessionData, sessionId: string, emotion?
   if (session.status !== "active") throw Errors.conflict("Энэ ярилцлага дууссан байна.");
   const limit = checkRateLimit(`avatar:${auth.userId}`, 5);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
-  return { sessionToken: await createAvatarToken(session.caseSnapshot.public.patient.sex, emotion), provider: getConfig().AVATAR_PROVIDER };
+  return { sessionToken: await createAvatarToken(session.caseSnapshot.public.patient.sex, emotion, undefined, session.caseId), provider: getConfig().AVATAR_PROVIDER };
 }
