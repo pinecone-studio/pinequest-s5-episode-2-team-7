@@ -104,6 +104,14 @@ export function AnamAvatar({
         markSpeaking(pcm.length);
         armIdle();
       },
+      speakPcm(pcm: Uint8Array, last: boolean) {
+        const stream = streamRef.current;
+        if (!stream || status !== "live") return;
+        for (let at = 0; at < pcm.length; at += 6400) stream.sendAudioChunk(pcm.slice(at, at + 6400));
+        if (last) stream.endSequence();
+        if (pcm.length > 0) markSpeaking(pcm.length);
+        armIdle();
+      },
       wake() {
         if (statusRef.current === "resting") void start();
         else if (statusRef.current === "live") armIdle();

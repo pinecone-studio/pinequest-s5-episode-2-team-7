@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/api/http";
 import { getConfig } from "@/lib/config";
 import { EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
 import type { VoiceFeatures } from "@/lib/views";
-import { synthesize as synthesizeChimege } from "./chimege";
+import { pcmFromWav, synthesize as synthesizeChimege } from "./chimege";
 import { synthesizeElevenLabs } from "./elevenlabs";
 
 /**
@@ -27,6 +27,23 @@ export function speak(text: string, sex: Sex, emotion?: EmotionId, signal?: Abor
   if (c.TTS_PROVIDER !== "elevenlabs") return synthesizeChimege(text, voice, signal);
   const tag = c.ELEVENLABS_EMOTION_TAGS === "on" && emotion ? EMOTIONS[emotion].voiceTag : "";
   return synthesizeElevenLabs(tag ? `${tag} ${text}` : text, voice, signal);
+}
+
+/**
+ * Like `speak`, but reports the audio as it is synthesized (raw 16 kHz PCM16
+ * pieces) so playback can start before the sentence is finished. Services
+ * without streaming report the whole sentence as one piece.
+ */
+export async function speakStreaming(text: string, sex: Sex, emotion: EmotionId | undefined, onPcm: (pcm: Uint8Array) => void, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
+  const c = getConfig();
+  const voice = voiceFor(sex);
+  if (c.TTS_PROVIDER !== "elevenlabs") {
+    const wav = await synthesizeChimege(text, voice, signal);
+    onPcm(pcmFromWav(wav));
+    return wav;
+  }
+  const tag = c.ELEVENLABS_EMOTION_TAGS === "on" && emotion ? EMOTIONS[emotion].voiceTag : "";
+  return synthesizeElevenLabs(tag ? `${tag} ${text}` : text, voice, signal, onPcm);
 }
 
 /** Whether `emotion` changes the synthesized audio (so it must be part of cache keys). */

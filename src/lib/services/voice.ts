@@ -9,7 +9,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { getConfig } from "@/lib/config";
 import { isSpeechWav, MAX_STT_BYTES, splitSentences, transcribe } from "@/lib/speech/chimege";
 import type { EmotionId } from "@/lib/patient/emotions";
-import { createAvatarToken, getVoiceFeatures, speak, voiceFor, voiceUsesEmotion } from "@/lib/speech/features";
+import { createAvatarToken, getVoiceFeatures, speak, speakStreaming, voiceFor, voiceUsesEmotion } from "@/lib/speech/features";
 import { askQuestion, loadOwnedSession, type QuestionResult } from "./sessions";
 
 /** Spoken replies are cached by message id: each synthesis costs TTS credits. */
@@ -74,14 +74,45 @@ export async function patientReplyAudio(
 
 /** One event of a spoken question (NDJSON line). */
 export type SpokenTurnEvent =
-  | { type: "sentence"; index: number; text: string; audio: string | null }
+  /** A reply sentence starts: its text, then its audio pieces follow. */
+  | { type: "sentence"; index: number; text: string }
+  /** Raw 16 kHz PCM16 audio of the current sentence, base64. */
+  | { type: "audio"; index: number; pcm: string }
+  /** The sentence's audio is complete (`ok: false` → no voice for it). */
+  | { type: "sentenceEnd"; index: number; ok: boolean }
   | ({ type: "done"; spokenParts: number } & QuestionResult);
 
+/** Audio pieces of one sentence, buffered until it is that sentence's turn to be sent. */
+class PcmQueue {
+  private pieces: Uint8Array[] = [];
+  private finished = false;
+  private wake: (() => void) | null = null;
+
+  push(pcm: Uint8Array) {
+    this.pieces.push(pcm);
+    this.wake?.();
+  }
+
+  end() {
+    this.finished = true;
+    this.wake?.();
+  }
+
+  async *drain(): AsyncGenerator<Uint8Array> {
+    for (;;) {
+      const piece = this.pieces.shift();
+      if (piece) yield piece;
+      else if (this.finished) return;
+      else await new Promise<void>((resolve) => (this.wake = resolve));
+    }
+  }
+}
+
 /**
- * Asks a question and voices the reply sentence by sentence while the model
- * is still writing it: each validated sentence is synthesized at once and
- * sent (base64 WAV) in order, then the stored result follows. Saves the
- * round trip of fetching audio after the whole reply is ready.
+ * Asks a question and voices the reply while the model is still writing it:
+ * each validated sentence is synthesized at once, and its audio is streamed
+ * piece by piece (sentences in order) so the avatar starts talking as soon as
+ * the first piece of the first sentence exists. The stored result follows.
  */
 export async function askQuestionSpoken(
   auth: SessionData,
@@ -98,12 +129,20 @@ export async function askQuestionSpoken(
 
   const onSentence = (text: string) => {
     const index = voiced.length;
+    const queue = new PcmQueue();
     const allowed = canSpeak && checkRateLimit(`tts:${auth.userId}`, 60).ok;
-    const wav = allowed ? speak(text, sex, emotion).catch(() => null) : Promise.resolve(null);
+    const wav = allowed
+      ? speakStreaming(text, sex, emotion, (pcm) => queue.push(pcm)).catch((error: unknown) => {
+          console.error("[tts] sentence failed:", error instanceof Error ? error.message : error);
+          return null;
+        })
+      : Promise.resolve(null);
+    void wav.finally(() => queue.end());
     voiced.push({ text, wav });
     delivered = delivered.then(async () => {
-      const audio = await wav;
-      send({ type: "sentence", index, text, audio: audio ? Buffer.from(audio).toString("base64") : null });
+      send({ type: "sentence", index, text });
+      for await (const pcm of queue.drain()) send({ type: "audio", index, pcm: Buffer.from(pcm).toString("base64") });
+      send({ type: "sentenceEnd", index, ok: (await wav) !== null });
     });
   };
 

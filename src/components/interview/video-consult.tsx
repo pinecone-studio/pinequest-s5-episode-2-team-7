@@ -224,9 +224,17 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
         // Voice each sentence the moment it is ready instead of after the whole reply.
         const p = player();
         const generation = p.generation;
-        result = await askSpoken(url, { content, emotion }, ({ text, wav }) => {
-          setLiveCaption((prev) => (prev ? `${prev} ${text}` : text));
-          if (wav) p.enqueue(wav, generation);
+        let utterance: ReturnType<SpeechPlayer["stream"]> | null = null;
+        result = await askSpoken(url, { content, emotion }, {
+          onSentence(text) {
+            setLiveCaption((prev) => (prev ? `${prev} ${text}` : text));
+            utterance = p.stream(generation);
+          },
+          onAudio: (pcm) => utterance?.push(pcm),
+          onSentenceEnd() {
+            utterance?.end();
+            utterance = null;
+          },
         });
       } else {
         result = await apiFetch(url, { method: "POST", json: { content, emotion } });

@@ -17,6 +17,11 @@ export interface AvatarHandle {
   interrupt(): void;
   /** Change the facial expression (no-op where the service cannot). */
   setEmotion(emotion: EmotionId): void;
+  /**
+   * Optional: lip-sync audio as it arrives — raw 16 kHz PCM16 pieces of one
+   * utterance, `last` on the final call — instead of a whole WAV.
+   */
+  speakPcm?(pcm: Uint8Array, last: boolean): void;
   /** The student is about to talk or ask: reopen a resting video session. */
   wake?(): void;
 }

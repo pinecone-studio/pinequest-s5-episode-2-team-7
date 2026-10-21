@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetConfigForTests } from "@/lib/config";
-import { synthesizeElevenLabs } from "./elevenlabs";
+import { readPcmStream, synthesizeElevenLabs } from "./elevenlabs";
 
 describe("ElevenLabs TTS", () => {
   afterEach(() => {
@@ -27,5 +27,21 @@ describe("ElevenLabs TTS", () => {
     expect(results).toHaveLength(4);
     expect(peak).toBeLessThanOrEqual(2); // default ELEVENLABS_CONCURRENCY
     expect(calls).toBe(5); // 4 requests + 1 retry
+  });
+});
+
+describe("streamed PCM", () => {
+  it("reports whole samples only, joining a byte split across network chunks", async () => {
+    const chunks = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5]), new Uint8Array([6])];
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        chunks.forEach((c) => controller.enqueue(c));
+        controller.close();
+      },
+    });
+    const pieces: number[][] = [];
+    const all = await readPcmStream(body, (pcm) => pieces.push([...pcm]));
+    expect(pieces).toEqual([[1, 2], [3, 4], [5, 6]]);
+    expect([...all]).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });

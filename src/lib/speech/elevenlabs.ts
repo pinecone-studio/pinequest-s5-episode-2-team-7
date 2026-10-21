@@ -30,16 +30,22 @@ async function withSlot<T>(limit: number, run: () => Promise<T>): Promise<T> {
   }
 }
 
-export function synthesizeElevenLabs(text: string, voiceId: string, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
-  return withSlot(getConfig().ELEVENLABS_CONCURRENCY, () => request(text, voiceId, signal));
+/**
+ * With `onPcm`, the audio is streamed: raw PCM16 pieces (always whole
+ * samples) are reported as ElevenLabs produces them — the first arrives in
+ * about half the time the whole sentence takes. The full WAV is returned
+ * either way.
+ */
+export function synthesizeElevenLabs(text: string, voiceId: string, signal?: AbortSignal, onPcm?: (pcm: Uint8Array) => void): Promise<Uint8Array<ArrayBuffer>> {
+  return withSlot(getConfig().ELEVENLABS_CONCURRENCY, () => request(text, voiceId, signal, onPcm));
 }
 
-async function request(text: string, voiceId: string, signal?: AbortSignal, retried = false): Promise<Uint8Array<ArrayBuffer>> {
+async function request(text: string, voiceId: string, signal?: AbortSignal, onPcm?: (pcm: Uint8Array) => void, retried = false): Promise<Uint8Array<ArrayBuffer>> {
   const c = getConfig();
   if (!c.ELEVENLABS_API_KEY || !voiceId) throw new ApiError(503, "speech_unavailable", "Дуу гаргах үйлчилгээ тохируулагдаагүй байна.");
   let response: Response;
   try {
-    response = await fetch(`${API}/text-to-speech/${encodeURIComponent(voiceId)}?output_format=pcm_${SAMPLE_RATE}`, {
+    response = await fetch(`${API}/text-to-speech/${encodeURIComponent(voiceId)}${onPcm ? "/stream" : ""}?output_format=pcm_${SAMPLE_RATE}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "xi-api-key": c.ELEVENLABS_API_KEY },
       body: JSON.stringify({
@@ -57,7 +63,7 @@ async function request(text: string, voiceId: string, signal?: AbortSignal, retr
   if (response.status === 429 && !retried) {
     // Concurrency or rate limit: one short retry before giving up.
     await new Promise((resolve) => setTimeout(resolve, 700));
-    return request(text, voiceId, signal, true);
+    return request(text, voiceId, signal, onPcm, true);
   }
   if (!response.ok) {
     // ElevenLabs explains missing permissions / quota in detail.message; keep it for the server log.
@@ -65,5 +71,38 @@ async function request(text: string, voiceId: string, signal?: AbortSignal, retr
     console.error(`[tts] ElevenLabs HTTP ${response.status}: ${detail.slice(0, 300)}`);
     throw new ApiError(503, "speech_unavailable", "Дуу гаргах үйлчилгээ одоогоор ажиллахгүй байна. Бичгээр үргэлжлүүлнэ үү.");
   }
-  return wavFromPcm(new Uint8Array(await response.arrayBuffer()));
+  if (!onPcm || !response.body) return wavFromPcm(new Uint8Array(await response.arrayBuffer()));
+  return wavFromPcm(await readPcmStream(response.body, onPcm));
+}
+
+/** Reads a PCM16 byte stream, reporting whole-sample pieces; returns all of it. */
+export async function readPcmStream(body: ReadableStream<Uint8Array>, onPcm: (pcm: Uint8Array) => void): Promise<Uint8Array> {
+  const pieces: Uint8Array[] = [];
+  let carry: Uint8Array | null = null; // an odd trailing byte waits for its pair
+  const reader = body.getReader();
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    let bytes = value;
+    if (carry) {
+      bytes = new Uint8Array(carry.length + value.length);
+      bytes.set(carry);
+      bytes.set(value, carry.length);
+      carry = null;
+    }
+    const whole = bytes.length - (bytes.length % 2);
+    if (whole < bytes.length) carry = bytes.slice(whole);
+    if (whole > 0) {
+      const piece = bytes.slice(0, whole);
+      pieces.push(piece);
+      onPcm(piece);
+    }
+  }
+  const all = new Uint8Array(pieces.reduce((n, p) => n + p.length, 0));
+  let at = 0;
+  for (const piece of pieces) {
+    all.set(piece, at);
+    at += piece.length;
+  }
+  return all;
 }

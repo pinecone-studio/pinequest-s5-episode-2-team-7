@@ -31,6 +31,29 @@ export class SpeechPlayer {
     if (!this.current) this.next();
   }
 
+  /**
+   * Plays one utterance that arrives in pieces (raw 16 kHz PCM16): straight
+   * to the avatar while it is live, otherwise collected and played as one
+   * WAV once complete. Pieces after `stop()` are dropped.
+   */
+  stream(generation = this.gen): { push(pcm: Uint8Array): void; end(): void } {
+    const avatar = this.avatar();
+    const live = avatar?.ready && avatar.speakPcm ? avatar : null;
+    const pieces: Uint8Array[] = [];
+    return {
+      push: (pcm) => {
+        if (generation !== this.gen) return;
+        if (live) live.speakPcm!(pcm, false);
+        else pieces.push(pcm);
+      },
+      end: () => {
+        if (generation !== this.gen) return;
+        if (live) live.speakPcm!(new Uint8Array(), true);
+        else if (pieces.length > 0) this.enqueue(wavFromPcm(pieces), generation);
+      },
+    };
+  }
+
   stop(): void {
     this.gen++;
     this.queue = [];
@@ -58,4 +81,31 @@ export class SpeechPlayer {
     audio.onended = done;
     audio.play().catch(done);
   }
+}
+
+/** 16 kHz mono PCM16 pieces → a WAV file the browser can play. */
+export function wavFromPcm(pieces: Uint8Array[], sampleRate = 16_000): ArrayBuffer {
+  const size = pieces.reduce((n, p) => n + p.length, 0);
+  const wav = new ArrayBuffer(44 + size);
+  const view = new DataView(wav);
+  const text = (at: number, s: string) => [...s].forEach((ch, i) => view.setUint8(at + i, ch.charCodeAt(0)));
+  text(0, "RIFF");
+  view.setUint32(4, 36 + size, true);
+  text(8, "WAVE");
+  text(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, 1, true); // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  text(36, "data");
+  view.setUint32(40, size, true);
+  let at = 44;
+  for (const piece of pieces) {
+    new Uint8Array(wav, at, piece.length).set(piece);
+    at += piece.length;
+  }
+  return wav;
 }

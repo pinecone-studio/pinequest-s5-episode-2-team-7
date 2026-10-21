@@ -9,16 +9,21 @@ export interface SpokenTurnResult {
   spokenParts: number;
 }
 
+export interface SpokenTurnHandlers {
+  /** A reply sentence starts (its audio follows). */
+  onSentence(text: string): void;
+  /** A piece of the current sentence's voice: raw 16 kHz PCM16. */
+  onAudio(pcm: Uint8Array): void;
+  /** The current sentence's voice is complete. */
+  onSentenceEnd(): void;
+}
+
 /**
- * Sends a question and receives the reply as it is written: `onSentence` gets
- * each sentence with its voice (WAV) as soon as the server has it, before the
- * whole reply exists. Resolves with the stored messages.
+ * Sends a question and receives the reply as it is written: each sentence
+ * and its voice arrive piece by piece, before the whole reply exists, so
+ * playback starts at once. Resolves with the stored messages.
  */
-export async function askSpoken(
-  url: string,
-  body: { content: string; emotion: string },
-  onSentence: (sentence: { index: number; text: string; wav: ArrayBuffer | null }) => void,
-): Promise<SpokenTurnResult> {
+export async function askSpoken(url: string, body: { content: string; emotion: string }, handlers: SpokenTurnHandlers): Promise<SpokenTurnResult> {
   let response: Response;
   try {
     response = await fetch(url, { method: "POST", headers: { "content-type": "application/json", accept: "application/x-ndjson" }, body: JSON.stringify(body) });
@@ -42,10 +47,14 @@ export async function askSpoken(
       buffer = buffer.slice(newline + 1);
       if (!line) continue;
       const event = JSON.parse(line) as
-        | { type: "sentence"; index: number; text: string; audio: string | null }
+        | { type: "sentence"; text: string }
+        | { type: "audio"; pcm: string }
+        | { type: "sentenceEnd" }
         | ({ type: "done" } & SpokenTurnResult)
         | { type: "error"; status: number; error: { code: string; message: string } };
-      if (event.type === "sentence") onSentence({ index: event.index, text: event.text, wav: event.audio ? base64ToBuffer(event.audio) : null });
+      if (event.type === "sentence") handlers.onSentence(event.text);
+      else if (event.type === "audio") handlers.onAudio(base64ToBytes(event.pcm));
+      else if (event.type === "sentenceEnd") handlers.onSentenceEnd();
       else if (event.type === "error") throw new ClientApiError(event.error.message, event.status, event.error.code);
       else return { messages: event.messages, questionCount: event.questionCount, provider: event.provider, spokenParts: event.spokenParts };
     }
@@ -54,9 +63,9 @@ export async function askSpoken(
   throw new ClientApiError("Хариулт дутуу ирлээ. Дахин оролдоно уу.", 0, "incomplete");
 }
 
-function base64ToBuffer(base64: string): ArrayBuffer {
+function base64ToBytes(base64: string): Uint8Array {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes.buffer;
+  return bytes;
 }
