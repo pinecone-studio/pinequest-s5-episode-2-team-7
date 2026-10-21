@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "id": "abdominal-pain-02",
+  "version": 1,
+  "internalTitle": "Ruptured left tubal ectopic pregnancy in a 26-year-old woman with prior chlamydia",
+  "public": {
+    "displayTitle": { "mn": "Гэнэт хэвлий өвдөж, толгой эргэсэн 26 настай эмэгтэй", "en": "26-year-old woman with sudden abdominal pain and dizziness" },
+    "specialty": "Эмэгтэйчүүд / Яаралтай тусламж",
+    "difficulty": "intermediate",
+    "tags": ["яаралтай тусламж", "хэвлийн өвдөлт", "эмэгтэйчүүд"],
+    "setting": { "mn": "Яаралтай тусламжийн тасаг, өдөр 11:15", "en": "Emergency department, 11:15" },
+    "patient": {
+      "name": "Сарантуяа",
+      "age": 26,
+      "sex": "female",
+      "occupation": { "mn": "Банкны теллер", "en": "Bank teller" }
+    },
+    "chiefComplaint": { "mn": "Гэдэс өвдөх, толгой эргэх", "en": "Abdominal pain and dizziness" },
+    "chiefComplaintTopics": ["abdominal_pain", "dizziness"],
+    "openingLine": { "mn": "Эмч ээ, гэдэсний доод хэсэг гэнэт хүчтэй өвдөөд, босохоор толгой эргээд байна.", "en": "Doctor, my lower belly suddenly hurts badly and I get dizzy when I stand." },
+    "initialVitals": { "bloodPressure": "96/60", "heartRate": 118, "respiratoryRate": 22, "temperatureC": 36.8, "spo2": 98 },
+    "estimatedMinutes": 12,
+    "timeCritical": true
+  },
+  "persona": {
+    "personality": { "mn": "Даруу, ичимхий залуу эмэгтэй. Бэлгийн амьдрал, жирэмслэлтийн талаар шууд асуухад эхлээд эргэлзэнэ.", "en": "Reserved, shy young woman; hesitant at first about sexual or pregnancy questions." },
+    "speakingStyle": { "mn": "Нам дуугаар, богино хариулна. Өвдөлт хүчтэй үед үгээ тасалдуулна.", "en": "Quiet, short answers; breaks off when the pain surges." },
+    "emotionalState": { "mn": "Өвдөлттэй, айсан, цонхийсон.", "en": "In pain, scared, pale." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Умайн гаднах жирэмслэлт (хагарсан)", "en": "Ruptured ectopic pregnancy" },
+      "icd10": "O00.1",
+      "acceptedAliases": [
+        "ectopic pregnancy", "ruptured ectopic pregnancy", "ruptured ectopic", "tubal pregnancy", "ectopic",
+        "умайн гаднах жирэмслэлт", "умайн гадуурх жирэмслэлт", "хагарсан умайн гаднах жирэмслэлт", "умайн гадуур жирэмслэх",
+        "өндгөвчийн гуурсан хоолойн жирэмслэлт", "гуурсан хоолойн жирэмслэлт", "эктопик жирэмслэлт"
+      ],
+      "partialAliases": ["pregnancy complication", "haemoperitoneum", "hemoperitoneum", "жирэмсний хүндрэл", "хэвлийн хөндийн цус алдалт"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Мухар олгойн цочмог үрэвсэл", "en": "Acute appendicitis" },
+        "aliases": ["appendicitis", "мухар олгойн үрэвсэл"],
+        "rationale": { "mn": "Хэвлийн доод хэсгийн өвдөлтөд бодно; гэвч сарын тэмдэг хоцорсон, бага зэргийн цус гарсан, даралт буурсан нь жирэмслэлтийн хүндрэлийг илүү заана.", "en": "Considered, but missed period, spotting and hypotension favour ectopic." }
+      },
+      {
+        "label": { "mn": "Өндгөвчний уйланхай хагарах / мушгирах", "en": "Ruptured or torted ovarian cyst" },
+        "aliases": ["ovarian cyst", "ovarian torsion", "өндгөвчний уйланхай", "өндгөвч мушгирах"],
+        "rationale": { "mn": "Гэнэтийн нэг талын өвдөлт өгнө; жирэмсний тест сөрөг бол илүү магадлалтай.", "en": "Sudden unilateral pain; more likely if pregnancy test negative." }
+      },
+      {
+        "label": { "mn": "Аяндаа зулбалт", "en": "Miscarriage" },
+        "aliases": ["miscarriage", "зулбалт"],
+        "rationale": { "mn": "Сарын тэмдэг хоцорч, цус гарна, гэхдээ нэг талын хүчтэй өвдөлт, мөрний өвдөлт, шок нь хэвлийн хөндийн цус алдалтыг заана.", "en": "Bleeding fits, but unilateral pain, shoulder-tip pain and shock suggest intraperitoneal bleeding." }
+      },
+      {
+        "label": { "mn": "Аарцгийн хөндийн үрэвсэлт өвчин", "en": "Pelvic inflammatory disease" },
+        "aliases": ["pid", "pelvic inflammatory disease", "аарцгийн үрэвсэл"],
+        "rationale": { "mn": "Хламидийн түүхтэй ч халууралтгүй, гэнэт эхэлсэн, шоктой байгаа нь тохирохгүй.", "en": "Chlamydia history, but no fever and sudden onset with shock do not fit." }
+      }
+    ],
+    "summary": {
+      "mn": "26 настай эмэгтэй, сарын тэмдэг 7 долоо хоногийн өмнө ирсэн (ихэвчлэн тогтмол 28 хоног), 3 хоног бага зэргийн хүрэн цус гарч байсан. Өнөө өглөө зүүн доод хэвлийд гэнэт хүчтэй хутгалах өвдөлт гарч, хэвлийгээр тархаж, баруун мөр өвдөж, босоход толгой эргэх, нүд харанхуйлах болсон. Хоёр жилийн өмнө хламиди илэрч эмчлүүлсэн. Тогтмол хамгаалалт хэрэглэдэггүй.",
+      "en": "26-year-old, LMP 7 weeks ago (usually regular), 3 days of brown spotting. This morning sudden severe stabbing left lower abdominal pain spreading across the abdomen, right shoulder-tip pain, dizziness and near-syncope on standing. Chlamydia treated 2 years ago. Inconsistent contraception."
+    },
+    "facts": [
+      {
+        "id": "pain-onset",
+        "kind": "positive",
+        "topics": ["abdominal_pain", "onset", "location", "character", "severity"],
+        "patientKnows": true,
+        "answer": { "mn": "Өнөө өглөө ажилдаа явах гэж байтал зүүн доод талд гэнэт хутгаар хатгах шиг өвдсөн. Арваас ес гэж хэлнэ.", "en": "This morning as I was leaving for work, it suddenly stabbed low on the left like a knife. Nine out of ten." },
+        "leakTerms": ["зүүн доод тал"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "pain-spread",
+        "kind": "positive",
+        "topics": ["radiation", "progression"],
+        "patientKnows": true,
+        "answer": { "mn": "Одоо гэдэс бүхэлдээ өвдөөд байна. Бас яагаад ч юм баруун мөр өвдөөд байгаа.", "en": "Now the whole belly hurts. And for some reason my right shoulder hurts too." },
+        "significance": { "mn": "Мөрний өвдөлт нь хэвлийн хөндийд цус хуримтлагдаж өрцийг цочроосныг илтгэнэ.", "en": "Shoulder-tip pain suggests blood irritating the diaphragm." },
+        "leakTerms": ["баруун мөр"]
+      },
+      {
+        "id": "dizziness",
+        "kind": "positive",
+        "topics": ["dizziness", "associated_general", "sweating"],
+        "patientKnows": true,
+        "answer": { "mn": "Босохоор нүд харанхуйлаад, унах гэж байгаа юм шиг болдог. Хүйтэн хөлс гараад байна.", "en": "When I stand everything goes dark and I nearly fall. I'm in a cold sweat." },
+        "significance": { "mn": "Цус алдалтаас үүдсэн шокын шинж.", "en": "Signs of haemorrhagic shock." },
+        "leakTerms": ["нүд харанхуйлаад", "хүйтэн хөлс"]
+      },
+      {
+        "id": "lmp",
+        "kind": "history",
+        "topics": ["lmp"],
+        "patientKnows": true,
+        "answer": { "mn": "Сүүлийн сарын тэмдэг долоон долоо хоногийн өмнө ирсэн. Ер нь 28 хоногт тогтмол ирдэг, энэ удаа хоцорсон.", "en": "My last period was seven weeks ago. Normally it's regular every 28 days — this time it's late." },
+        "significance": { "mn": "Сарын тэмдэг хоцорсон нь жирэмслэлтийг заавал шалгах шалтгаан.", "en": "A late period mandates a pregnancy test." },
+        "leakTerms": ["долоон долоо хоног", "хоцорсон"]
+      },
+      {
+        "id": "spotting",
+        "kind": "positive",
+        "topics": ["vaginal_symptoms"],
+        "patientKnows": true,
+        "answer": { "mn": "Гурван хоногийн өмнөөс бага зэрэг хүрэн өнгийн цус гараад байсан. Сарын тэмдэг ирж байна гэж бодсон.", "en": "For three days I've had a little brown spotting. I thought my period was starting." },
+        "leakTerms": ["хүрэн өнгийн"]
+      },
+      {
+        "id": "pregnancy",
+        "kind": "history",
+        "topics": ["pregnancy"],
+        "patientKnows": true,
+        "answer": { "mn": "Жирэмсний тест хийгээгүй... Жирэмсэн байж магадгүй юм. Өмнө нь жирэмсэлж байгаагүй.", "en": "I haven't done a pregnancy test... I might be pregnant. I've never been pregnant before." },
+        "leakTerms": ["тест хийгээгүй"]
+      },
+      {
+        "id": "sexual-contraception",
+        "kind": "history",
+        "topics": ["sexual_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Нэг найз залуутай. Бэлгэвч заримдаа л хэрэглэдэг, өөр хамгаалалт хэрэглэдэггүй.", "en": "I have one boyfriend. We only sometimes use condoms, no other contraception." }
+      },
+      {
+        "id": "chlamydia",
+        "kind": "history",
+        "topics": ["pmh"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр жилийн өмнө хламиди илэрч, антибиотик уусан. Өөр өвчин байхгүй.", "en": "Two years ago I had chlamydia and took antibiotics. No other illnesses." },
+        "significance": { "mn": "Бэлгийн замын халдвар өндгөвчийн гуурсыг гэмтээж, умайн гаднах жирэмслэлтийн эрсдэлийг нэмэгдүүлнэ.", "en": "Prior STI damages the tubes and raises ectopic risk." },
+        "leakTerms": ["хламиди"]
+      },
+      {
+        "id": "no-surgery",
+        "kind": "negative",
+        "topics": ["surgeries", "hospitalizations"],
+        "patientKnows": true,
+        "answer": { "mn": "Мэс засал хийлгэж, эмнэлэгт хэвтэж байгаагүй.", "en": "No operations or hospital stays." }
+      },
+      {
+        "id": "nausea",
+        "kind": "positive",
+        "topics": ["nausea"],
+        "patientKnows": true,
+        "answer": { "mn": "Дотор жаахан муухайраад байна, бөөлжөөгүй.", "en": "A little nauseous, no vomiting." }
+      },
+      {
+        "id": "no-fever-urinary",
+        "kind": "negative",
+        "topics": ["fever", "urinary", "diarrhea", "vomiting"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуураагүй. Шээхэд хэвийн. Суулгаагүй, бөөлжөөгүй.", "en": "No fever. Urinating normally. No diarrhoea or vomiting." },
+        "significance": { "mn": "Халдвар, шээсний замын шалтгааны магадлалыг бууруулна.", "en": "Lowers likelihood of infection or urinary causes." }
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications", "allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Эм уудаггүй. Өглөө өвдөлт намдаах гэж но-шпа нэг уусан. Харшил байхгүй.", "en": "No regular medicines. I took one No-Spa this morning for the pain. No allergies." }
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "occupation", "living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Тамхи татдаггүй, архи бараг уудаггүй. Банкинд теллер хийдэг. Ээжтэйгээ хамт амьдардаг.", "en": "I don't smoke and barely drink. I'm a bank teller and live with my mother." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Гэр бүлд онцгой өвчин байхгүй.", "en": "No notable family illnesses." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Ээж маань мэдчих вий гэж айж байна... Бас ийм их өвдөж байгаа нь юу юм бол гэж санаа зовж байна.", "en": "I'm afraid my mother will find out... and scared of why it hurts so much." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 36.8°C, зүрхний цохилт 118/мин, амьсгал 22/мин, АД 96/60 мм.муб (босоход 82/50), SpO₂ 98%. Арьс цайвар, чийглэг.", "en": "T 36.8°C, HR 118, RR 22, BP 96/60 (82/50 standing), SpO₂ 98%. Pale, clammy." }
+      },
+      {
+        "id": "abdominal-exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Хэвлий бага зэрэг хөөсөн, бүхэлдээ эмзэглэлтэй, зүүн доод хэсэгт хамгийн их; гэнэт сулласны дараах өвдөлт эерэг. Үтрээгээр бага зэрэг хүрэн цус.", "en": "Mildly distended, diffusely tender, maximal left lower quadrant; rebound positive. Small amount of dark vaginal blood." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "lmp-pregnancy", "category": "red_flags", "topics": ["lmp", "pregnancy"], "weight": 3, "critical": true,
+        "label": { "mn": "Сүүлийн сарын тэмдэг, жирэмслэлт", "en": "LMP and pregnancy" },
+        "rationale": { "mn": "Нөхөн үржихүйн насны эмэгтэйн хэвлийн өвдөлтөд жирэмслэлтийг заавал асууна.", "en": "Mandatory in any woman of reproductive age with abdominal pain." },
+        "suggestedQuestion": { "mn": "Сүүлийн сарын тэмдэг хэзээ ирсэн бэ? Жирэмсэн байх магадлал бий юу?" }
+      },
+      {
+        "id": "vaginal-bleeding", "category": "associated_symptoms", "topics": ["vaginal_symptoms"], "weight": 2, "critical": true,
+        "label": { "mn": "Үтрээнээс цус гарах", "en": "Vaginal bleeding" },
+        "rationale": { "mn": "Сарын тэмдэг хоцорсон үеийн цус гарах нь жирэмслэлтийн хүндрэлийг заана.", "en": "Bleeding after a missed period suggests pregnancy complication." },
+        "suggestedQuestion": { "mn": "Үтрээнээс цус гарсан уу?" }
+      },
+      {
+        "id": "shock-symptoms", "category": "red_flags", "topics": ["dizziness", "associated_general", "radiation"], "weight": 2, "critical": true,
+        "label": { "mn": "Цус алдалтын шинж (толгой эргэх, мөр өвдөх)", "en": "Signs of haemorrhage" },
+        "rationale": { "mn": "Толгой эргэх, ухаан балартах, мөрний өвдөлт нь хэвлийн хөндийн цус алдалтыг илтгэнэ.", "en": "Dizziness, syncope and shoulder-tip pain indicate intra-abdominal bleeding." },
+        "suggestedQuestion": { "mn": "Толгой эргэх, ухаан балартах зүйл байна уу? Өвдөлт өөр газар руу дамждаг уу?" }
+      },
+      {
+        "id": "pain-characteristics", "category": "hpi", "topics": ["onset", "location", "character", "severity"], "weight": 1.5,
+        "label": { "mn": "Өвдөлтийн эхлэл, байршил, шинж", "en": "Pain onset, site and character" },
+        "rationale": { "mn": "Гэнэтийн нэг талын өвдөлт нь гуурс хагарах, мушгирахыг заана.", "en": "Sudden unilateral pain suggests rupture or torsion." },
+        "suggestedQuestion": { "mn": "Өвдөлт хэзээ, яаж эхэлсэн бэ? Хаана өвдөж байна?" }
+      },
+      {
+        "id": "risk-factors", "category": "risk_factors", "topics": ["pmh", "sexual_history", "surgeries"], "weight": 1.5,
+        "label": { "mn": "Эрсдэлт хүчин зүйл (БЗДХ, жирэмслэлтээс хамгаалах арга, мэс засал)", "en": "Risk factors (STI, contraception, surgery)" },
+        "rationale": { "mn": "Хламиди, аарцгийн үрэвсэл, гуурсны мэс засал эрсдэлийг нэмнэ.", "en": "Chlamydia, PID and tubal surgery raise ectopic risk." },
+        "suggestedQuestion": { "mn": "Өмнө нь бэлгийн замын халдвар, эмэгтэйчүүдийн мэс засал байсан уу? Ямар хамгаалалт хэрэглэдэг вэ?" }
+      },
+      {
+        "id": "negatives", "category": "pertinent_negatives", "topics": ["fever", "urinary", "vomiting", "diarrhea"], "weight": 1,
+        "label": { "mn": "Халууралт, шээс, хоол боловсруулах шинж", "en": "Fever, urinary and GI symptoms" },
+        "rationale": { "mn": "Мухар олгой, шээсний замын халдвар, аарцгийн үрэвслээс ялгана.", "en": "Separates appendicitis, UTI and PID." },
+        "suggestedQuestion": { "mn": "Халуурсан уу? Шээхэд хорсож өвддөг үү? Суулгасан, бөөлжсөн үү?" }
+      },
+      {
+        "id": "medications", "category": "medications_allergies", "topics": ["medications", "allergies"], "weight": 1,
+        "label": { "mn": "Эм, харшил", "en": "Medications and allergies" },
+        "rationale": { "mn": "Яаралтай мэс засал, мэдээгүйжүүлэлтийн өмнө шаардлагатай.", "en": "Needed before urgent surgery and anaesthesia." },
+        "suggestedQuestion": { "mn": "Ямар эм уусан бэ? Харшил бий юу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Нөхөн үржихүйн насны эмэгтэйд сарын тэмдэг хоцорсон, бага зэргийн цус гарсан, гэнэт нэг талын хүчтэй хэвлийн өвдөлт, мөрний өвдөлт, толгой эргэх, тахикарди, даралт буурах нь хагарсан умайн гаднах жирэмслэлт — амь насанд аюултай яаралтай байдал. Хламидийн түүх эрсдэлийг нэмнэ. Хэвлийн өвдөлттэй эмэгтэй бүрээс сүүлийн сарын тэмдэг, жирэмслэлтийг заавал асууж, жирэмсний тест хийнэ.",
+      "en": "Missed period, spotting, sudden unilateral pain, shoulder-tip pain, dizziness, tachycardia and hypotension in a woman of reproductive age indicate ruptured ectopic pregnancy — a life-threatening emergency. Prior chlamydia raises risk. Always ask LMP and do a pregnancy test."
+    },
+    "learningPoints": [
+      { "mn": "Хэвлийн өвдөлттэй эмэгтэй бүрт жирэмсний тест хийх.", "en": "Pregnancy test for every woman with abdominal pain." },
+      { "mn": "Мөрний өвдөлт хэвлийн хөндийн цус алдалтын шинж байж болно.", "en": "Shoulder-tip pain can signal intraperitoneal blood." },
+      { "mn": "БЗДХ, аарцгийн үрэвслийн түүх умайн гаднах жирэмслэлтийн эрсдэлийг нэмнэ.", "en": "STI/PID history increases ectopic risk." },
+      { "mn": "Шокын шинжтэй бол нэн даруй эмэгтэйчүүдийн мэс засалч дуудах.", "en": "With shock, call gynaecology surgery immediately." }
+    ],
+    "emergency": {
+      "escalation": { "mn": "Хоёр том венийн суваг тавьж, шингэн сэлбэж, цусны бүлэг тодорхойлж, эмэгтэйчүүдийн мэс засалчийг нэн даруй дуудна.", "en": "Two large-bore IVs, fluids, group and crossmatch, call gynaecology immediately." }
+    }
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

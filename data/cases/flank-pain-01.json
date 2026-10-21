@@ -1,0 +1,260 @@
+{
+  "schemaVersion": 1,
+  "id": "flank-pain-01",
+  "version": 1,
+  "internalTitle": "Left ureteric colic (obstructing ureteric stone) in a 38-year-old mine worker",
+  "public": {
+    "displayTitle": { "mn": "Хажуу нуруугаар хүчтэй өвдсөн 38 настай эрэгтэй", "en": "38-year-old man with severe side pain" },
+    "specialty": "Урологи / Яаралтай тусламж",
+    "difficulty": "beginner",
+    "tags": ["яаралтай тусламж", "өвдөлт"],
+    "setting": { "mn": "Яаралтай тусламжийн тасаг, шөнө 03:20", "en": "Emergency department, 03:20" },
+    "patient": {
+      "name": "Мөнхбат",
+      "age": 38,
+      "sex": "male",
+      "occupation": { "mn": "Уурхайн тоног төхөөрөмжийн оператор", "en": "Mine equipment operator" }
+    },
+    "chiefComplaint": { "mn": "Зүүн хажуу нуруу өвдөх", "en": "Left side pain" },
+    "chiefComplaintTopics": ["back_pain"],
+    "openingLine": { "mn": "Эмч ээ, зүүн хажуу маань тэсэхийн аргагүй өвдөөд байна!", "en": "Doctor, my left side hurts unbearably!" },
+    "estimatedMinutes": 10,
+    "timeCritical": false
+  },
+  "persona": {
+    "personality": { "mn": "Ердөө тэвчээртэй, хүчирхэг эр боловч одоо өвдөлтөөсөө болж тайван сууж чадахгүй.", "en": "Normally tough and patient, but now can't keep still from the pain." },
+    "speakingStyle": { "mn": "Өвдөлт хүчтэй үедээ үгээ тасалж, 'ёо' гэж ёолно. Шууд, товч хариулна.", "en": "Groans and breaks off during waves of pain; direct, brief answers." },
+    "emotionalState": { "mn": "Хүчтэй өвдөлттэй, тайван бус.", "en": "In severe pain, restless." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Шээсний сувгийн чулуу (бөөрний хатгаа)", "en": "Ureteric stone (renal colic)" },
+      "icd10": "N20.1",
+      "acceptedAliases": [
+        "renal colic", "ureteric colic", "ureteral colic", "kidney stone", "ureteric stone", "ureteral stone", "ureterolithiasis", "urolithiasis", "nephrolithiasis",
+        "бөөрний хатгаа", "бөөрний чулуу", "шээсний сувгийн чулуу", "шээсний замын чулуу", "уретерийн чулуу", "бөөрний чулууны хөдлөл"
+      ],
+      "partialAliases": ["urinary tract obstruction", "hydronephrosis", "шээсний замын бөглөрөл", "гидронефроз"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Хэвлийн гол судасны цүлхэн хагарах", "en": "Ruptured abdominal aortic aneurysm" },
+        "aliases": ["aaa", "aortic aneurysm", "гол судасны цүлхэн"],
+        "rationale": { "mn": "Хажуу нурууны хүчтэй өвдөлтөд аюултай шалтгааныг бодно; 38 настай, даралт хэвийн тул магадлал бага.", "en": "Must be considered in flank pain; unlikely at 38 with normal BP." }
+      },
+      {
+        "label": { "mn": "Цочмог пиелонефрит", "en": "Acute pyelonephritis" },
+        "aliases": ["pyelonephritis", "пиелонефрит"],
+        "rationale": { "mn": "Халууралтгүй, шээхэд хорсохгүй тул халдварын магадлал бага, гэхдээ халдвартай чулууг үргэлж бодно.", "en": "No fever or dysuria, but always consider an infected obstructed system." }
+      },
+      {
+        "label": { "mn": "Төмсөг мушгирах", "en": "Testicular torsion" },
+        "aliases": ["testicular torsion", "төмсөг мушгирах"],
+        "rationale": { "mn": "Цавь руу дамжих өвдөлтөд төмсгийг шалгана.", "en": "Pain radiating to the groin requires a testicular check." }
+      }
+    ],
+    "summary": {
+      "mn": "38 настай эрэгтэй уурхайд ээлжээр ажилладаг, халуунд ус бага уудаг. Шөнө 2 цагт зүүн хажуу нуруунд гэнэт таталт маягийн, долгион мэт хүчтэй өвдөлт гарч, цавь болон төмсөг рүү дамжиж, дотор муухайрч 2 удаа бөөлжсөн. Шээс ягаан өнгөтэй болсон. Халуураагүй. Аав нь бөөрний чулуутай байсан.",
+      "en": "38-year-old shift worker at a mine who drinks little water. At 2 a.m. sudden severe colicky left flank pain in waves, radiating to the groin and testicle, with nausea and two vomits; pink urine. No fever. Father had kidney stones."
+    },
+    "facts": [
+      {
+        "id": "pain-onset",
+        "kind": "positive",
+        "topics": ["back_pain", "onset", "location", "severity"],
+        "patientKnows": true,
+        "answer": { "mn": "Шөнө хоёр цагт унтаж байтал гэнэт зүүн хажуу, хавирганы доор өвдөөд сэрсэн. Амьдралдаа ийм өвдөлт мэдэрч байгаагүй, арваас арав.", "en": "At two a.m. it woke me — sudden pain in my left side under the ribs. Worst pain of my life, ten out of ten." },
+        "leakTerms": ["хоёр цагт"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "colicky",
+        "kind": "positive",
+        "topics": ["character", "progression", "relieving"],
+        "patientKnows": true,
+        "answer": { "mn": "Долгион шиг ирээд, жаахан намдчихаад дахиад хүчтэй базалдаг. Ямар байрлалд байхад ч гайгүй болохгүй, хэвтэж ч чадахгүй, явж л байна.", "en": "It comes in waves — eases a little, then grips hard again. No position helps; I can't lie still, I keep walking around." },
+        "significance": { "mn": "Таталт маягийн, байрлалаас үл хамаарах өвдөлт, тайван бус байдал нь хөндий эрхтний бөглөрлийн шинж.", "en": "Colicky pain unrelieved by position with restlessness suggests hollow-organ obstruction." },
+        "leakTerms": ["долгион шиг"]
+      },
+      {
+        "id": "radiation",
+        "kind": "positive",
+        "topics": ["radiation"],
+        "patientKnows": true,
+        "answer": { "mn": "Хажуунаас доошоо цавь руу, зүүн төмсөг рүү хүртэл дамжиж өвддөг.", "en": "It shoots down from my side to the groin, even into my left testicle." },
+        "significance": { "mn": "Цавь руу дамжих нь шээсний сувгийн чулууны онцлог.", "en": "Loin-to-groin radiation is typical of a ureteric stone." },
+        "leakTerms": ["цавь руу"]
+      },
+      {
+        "id": "nausea-vomit",
+        "kind": "positive",
+        "topics": ["nausea", "vomiting"],
+        "patientKnows": true,
+        "answer": { "mn": "Өвдөлт хүчтэй үед дотор муухайраад, хоёр удаа бөөлжсөн.", "en": "When the pain peaks I feel sick — vomited twice." }
+      },
+      {
+        "id": "haematuria",
+        "kind": "positive",
+        "topics": ["urinary"],
+        "patientKnows": true,
+        "answer": { "mn": "Шээс ягаан өнгөтэй гарсан. Шээхэд хорсохгүй, гэхдээ байн байн шээмээр санагдаад байна.", "en": "My urine came out pink. No burning, but I keep feeling I need to go." },
+        "significance": { "mn": "Цустай шээс чулууны үед түгээмэл.", "en": "Haematuria is common with stones." },
+        "leakTerms": ["ягаан"]
+      },
+      {
+        "id": "no-fever",
+        "kind": "negative",
+        "topics": ["fever", "chills"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуураагүй, чичрээгүй.", "en": "No fever, no chills." },
+        "significance": { "mn": "Халууралтгүй нь бөглөрөлтэй халдварын (яаралтай урологийн арга хэмжээ) магадлалыг бууруулна.", "en": "No fever makes an infected obstruction (urological emergency) less likely." }
+      },
+      {
+        "id": "no-diarrhea",
+        "kind": "negative",
+        "topics": ["diarrhea", "constipation", "abdominal_pain"],
+        "patientKnows": true,
+        "answer": { "mn": "Өтгөн хэвийн. Гэдэсний урд тал өвдөхгүй, хажуу л өвдөж байна.", "en": "Bowels are normal. The front of my belly doesn't hurt — just my side." }
+      },
+      {
+        "id": "previous",
+        "kind": "history",
+        "topics": ["previous_episodes", "pmh"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр жилийн өмнө баруун тал нэг удаа бага зэрэг ийм өвдөөд, өөрөө арилсан. Эмчид үзүүлээгүй. Өөр өвчин байхгүй.", "en": "Two years ago my right side hurt like this once, milder, and it went away. I didn't see a doctor. No other illnesses." },
+        "leakTerms": ["хоёр жилийн өмнө"]
+      },
+      {
+        "id": "fluids-work",
+        "kind": "history",
+        "topics": ["occupation", "diet"],
+        "patientKnows": true,
+        "answer": { "mn": "Өмнөговьд уурхайд 14 хоног ээлжээр ажилладаг. Кабин халуун, ус бага уудаг, ихэвчлэн кофе, энерги ундаа уудаг. Мах их иддэг.", "en": "I work 14-day shifts at a mine in Ömnögovi. The cab is hot; I drink little water, mostly coffee and energy drinks. I eat a lot of meat." },
+        "significance": { "mn": "Шингэн бага уух, халуунд ажиллах нь чулуу үүсэх эрсдэл.", "en": "Low fluid intake and heat exposure raise stone risk." },
+        "leakTerms": ["энерги ундаа"]
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Аав маань бөөрөндөө чулуутай байсан, хагалгаа хийлгэсэн.", "en": "My father had kidney stones and had an operation." },
+        "leakTerms": ["бөөрөндөө чулуу"]
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications", "allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Байнга уудаг эм байхгүй. Шөнө ибупрофен уусан, огт нэмэргүй. Харшил байхгүй.", "en": "No regular medicines. I took ibuprofen in the night — no help at all. No allergies." }
+      },
+      {
+        "id": "pmh-negatives",
+        "kind": "negative",
+        "topics": ["hypertension", "heart_disease", "diabetes", "surgeries"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралт, зүрх, чихрийн шижин байхгүй. Мэс засал хийлгэж байгаагүй.", "en": "No blood pressure, heart problems or diabetes. No surgery." }
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Өдөрт хагас хайрцаг тамхи татна. Амралтаараа пиво уудаг. Эхнэр, хоёр хүүхэдтэйгээ Улаанбаатарт амьдардаг.", "en": "Half a pack a day. Beer on days off. Live in Ulaanbaatar with my wife and two kids." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Зүгээр л өвдөлтийг минь намдаагаач. Хагалгаа хийх болов уу гэж айж байна.", "en": "Please just stop the pain. I'm afraid I'll need an operation." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 36.8°C, зүрхний цохилт 98/мин, амьсгал 20/мин, АД 142/88 мм.муб (өвдөлттэй), SpO₂ 99%.", "en": "T 36.8°C, HR 98, RR 20, BP 142/88 (in pain), SpO₂ 99%." }
+      },
+      {
+        "id": "exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Тайван бус, байрлалаа байнга өөрчилнө. Зүүн хавирга-нурууны өнцөгт тогшиход өвдөлттэй. Хэвлий зөөлөн, цочролын шинжгүй. Хэвлийд лугшилттай хавдар тэмтрэгдэхгүй. Төмсөг хэвийн.", "en": "Restless, constantly shifting. Left costovertebral angle tenderness. Soft abdomen without peritonism. No pulsatile mass. Testes normal." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "pain-character", "category": "hpi", "topics": ["character", "onset", "relieving"], "weight": 2, "critical": true,
+        "label": { "mn": "Өвдөлтийн шинж (таталт, долгион)", "en": "Pain character (colicky)" },
+        "rationale": { "mn": "Долгионт, байрлалаас үл хамаарах өвдөлт чулууны онцлог.", "en": "Colicky, position-independent pain is typical of stones." },
+        "suggestedQuestion": { "mn": "Өвдөлт ямар байна, байнгын уу эсвэл долгион шиг ирж очдог уу?" }
+      },
+      {
+        "id": "radiation", "category": "hpi", "topics": ["radiation"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Дамжилт", "en": "Radiation" },
+        "rationale": { "mn": "Хажуунаас цавь руу дамжих нь шээсний сувгийн чулууг заана.", "en": "Loin-to-groin radiation indicates a ureteric stone." },
+        "suggestedQuestion": { "mn": "Өвдөлт хаашаа дамждаг вэ?" }
+      },
+      {
+        "id": "urinary", "category": "associated_symptoms", "topics": ["urinary"], "weight": 1.5,
+        "label": { "mn": "Шээсний өөрчлөлт, цустай шээс", "en": "Urinary changes and haematuria" },
+        "rationale": { "mn": "Цустай шээс оношийг дэмжинэ.", "en": "Haematuria supports the diagnosis." },
+        "suggestedQuestion": { "mn": "Шээсний өнгө өөрчлөгдсөн үү? Шээхэд хорсож өвддөг үү?" }
+      },
+      {
+        "id": "fever", "category": "red_flags", "topics": ["fever", "chills"], "weight": 2, "critical": true,
+        "label": { "mn": "Халууралт (халдвартай бөглөрөл)", "en": "Fever (infected obstruction)" },
+        "rationale": { "mn": "Чулуу + халууралт бол яаралтай шээсний замыг чөлөөлөх шаардлагатай.", "en": "Stone plus fever needs urgent decompression." },
+        "suggestedQuestion": { "mn": "Халуурсан уу? Чичэрсэн үү?" }
+      },
+      {
+        "id": "risk-factors", "category": "risk_factors", "topics": ["occupation", "diet", "family_history"], "weight": 1,
+        "label": { "mn": "Эрсдэлт хүчин зүйл (шингэн, хоол, удамшил)", "en": "Risk factors (fluids, diet, family)" },
+        "rationale": { "mn": "Давтагдахаас сэргийлэх зөвлөгөөнд хэрэгтэй.", "en": "Needed for prevention advice." },
+        "suggestedQuestion": { "mn": "Өдөрт хэр их ус уудаг вэ? Гэр бүлд бөөрний чулуутай хүн бий юу?" }
+      },
+      {
+        "id": "previous", "category": "past_history", "topics": ["previous_episodes", "pmh"], "weight": 1,
+        "label": { "mn": "Өмнөх ижил тохиолдол", "en": "Previous episodes" },
+        "rationale": { "mn": "Давтагдсан чулуу нэмэлт шинжилгээ шаардана.", "en": "Recurrent stones need metabolic work-up." },
+        "suggestedQuestion": { "mn": "Өмнө нь ийм өвдөж байсан уу?" }
+      },
+      {
+        "id": "medications", "category": "medications_allergies", "topics": ["medications", "allergies"], "weight": 1,
+        "label": { "mn": "Эм, харшил", "en": "Medications and allergies" },
+        "rationale": { "mn": "Өвдөлт намдаах эм сонгоход шаардлагатай.", "en": "Needed for analgesia choice." },
+        "suggestedQuestion": { "mn": "Ямар эм уусан бэ? Харшил бий юу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Гэнэтийн, долгионт, тэсэхийн аргагүй хажуу нурууны өвдөлт хавирганы доороос цавь, төмсөг рүү дамжиж, тайван бус байдал, бөөлжилт, цустай шээс дагалдах нь шээсний сувгийн чулууны сонгодог шинж. Халууралт байгаа эсэхийг заавал асууна — халдвартай бөглөрөл яаралтай. Ахимаг насанд хэвлийн гол судасны цүлхэнг хасна. Шингэн бага уух, халуунд ажиллах, удамшил эрсдэлийг нэмнэ.",
+      "en": "Sudden excruciating colicky loin-to-groin pain with restlessness, vomiting and haematuria is classic ureteric colic. Always ask about fever (infected obstruction is an emergency) and exclude AAA in older patients. Low fluid intake, heat and family history raise risk."
+    },
+    "learningPoints": [
+      { "mn": "Хажуу нурууны өвдөлтөд халууралтыг заавал асуух.", "en": "Always ask about fever in flank pain." },
+      { "mn": "Өвдөлтийн дамжилт, шинж оношийг тодорхойлно.", "en": "Radiation and character point to the diagnosis." },
+      { "mn": "Ахимаг насанд гол судасны цүлхэнг бодох.", "en": "Consider AAA in older patients." },
+      { "mn": "Шингэн хангалттай уух зөвлөгөө өгөх.", "en": "Advise adequate fluid intake." }
+    ]
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

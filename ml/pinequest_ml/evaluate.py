@@ -20,7 +20,11 @@ model before fine-tuning, and on the fine-tuned adapter afterwards.
 from __future__ import annotations
 
 import json
+import os
+import random
+import re
 import time
+import urllib.error
 import urllib.request
 from collections import defaultdict
 from pathlib import Path
@@ -86,16 +90,29 @@ def score(example: dict[str, Any], reply: str, case: dict[str, Any] | None) -> d
 
 
 class EndpointBackend:
-    def __init__(self, base_url: str, model: str, api_key: str | None):
+    def __init__(self, base_url: str, model: str, api_key: str | None, extra_body: dict[str, Any] | None = None, delay: float = 0.0):
         self.base_url, self.model, self.api_key = base_url.rstrip("/"), model, api_key
+        self.extra_body, self.delay = extra_body or {}, delay
 
     def generate(self, messages: list[dict[str, str]]) -> str:
-        body = json.dumps({"model": self.model, "messages": messages, "max_tokens": 200, "temperature": 0}).encode()
-        headers = {"content-type": "application/json", **({"authorization": f"Bearer {self.api_key}"} if self.api_key else {})}
-        request = urllib.request.Request(f"{self.base_url}/chat/completions", data=body, headers=headers)
-        with urllib.request.urlopen(request, timeout=120) as response:
-            data = json.loads(response.read())
-        return (data["choices"][0]["message"]["content"] or "").strip()
+        body = json.dumps({"model": self.model, "messages": messages, "max_tokens": 200, "temperature": 0, **self.extra_body}).encode()
+        # Groq (Cloudflare) answers 403 to urllib's default "Python-urllib" user agent.
+        headers = {"content-type": "application/json", "user-agent": "pinequest-ml-eval", **({"authorization": f"Bearer {self.api_key}"} if self.api_key else {})}
+        # Free tiers rate-limit hard; back off on 429/5xx instead of failing the whole run.
+        for attempt in range(6):
+            time.sleep(self.delay)
+            request = urllib.request.Request(f"{self.base_url}/chat/completions", data=body, headers=headers)
+            try:
+                with urllib.request.urlopen(request, timeout=120) as response:
+                    data = json.loads(response.read())
+                break
+            except urllib.error.HTTPError as error:
+                if error.code not in (429, 500, 502, 503) or attempt == 5:
+                    raise
+                time.sleep(min(60, 5 * 2**attempt))
+        text = data["choices"][0]["message"].get("content") or ""
+        # Same clean-up as the web app's OpenAI-compatible provider (Qwen3 <think> blocks).
+        return re.sub(r"<think>[\s\S]*?</think>", "", text).strip()
 
 
 class LocalBackend:
@@ -125,8 +142,26 @@ class LocalBackend:
         return self.tokenizer.decode(out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True).strip()
 
 
+def stratified_sample(rows: list[dict[str, Any]], n: int, seed: int = 0) -> list[dict[str, Any]]:
+    """Up to n rows spread evenly over (case, mode), so every case and turn type is represented."""
+    groups: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        groups[(row["case_id"], row["mode"])].append(row)
+    rng = random.Random(seed)
+    for key in sorted(groups):
+        rng.shuffle(groups[key])
+    picked: list[dict[str, Any]] = []
+    while len(picked) < n and any(groups.values()):
+        for key in sorted(groups):
+            if groups[key] and len(picked) < n:
+                picked.append(groups[key].pop())
+    return picked
+
+
 def evaluate(args: Any) -> dict[str, Any]:
-    rows = [json.loads(l) for l in Path(args.split).read_text(encoding="utf-8").splitlines() if l.strip()]
+    rows = [json.loads(l) for p in args.split.split(",") for l in Path(p).read_text(encoding="utf-8").splitlines() if l.strip()]
+    if args.sample:
+        rows = stratified_sample(rows, args.sample)
     if args.limit:
         rows = rows[: args.limit]
     cases = {c["id"]: with_defaults(c) for d in (CASES_DIR, INTERIM_DIR / "translated") if d.exists() for c in load_cases(d)}
@@ -134,7 +169,9 @@ def evaluate(args: Any) -> dict[str, Any]:
     if args.reference:
         backend, label = None, "reference"
     elif args.endpoint:
-        backend, label = EndpointBackend(args.endpoint, args.model, args.api_key), f"endpoint:{args.model}"
+        api_key = args.api_key or (os.environ.get(args.api_key_env) if args.api_key_env else None)
+        extra_body = json.loads(args.extra_body) if args.extra_body else None
+        backend, label = EndpointBackend(args.endpoint, args.model, api_key, extra_body, args.delay), f"endpoint:{args.model}"
     elif args.base_model:
         template_kwargs = {}
         if args.adapter and (Path(args.adapter) / "pinequest_adapter.json").exists():

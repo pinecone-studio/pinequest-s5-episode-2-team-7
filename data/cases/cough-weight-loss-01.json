@@ -1,0 +1,311 @@
+{
+  "schemaVersion": 1,
+  "id": "cough-weight-loss-01",
+  "version": 1,
+  "internalTitle": "Pulmonary tuberculosis (right upper lobe) in a 29-year-old construction worker with a household contact",
+  "public": {
+    "displayTitle": { "mn": "Удаан ханиалгаж, турсан 29 настай эрэгтэй", "en": "29-year-old man with a long cough and weight loss" },
+    "specialty": "Дотор / Уушги",
+    "difficulty": "intermediate",
+    "tags": ["амьсгалын зам", "халдварт өвчин"],
+    "setting": { "mn": "Өрхийн эрүүл мэндийн төв, өглөө", "en": "Family health centre, morning" },
+    "patient": {
+      "name": "Ганбаатар",
+      "age": 29,
+      "sex": "male",
+      "occupation": { "mn": "Барилгын ажилчин", "en": "Construction worker" }
+    },
+    "chiefComplaint": { "mn": "Удаан ханиалгах", "en": "Persistent cough" },
+    "chiefComplaintTopics": ["cough"],
+    "openingLine": { "mn": "Сайн байна уу, эмч ээ. Ханиалгаад л байна, бараг сар гаруй болж байна.", "en": "Hello doctor. I keep coughing — it's been over a month." },
+    "estimatedMinutes": 15,
+    "timeCritical": false
+  },
+  "persona": {
+    "personality": { "mn": "Дуу цөөтэй, ичимхий залуу. Ажлаа алдахаас айдаг тул өвчнөө бага гэж ярих хандлагатай.", "en": "Quiet, shy young man; afraid of losing work, so he tends to downplay symptoms." },
+    "speakingStyle": { "mn": "Богино, энгийн үгээр хариулна. Заримдаа 'за юу гэдэг юм' гэж эргэлзэнэ.", "en": "Short, plain answers; sometimes hesitates." },
+    "emotionalState": { "mn": "Ядарсан, бага зэрэг санаа зовсон, ичингүйрсэн.", "en": "Tired, somewhat worried and embarrassed." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Уушгины сүрьеэ", "en": "Pulmonary tuberculosis" },
+      "icd10": "A15.0",
+      "acceptedAliases": [
+        "pulmonary tuberculosis", "tuberculosis", "tb", "pulmonary tb", "active tuberculosis",
+        "уушгины сүрьеэ", "сүрьеэ", "идэвхтэй сүрьеэ", "уушгины идэвхтэй сүрьеэ"
+      ],
+      "partialAliases": ["chronic lung infection", "lower respiratory tract infection", "уушгины архаг халдвар", "амьсгалын замын халдвар"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Гаднын уушгины хатгалгаа", "en": "Community-acquired pneumonia" },
+        "aliases": ["pneumonia", "уушгины хатгалгаа", "хатгалгаа"],
+        "rationale": { "mn": "Хатгалгаа ихэвчлэн хэдэн хоногийн цочмог явцтай; 6 долоо хоногийн ханиалгалт, жин буурах нь архаг үйл явцыг илтгэнэ.", "en": "Pneumonia is usually acute; six weeks of cough with weight loss suggests a chronic process." }
+      },
+      {
+        "label": { "mn": "Уушгины хавдар", "en": "Lung cancer" },
+        "aliases": ["lung cancer", "уушгины хорт хавдар", "уушгины хавдар"],
+        "rationale": { "mn": "Цустай цэр, жин буурах нь хавдрын шинж байж болно, гэхдээ 29 настай, хавьталтай хүнд сүрьеэ илүү магадлалтай.", "en": "Haemoptysis and weight loss can mean cancer, but TB is far likelier at 29 with a household contact." }
+      },
+      {
+        "label": { "mn": "ХДХВ-тэй холбоотой оппортунист халдвар", "en": "HIV-associated opportunistic infection" },
+        "aliases": ["hiv", "хдхв"],
+        "rationale": { "mn": "Сүрьеэтэй бүх өвчтөнд ХДХВ-ийн шинжилгээ санал болгоно; эрсдэлт зан үйлийг асуух нь зүйтэй.", "en": "Offer HIV testing to every TB patient; ask about risk." }
+      }
+    ],
+    "summary": {
+      "mn": "29 настай, гэр хороололд олон хүнтэй амьдардаг эрэгтэйд 6 долоо хоног цэртэй ханиалгах, сүүлийн 2 долоо хоногт цэрэнд цусны судал гарах, орой бага зэрэг халуурах, шөнө их хөлрөх, 2 сард 6 кг турах шинж илэрсэн. Нагац ах нь өнгөрсөн жил сүрьеэгээр эмчлүүлсэн, нэг гэрт амьдардаг. Тамхи татдаг.",
+      "en": "29-year-old in a crowded ger-district household: 6 weeks of productive cough, blood-streaked sputum for 2 weeks, evening low-grade fevers, drenching night sweats and 6 kg weight loss over 2 months. His uncle in the same home was treated for TB last year. Smoker."
+    },
+    "facts": [
+      {
+        "id": "onset-duration",
+        "kind": "positive",
+        "topics": ["cough", "onset", "duration", "progression"],
+        "patientKnows": true,
+        "answer": { "mn": "Зургаан долоо хоног болж байна. Эхлээд ханиад гэж бодоод тоогоогүй, гэтэл арилахгүй, улам дордоод байна.", "en": "About six weeks. I thought it was a cold, but it hasn't gone away and keeps getting worse." },
+        "leakTerms": ["зургаан долоо хоног"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "sputum",
+        "kind": "positive",
+        "topics": ["sputum", "character"],
+        "patientKnows": true,
+        "answer": { "mn": "Цэртэй ханиалгадаг. Цэр нь шаравтар, өглөө илүү их гардаг.", "en": "It's a wet cough with yellowish phlegm, worse in the morning." },
+        "leakTerms": ["шаравтар"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "hemoptysis",
+        "kind": "positive",
+        "topics": ["hemoptysis"],
+        "patientKnows": true,
+        "answer": { "mn": "Сүүлийн хоёр долоо хоногт цэрэнд улаан судал хэд хэдэн удаа харагдсан. Их цус гараагүй.", "en": "In the last two weeks I've seen red streaks in the phlegm a few times. Not a lot of blood." },
+        "significance": { "mn": "Цустай цэр нь сүрьеэ, хавдрын сэрэмжлүүлэх шинж.", "en": "Haemoptysis is a red flag for TB or cancer." },
+        "leakTerms": ["улаан судал"]
+      },
+      {
+        "id": "fever-evening",
+        "kind": "positive",
+        "topics": ["fever", "chills"],
+        "patientKnows": true,
+        "answer": { "mn": "Орой болохоор бие халуу оргиод байдаг. Хэмжихэд 37.8 орчим байсан. Чичрээд байдаггүй.", "en": "In the evenings I feel feverish — about 37.8 when I checked. No shaking chills." },
+        "significance": { "mn": "Оройн бага зэргийн халууралт сүрьеэд түгээмэл.", "en": "Evening low-grade fever is typical of TB." },
+        "leakTerms": ["37.8"]
+      },
+      {
+        "id": "night-sweats",
+        "kind": "positive",
+        "topics": ["night_sweats", "sweating"],
+        "patientKnows": true,
+        "answer": { "mn": "Шөнө их хөлөрдөг. Сэрэхэд дэрний уут, цамц маань норчихсон байдаг.", "en": "I sweat a lot at night — I wake up with my pillow and shirt soaked." },
+        "significance": { "mn": "Шөнийн их хөлрөлт нь сүрьеэгийн сонгодог шинж.", "en": "Drenching night sweats are classic for TB." },
+        "leakTerms": ["дэрний уут"]
+      },
+      {
+        "id": "weight-loss",
+        "kind": "positive",
+        "topics": ["weight_loss", "appetite"],
+        "patientKnows": true,
+        "answer": { "mn": "Тийм, турсан. Хоёр сарын өмнө 68 кг байсан, одоо 62 болсон. Хоолны дуршил ч муу байна.", "en": "Yes, I've lost weight — from 68 kg two months ago to 62. My appetite is poor too." },
+        "significance": { "mn": "Тайлбаргүй жин буурах нь архаг халдвар, хавдрыг сэжиглүүлнэ.", "en": "Unexplained weight loss suggests chronic infection or malignancy." },
+        "leakTerms": ["68 кг", "62"]
+      },
+      {
+        "id": "fatigue",
+        "kind": "positive",
+        "topics": ["fatigue"],
+        "patientKnows": true,
+        "answer": { "mn": "Их ядардаг болсон. Ажил дээрээ өмнөх шигээ хүнд юм өргөж чадахаа больсон.", "en": "I get very tired. I can't lift heavy things at work like before." }
+      },
+      {
+        "id": "mild-dyspnea",
+        "kind": "positive",
+        "topics": ["dyspnea"],
+        "patientKnows": true,
+        "answer": { "mn": "Шат өгсөхөд бага зэрэг амьсгаадна. Тайван байхад гайгүй.", "en": "A little breathless climbing stairs; fine at rest." }
+      },
+      {
+        "id": "no-chest-pain",
+        "kind": "negative",
+        "topics": ["chest_pain"],
+        "patientKnows": true,
+        "answer": { "mn": "Цээж өвдөхгүй. Удаан ханиалгахаар жаахан чилдэг, тэр л байна.", "en": "No chest pain — just a bit sore after long coughing fits." }
+      },
+      {
+        "id": "tb-contact",
+        "kind": "history",
+        "topics": ["sick_contacts", "lung_disease"],
+        "patientKnows": true,
+        "answer": { "mn": "Нагац ах маань өнгөрсөн жил сүрьеэгээр эмчлүүлсэн. Бид нэг гэрт амьдардаг. Би өөрөө урьд нь сүрьеэ тусаж байгаагүй.", "en": "My uncle was treated for TB last year. We live in the same house. I've never had TB myself." },
+        "significance": { "mn": "Гэр бүлийн ойрын хавьтал нь сүрьеэгийн хамгийн чухал эрсдэлт хүчин зүйл.", "en": "Household contact is the strongest TB risk factor." },
+        "leakTerms": ["нагац ах"]
+      },
+      {
+        "id": "living",
+        "kind": "history",
+        "topics": ["living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Сонгинохайрханд гэр хороололд, хоёр өрөө байшинд зургуулаа амьдардаг. Өвөлдөө цонхоо бараг онгойлгодоггүй.", "en": "In the Songinokhairkhan ger district, six of us in a two-room house. In winter we barely open the windows." },
+        "leakTerms": ["зургуулаа"]
+      },
+      {
+        "id": "occupation",
+        "kind": "history",
+        "topics": ["occupation"],
+        "patientKnows": true,
+        "answer": { "mn": "Барилга дээр ажилладаг. Зуны улиралд ажилчдын байранд олуулаа хамт хонодог.", "en": "I work in construction. In summer we sleep together in a crowded workers' dormitory." }
+      },
+      {
+        "id": "smoking",
+        "kind": "history",
+        "topics": ["smoking"],
+        "patientKnows": true,
+        "answer": { "mn": "Тамхи татдаг, өдөрт арав орчим. Арван жил гаруй татаж байна.", "en": "I smoke about ten a day, for over ten years." },
+        "leakTerms": ["өдөрт арав"]
+      },
+      {
+        "id": "alcohol",
+        "kind": "history",
+        "topics": ["alcohol", "substance_use"],
+        "patientKnows": true,
+        "answer": { "mn": "Амралтын өдрөөр найзуудтайгаа архи уудаг. Өөр юм хэрэглэдэггүй.", "en": "I drink with friends at weekends. Nothing else." }
+      },
+      {
+        "id": "pmh",
+        "kind": "history",
+        "topics": ["pmh", "hospitalizations", "surgeries", "diabetes"],
+        "patientKnows": true,
+        "answer": { "mn": "Өмнө нь томоохон өвчин тусаж, эмнэлэгт хэвтэж байгаагүй. Чихрийн шижин байхгүй.", "en": "No serious illnesses or hospital stays before. No diabetes." }
+      },
+      {
+        "id": "medications-allergies",
+        "kind": "history",
+        "topics": ["medications", "allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Байнга уудаг эм байхгүй. Ханиалгын сироп авч уусан, нэмэр болоогүй. Эмийн харшил байхгүй.", "en": "No regular medicines. I tried a cough syrup, it didn't help. No drug allergies." }
+      },
+      {
+        "id": "hiv-risk",
+        "kind": "history",
+        "topics": ["sexual_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Найз охинтой. ХДХВ-ийн шинжилгээ өгч байгаагүй.", "en": "I have a girlfriend. I've never had an HIV test." }
+      },
+      {
+        "id": "vaccination",
+        "kind": "history",
+        "topics": ["vaccination"],
+        "patientKnows": true,
+        "answer": { "mn": "Бага байхдаа вакцинаа бүгдийг хийлгэсэн гэж ээж хэлдэг. Гар дээр сорви бий.", "en": "Mum says I had all my childhood vaccines. I have a scar on my arm." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Нагац ахаас өөр өвчтэй хүн байхгүй. Аав ээж эрүүл.", "en": "Apart from my uncle, nobody is ill. My parents are healthy." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Нагац ах шиг болчих вий гэж айгаад байна. Бас ажлаасаа гарах вий гэж санаа зовж байна.", "en": "I'm scared it's the same as my uncle had, and worried about losing my job." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 37.7°C, зүрхний цохилт 96/мин, амьсгал 20/мин, АД 118/74 мм.муб, SpO₂ 96% (агаараар). Биеийн жингийн индекс 18.6.", "en": "T 37.7°C, HR 96, RR 20, BP 118/74, SpO₂ 96% RA. BMI 18.6." }
+      },
+      {
+        "id": "chest-exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Туранхай. Баруун дээд талд чагналтаар нойтон хэржигнүүр сонсогдоно. Захын тунгалгийн булчирхай томроогүй.", "en": "Thin. Crackles over the right upper zone. No peripheral lymphadenopathy." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "duration", "category": "hpi", "topics": ["onset", "duration", "progression"], "weight": 2, "critical": true,
+        "label": { "mn": "Ханиалгын үргэлжлэх хугацаа", "en": "Duration of cough" },
+        "rationale": { "mn": "2 долоо хоногоос дээш ханиалгавал сүрьеэгийн шинжилгээ хийнэ.", "en": "Cough over 2 weeks warrants TB testing." },
+        "suggestedQuestion": { "mn": "Хэр удаж байна вэ? Хэзээнээс эхэлсэн бэ?" }
+      },
+      {
+        "id": "hemoptysis", "category": "red_flags", "topics": ["hemoptysis", "sputum"], "weight": 2, "critical": true,
+        "label": { "mn": "Цэр, цустай цэр", "en": "Sputum and haemoptysis" },
+        "rationale": { "mn": "Цустай цэр нь сүрьеэ, хавдрын сэрэмжлүүлэх шинж.", "en": "Red flag for TB or cancer." },
+        "suggestedQuestion": { "mn": "Цэр гардаг уу? Цэрэнд цус харагдсан уу?" }
+      },
+      {
+        "id": "constitutional", "category": "associated_symptoms", "topics": ["weight_loss", "night_sweats", "fever"], "weight": 2, "critical": true,
+        "label": { "mn": "Ерөнхий шинж (жин буурах, шөнийн хөлрөлт, халууралт)", "en": "Constitutional symptoms" },
+        "rationale": { "mn": "Сүрьеэгийн гол шинжүүд.", "en": "Core features of TB." },
+        "suggestedQuestion": { "mn": "Жин хассан уу? Шөнө хөлөрдөг үү? Халуурдаг уу?" }
+      },
+      {
+        "id": "tb-contact", "category": "risk_factors", "topics": ["sick_contacts", "lung_disease"], "weight": 2, "critical": true,
+        "label": { "mn": "Сүрьеэгийн хавьтал, өмнөх сүрьеэ", "en": "TB contact and prior TB" },
+        "rationale": { "mn": "Гэр бүлийн хавьтал нь хамгийн хүчтэй эрсдэл.", "en": "Household contact is the strongest risk." },
+        "suggestedQuestion": { "mn": "Танай гэрт эсвэл ойр хүрээнд сүрьеэтэй хүн байсан уу? Өөрөө сүрьеэ тусаж байсан уу?" }
+      },
+      {
+        "id": "living-work", "category": "social_history", "topics": ["living_situation", "occupation"], "weight": 1,
+        "label": { "mn": "Амьдрах орчин, ажил", "en": "Living and working conditions" },
+        "rationale": { "mn": "Хөл хөдөлгөөн ихтэй, агааржуулалт муу орчин халдварыг тараана; хавьтлын хайгуулд хэрэгтэй.", "en": "Crowding drives transmission; needed for contact tracing." },
+        "suggestedQuestion": { "mn": "Хэнтэй, ямар нөхцөлд амьдардаг вэ? Ямар ажил хийдэг вэ?" }
+      },
+      {
+        "id": "hiv-risk", "category": "risk_factors", "topics": ["sexual_history", "pmh"], "weight": 1,
+        "label": { "mn": "ХДХВ-ийн эрсдэл, дархлаа сулруулах эмгэг", "en": "HIV risk and immunosuppression" },
+        "rationale": { "mn": "ХДХВ, чихрийн шижин сүрьеэгийн эрсдэл, явцыг өөрчилнө.", "en": "HIV and diabetes change TB risk and course." },
+        "suggestedQuestion": { "mn": "ХДХВ-ийн шинжилгээ өгч байсан уу? Архаг өвчин бий юу?" }
+      },
+      {
+        "id": "smoking-alcohol", "category": "risk_factors", "topics": ["smoking", "alcohol"], "weight": 1,
+        "label": { "mn": "Тамхи, архи", "en": "Smoking and alcohol" },
+        "rationale": { "mn": "Тамхи, архи сүрьеэгийн эрсдэл, эмчилгээний үр дүнд нөлөөлнө.", "en": "Both raise TB risk and affect treatment outcome." },
+        "suggestedQuestion": { "mn": "Тамхи татдаг уу? Архи хэр уудаг вэ?" }
+      },
+      {
+        "id": "medications", "category": "medications_allergies", "topics": ["medications", "allergies"], "weight": 1,
+        "label": { "mn": "Эм, харшил", "en": "Medications and allergies" },
+        "rationale": { "mn": "Сүрьеэгийн эмийн өмнө харшил, харилцан үйлчлэлийг тодруулна.", "en": "Check before starting TB drugs." },
+        "suggestedQuestion": { "mn": "Ямар эм уусан бэ? Эмийн харшил бий юу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Хоёр долоо хоногоос удаан цэртэй ханиалгах, цустай цэр, оройн халууралт, шөнийн их хөлрөлт, жин буурах, гэр бүлийн сүрьеэгийн хавьтал нь уушгины идэвхтэй сүрьеэг хүчтэй сэжиглүүлнэ. Монголд сүрьеэгийн тархалт өндөр тул удаан ханиалгатай хүн бүрээс эдгээрийг заавал асууж, цэрний шинжилгээ (GeneXpert), цээжний рентген, ХДХВ-ийн шинжилгээ хийлгэнэ. Хавьтлын хайгуулд амьдрах, ажлын орчныг тодруулах нь чухал.",
+      "en": "Cough over two weeks with haemoptysis, evening fever, night sweats, weight loss and a household TB contact strongly suggest active pulmonary TB. In Mongolia every chronic cough needs TB screening, sputum GeneXpert, chest X-ray and HIV testing; living and work conditions guide contact tracing."
+    },
+    "learningPoints": [
+      { "mn": "2 долоо хоногоос дээш ханиалгавал сүрьеэг заавал сэжиглэх.", "en": "Cough > 2 weeks: always consider TB." },
+      { "mn": "Жин буурах, шөнийн хөлрөлт, халууралт, цустай цэрийг асуух.", "en": "Ask about weight loss, night sweats, fever and haemoptysis." },
+      { "mn": "Гэр бүл, ажлын байрны хавьтлыг тодруулах.", "en": "Identify household and workplace contacts." },
+      { "mn": "Сүрьеэтэй өвчтөнд ХДХВ-ийн шинжилгээ санал болгох.", "en": "Offer HIV testing to TB patients." }
+    ]
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

@@ -128,8 +128,13 @@ def test_build_splits_by_case_without_leakage(tmp_path: Path):
     cfg.write_text(yaml.safe_dump(config))
     report = build(cfg, None, tmp_path / "out")
     assert report["case_leakage_across_splits"] == []
+    case_splits: dict[str, set[str]] = {}
     for split in ("train", "validation", "test"):
         rows = [json.loads(l) for l in (tmp_path / "out" / f"{split}.jsonl").read_text(encoding="utf-8").splitlines()]
-        assert len({r["case_id"] for r in rows}) == 1
+        for r in rows:
+            case_splits.setdefault(r["case_id"], set()).add(split)
+    assert all(len(s) == 1 for s in case_splits.values())
+    for case_id, split in config["split"]["overrides"].items():
+        assert case_splits[case_id] == {split}
     assert (tmp_path / "out" / "quality_report.md").exists()
     assert assign_split("x", {"train": 1.0, "validation": 0, "test": 0}, "s") == "train"

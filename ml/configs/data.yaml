@@ -26,3 +26,7 @@ split:
     chest-pain-01: train
     abdominal-pain-01: validation
     cough-malaise-01: test
+    # 13 cases → 9 / 2 / 2, so validation and test each cover two body systems.
+    cough-weight-loss-01: validation
+    fever-back-pain-01: test
+    vomiting-thirst-01: train

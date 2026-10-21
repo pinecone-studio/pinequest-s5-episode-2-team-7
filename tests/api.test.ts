@@ -109,7 +109,7 @@ describe("13. students never receive the private case", () => {
     for (const forbidden of ['"hidden"', '"rubric"', '"facts"', '"diagnosis"', '"acceptedAliases"', "шигдээс", "мухар олгой", "хатгалгаа"]) {
       expect(text).not.toContain(forbidden);
     }
-    expect(JSON.parse(text).cases).toHaveLength(3);
+    expect(JSON.parse(text).cases).toHaveLength(DEMO_CASE_SOURCES.length);
   });
 
   it("an active session view contains no hidden data", async () => {
@@ -171,12 +171,12 @@ describe("15. case import validation", () => {
 
   it("imports valid cases as drafts", async () => {
     const copy = JSON.parse(JSON.stringify(DEMO_CASE_SOURCES[1]));
-    copy.id = "abdominal-pain-02";
+    copy.id = "imported-copy-01";
     const response = await adminImport(req("/api/admin/cases/import", { raw: JSON.stringify({ cases: [copy] }), cookie: adminCookie }), noCtx);
     expect(response.status).toBe(200);
-    expect((await response.json()).report.created).toEqual(["abdominal-pain-02"]);
+    expect((await response.json()).report.created).toEqual(["imported-copy-01"]);
     const list = await (await listCases(req("/api/cases", { cookie: studentCookie }), noCtx)).json();
-    expect(list.cases.map((c: { id: string }) => c.id)).not.toContain("abdominal-pain-02");
+    expect(list.cases.map((c: { id: string }) => c.id)).not.toContain("imported-copy-01");
   });
 });
 

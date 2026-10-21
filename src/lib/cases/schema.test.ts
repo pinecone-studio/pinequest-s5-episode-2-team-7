@@ -12,7 +12,7 @@ const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 describe("case schema", () => {
   it("accepts all bundled demonstration cases", () => {
     const cases = loadDemoCases();
-    expect(cases).toHaveLength(3);
+    expect(cases).toHaveLength(DEMO_CASE_SOURCES.length);
     for (const c of cases) {
       expect(c.provenance.synthetic).toBe(true);
       expect(c.rubric.items.some((i) => i.critical)).toBe(true);
