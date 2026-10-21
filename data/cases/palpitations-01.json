@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "id": "palpitations-01",
+  "version": 1,
+  "internalTitle": "Graves' disease (thyrotoxicosis with eye signs) in a 33-year-old woman",
+  "public": {
+    "displayTitle": { "mn": "Зүрх дэлсэж, турсан 33 настай эмэгтэй", "en": "33-year-old woman with palpitations and weight loss" },
+    "specialty": "Дотоод шүүрэл",
+    "difficulty": "intermediate",
+    "tags": ["зүрх дэлсэх", "жин буурах"],
+    "setting": { "mn": "Дүүргийн нэгдсэн эмнэлгийн дотрын кабинет, өглөө", "en": "District hospital internal medicine clinic, morning" },
+    "patient": {
+      "name": "Энхжаргал",
+      "age": 33,
+      "sex": "female",
+      "occupation": { "mn": "Нягтлан бодогч", "en": "Accountant" }
+    },
+    "chiefComplaint": { "mn": "Зүрх дэлсэх", "en": "Palpitations" },
+    "chiefComplaintTopics": ["palpitations"],
+    "openingLine": { "mn": "Эмч ээ, сүүлийн үед зүрх маань байнга түг түг цохилоод, тайван суулгахгүй байна.", "en": "Doctor, lately my heart keeps pounding and won't let me rest." },
+    "estimatedMinutes": 15,
+    "timeCritical": false
+  },
+  "persona": {
+    "personality": { "mn": "Ажилсаг, цэгцтэй боловч сүүлийн үед уурлах, бухимдах нь ихэссэн. Өөрийгөө 'зүгээр л стресс' гэж тайлбарлах хандлагатай.", "en": "Hard-working and organised, but lately irritable; tends to blame stress." },
+    "speakingStyle": { "mn": "Хурдан, дэлгэрэнгүй ярина, заримдаа сэдвээс хазайна.", "en": "Talks fast and in detail, sometimes drifts off topic." },
+    "emotionalState": { "mn": "Түгшсэн, тайван бус, ядарсан.", "en": "Anxious, restless, tired." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Грейвсийн өвчин (бамбай булчирхайн хордлого)", "en": "Graves' disease (thyrotoxicosis)" },
+      "icd10": "E05.0",
+      "acceptedAliases": [
+        "graves disease", "graves' disease", "graves", "hyperthyroidism", "thyrotoxicosis", "toxic diffuse goitre", "toxic diffuse goiter",
+        "грейвсийн өвчин", "грейвс", "базедовын өвчин", "бамбай булчирхайн хордлого", "гипертиреоз", "тиреотоксикоз", "бамбай булчирхайн үйл ажиллагаа ихсэх", "хорт сарнисан бахлуур"
+      ],
+      "partialAliases": ["thyroid disease", "goitre", "goiter", "бамбай булчирхайн өвчин", "бахлуур"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Түгшүүрийн эмгэг", "en": "Anxiety disorder" },
+        "aliases": ["anxiety", "panic disorder", "түгшүүр", "сэтгэл түгшүүр"],
+        "rationale": { "mn": "Түгшүүр зүрх дэлслэх, хөлрөх өгнө, гэвч сайн идэж байхад турах, халуунд тэсвэргүй, нүдний өөрчлөлт тайлбарлагдахгүй.", "en": "Causes palpitations and sweating, but not weight loss with good appetite, heat intolerance or eye signs." }
+      },
+      {
+        "label": { "mn": "Тосгуурын жирвэгнэх / тахиаритми", "en": "Atrial fibrillation / tachyarrhythmia" },
+        "aliases": ["atrial fibrillation", "svt", "тосгуурын жирвэгнэх", "хэм алдагдал"],
+        "rationale": { "mn": "Хэм алдагдал нь бамбайн хордлогын хүндрэл байж болно; ЗЦБ хийнэ.", "en": "Arrhythmia may itself complicate thyrotoxicosis; do an ECG." }
+      },
+      {
+        "label": { "mn": "Бамбай булчирхайн үрэвсэл (тиреоидит)", "en": "Thyroiditis" },
+        "aliases": ["thyroiditis", "тиреоидит"],
+        "rationale": { "mn": "Түр зуурын хордлого өгнө; хүзүү өвдөх, саяхны төрөлт, вирусын халдвар байхгүй, нүдний шинж нь Грейвсийг заана.", "en": "Transient thyrotoxicosis; no neck pain or recent pregnancy, and eye signs favour Graves'." }
+      }
+    ],
+    "summary": {
+      "mn": "33 настай эмэгтэйд 2 сарын турш зүрх дэлсэх, сайн идэж байхад 5 кг турах, халуунд тэсвэргүй, их хөлрөх, гар чичрэх, өдөрт 3–4 удаа сул өтгөн гарах, нойргүйдэх, уур уцаартай болох, сарын тэмдэг багасах шинж илэрсэн. Нүд нь бүлтийж, хорсож, найзууд нь 'ширтдэг болсон' гэж хэлдэг. Ээж нь бамбай булчирхайн мэс засал хийлгэсэн. Тамхи татдаг.",
+      "en": "33-year-old: 2 months of palpitations, 5 kg weight loss despite good appetite, heat intolerance, sweating, tremor, loose stools 3–4 times a day, insomnia, irritability and lighter periods. Gritty, prominent eyes ('staring'). Mother had thyroid surgery. Smoker."
+    },
+    "facts": [
+      {
+        "id": "palpitations",
+        "kind": "positive",
+        "topics": ["palpitations", "onset", "duration", "character", "progression"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр сар орчим болж байна. Тайван сууж байхад ч зүрх хурдан, жигд түг түг цохилдог. Шөнө хэвтэхэд илүү мэдрэгддэг.", "en": "About two months. Even sitting still my heart beats fast and regular. I feel it more lying down at night." },
+        "leakTerms": ["хоёр сар"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "weight-appetite",
+        "kind": "positive",
+        "topics": ["weight_loss", "appetite"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоолны дуршил их сайн, өмнөхөөсөө их иддэг болсон мөртлөө таван кг турчихсан. Хүмүүс 'туранхай болжээ' гэх юм.", "en": "My appetite is huge — I eat more than before — yet I've lost five kilos. People say I've got thin." },
+        "significance": { "mn": "Хоолны дуршил ихэссэн ч турах нь бодисын солилцоо хурдссаныг илтгэнэ.", "en": "Weight loss despite increased appetite suggests hypermetabolism." },
+        "leakTerms": ["таван кг", "дуршил их сайн"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "heat-sweating",
+        "kind": "positive",
+        "topics": ["sweating", "aggravating"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуунд тэсэхгүй болсон. Бусад хүмүүс даарч байхад би цонх онгойлгоод, хөлөрөөд суудаг.", "en": "I can't stand heat. When others are cold, I open the window and still sweat." },
+        "significance": { "mn": "Халуунд тэсвэргүй байх нь бамбайн хордлогын онцлог.", "en": "Heat intolerance is characteristic of thyrotoxicosis." },
+        "leakTerms": ["цонх онгойлгоод"]
+      },
+      {
+        "id": "tremor-sleep",
+        "kind": "positive",
+        "topics": ["associated_general", "fatigue"],
+        "patientKnows": true,
+        "answer": { "mn": "Гар чичрээд, компьютер дээр бичихэд алдаа гаргадаг болсон. Шөнө унтаж чадахгүй, тэгсэн мөртлөө их ядардаг. Амархан уурлаад, нөхөртэйгөө муудалцаад байна.", "en": "My hands shake — I make typing mistakes. I can't sleep at night, yet I'm exhausted. I get angry easily and keep quarrelling with my husband." },
+        "leakTerms": ["гар чичрээд"]
+      },
+      {
+        "id": "bowels",
+        "kind": "positive",
+        "topics": ["diarrhea"],
+        "patientKnows": true,
+        "answer": { "mn": "Өдөрт гурав, дөрвөн удаа бие засна, зөөлөн. Цус, салс байхгүй, гэдэс өвдөхгүй.", "en": "Three or four soft stools a day. No blood or mucus, no belly pain." },
+        "leakTerms": ["дөрвөн удаа"]
+      },
+      {
+        "id": "eyes-neck",
+        "kind": "positive",
+        "topics": ["associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Нүд хорсож, элс орсон юм шиг болдог. Найзууд маань 'нүд чинь бүлтийгээд, ширтдэг болжээ' гэсэн. Хүзүү бага зэрэг томорсон юм шиг санагддаг, өвддөггүй.", "en": "My eyes feel gritty, like sand. Friends say my eyes bulge and I stare. My neck looks a bit fuller, but it doesn't hurt." },
+        "significance": { "mn": "Нүд бүлтийх (экзофтальм) нь Грейвсийн өвчинд онцлог; өвдөлтгүй томролт тиреоидитээс ялгана.", "en": "Exophthalmos is specific to Graves'; painless goitre distinguishes from thyroiditis." },
+        "leakTerms": ["бүлтий", "элс орсон"]
+      },
+      {
+        "id": "menses",
+        "kind": "history",
+        "topics": ["lmp", "pregnancy"],
+        "patientKnows": true,
+        "answer": { "mn": "Сарын тэмдэг бага ирдэг болсон, хоёр хоногт л дуусна. Сүүлийнх нь арав хоногийн өмнө. Жирэмсэн биш, хоёр хүүхэдтэй, бага нь 5 настай.", "en": "My periods are lighter, over in two days. The last one was ten days ago. Not pregnant; two children, the youngest is five." },
+        "significance": { "mn": "Жирэмслэлт эмчилгээний сонголтод чухал; саяхны төрөлтгүй нь төрсний дараах тиреоидитыг хасна.", "en": "Pregnancy matters for treatment; no recent delivery excludes postpartum thyroiditis." }
+      },
+      {
+        "id": "no-chest-pain",
+        "kind": "negative",
+        "topics": ["chest_pain", "dyspnea", "dizziness", "leg_swelling"],
+        "patientKnows": true,
+        "answer": { "mn": "Цээж өвдөхгүй. Шат өгсөхөд бага зэрэг амьсгаадна. Ухаан алдаж, толгой эргэж байгаагүй. Хөл хавдаагүй.", "en": "No chest pain. Slightly breathless on stairs. No fainting or dizziness. No leg swelling." },
+        "significance": { "mn": "Зүрхний дутагдал, хэм алдагдлын хүндрэлийн шинж байхгүй.", "en": "No signs of heart failure or arrhythmic complications." }
+      },
+      {
+        "id": "no-neck-pain-fever",
+        "kind": "negative",
+        "topics": ["fever", "trigger"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуураагүй, хүзүү өвдөөгүй. Саяхан ханиад томуу хүрээгүй.", "en": "No fever, no neck pain. No recent cold or flu." }
+      },
+      {
+        "id": "pmh",
+        "kind": "history",
+        "topics": ["pmh", "heart_disease", "hospitalizations", "surgeries"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр удаа хэвийн төрсөн. Өөр өвчин, мэс засал байхгүй. Зүрхний өвчин байгаагүй.", "en": "Two normal deliveries. No other illnesses or surgery. No heart disease." }
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications", "allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Ямар ч эм уудаггүй. Турах эм, нэмэлт тэжээл ч уудаггүй. Харшил байхгүй.", "en": "No medicines — no slimming pills or supplements either. No allergies." },
+        "significance": { "mn": "Бамбайн гормон эсвэл турах эм хэрэглэснээс үүдэх хордлогыг хасна.", "en": "Excludes exogenous thyroid hormone or diet pills." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Ээж маань залуудаа бамбай булчирхайгаа хагалгаагаар авахуулсан. Эгч маань чихрийн шижинтэй.", "en": "My mother had her thyroid removed when she was young. My sister has diabetes." },
+        "significance": { "mn": "Гэр бүлд бамбай, аутоиммун өвчин байх нь эрсдэл.", "en": "Family thyroid and autoimmune disease increase risk." },
+        "leakTerms": ["бамбай булчирхай"]
+      },
+      {
+        "id": "smoking-alcohol",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "substance_use"],
+        "patientKnows": true,
+        "answer": { "mn": "Өдөрт таван ширхэг орчим тамхи татдаг. Архи бараг уудаггүй. Кофе өдөрт хоёр аяга.", "en": "About five cigarettes a day. Hardly drink. Two cups of coffee a day." },
+        "significance": { "mn": "Тамхи нүдний Грейвсийн эмгэгийг хүндрүүлнэ.", "en": "Smoking worsens Graves' eye disease." }
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["occupation", "living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Компанид нягтлан бодогч. Нөхөр, хоёр хүүхэдтэйгээ орон сууцанд амьдардаг. Жилийн эцсийн тайлан ойртож байгаа болохоор стресс их байна.", "en": "Company accountant. Live in an apartment with my husband and two kids. Year-end reports are coming, lots of stress." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Зүгээр л стресс байх гэж бодсон. Гэхдээ зүрх маань гэмтчих вий гэж айж байна.", "en": "I thought it was just stress. But I'm afraid my heart is being damaged." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 37.2°C, зүрхний цохилт 118/мин (жигд), амьсгал 18/мин, АД 138/62 мм.муб, SpO₂ 99%.", "en": "T 37.2°C, HR 118 regular, RR 18, BP 138/62, SpO₂ 99%." }
+      },
+      {
+        "id": "exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Бамбай булчирхай жигд сарнисан томорсон, зөөлөн, эмзэглэлгүй, дээр нь судасны шуугиан сонсогдоно. Хоёр нүд бүлтийсэн, зовхи хоцрох шинж эерэг. Сунгасан гарын нарийн чичрэл. Арьс чийглэг, дулаан.", "en": "Diffuse smooth non-tender goitre with a bruit. Bilateral proptosis, lid lag. Fine tremor of outstretched hands. Warm, moist skin." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "weight-appetite", "category": "associated_symptoms", "topics": ["weight_loss", "appetite"], "weight": 2, "critical": true,
+        "label": { "mn": "Жин буурах ба хоолны дуршил", "en": "Weight loss with appetite" },
+        "rationale": { "mn": "Дуршил сайн байхад турах нь бамбайн хордлогын гол шинж.", "en": "Weight loss with good appetite is a key clue." },
+        "suggestedQuestion": { "mn": "Жин хассан уу? Хоолны дуршил ямар байна?" }
+      },
+      {
+        "id": "heat-intolerance", "category": "associated_symptoms", "topics": ["sweating", "aggravating"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Халуунд тэсвэргүй, хөлрөх", "en": "Heat intolerance and sweating" },
+        "rationale": { "mn": "Түгшүүрээс ялгах онцлог шинж.", "en": "Distinguishes from anxiety." },
+        "suggestedQuestion": { "mn": "Халуунд тэсвэргүй болсон уу? Их хөлөрдөг үү?" }
+      },
+      {
+        "id": "eye-neck", "category": "associated_symptoms", "topics": ["associated_general"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Нүд, хүзүүний өөрчлөлт", "en": "Eye and neck changes" },
+        "rationale": { "mn": "Нүд бүлтийх нь Грейвсийн өвчинд онцлог.", "en": "Eye signs are specific to Graves'." },
+        "suggestedQuestion": { "mn": "Нүдэнд өөрчлөлт, хүзүүнд томролт ажиглагдсан уу?" }
+      },
+      {
+        "id": "palpitations-hpi", "category": "hpi", "topics": ["onset", "duration", "character"], "weight": 1,
+        "label": { "mn": "Зүрх дэлслэлтийн хугацаа, шинж", "en": "Palpitations: timing and character" },
+        "rationale": { "mn": "Жигд, байнгын тахикарди ба гэнэтийн хэм алдагдлыг ялгана.", "en": "Persistent sinus tachycardia vs paroxysmal arrhythmia." },
+        "suggestedQuestion": { "mn": "Хэзээнээс эхэлсэн бэ? Жигд цохилдог уу, эсвэл тасалдаж, гэнэт эхэлдэг үү?" }
+      },
+      {
+        "id": "other-hyperthyroid", "category": "associated_symptoms", "topics": ["diarrhea", "fatigue", "lmp"], "weight": 1,
+        "label": { "mn": "Бусад шинж (өтгөн, чичрэл, нойр, сарын тэмдэг)", "en": "Other features (bowels, tremor, sleep, menses)" },
+        "rationale": { "mn": "Олон тогтолцооны шинж оношийг бататгана.", "en": "Multi-system features support the diagnosis." },
+        "suggestedQuestion": { "mn": "Өтгөн гаралт, нойр, сарын тэмдэгт өөрчлөлт гарсан уу?" }
+      },
+      {
+        "id": "cardiac-complications", "category": "red_flags", "topics": ["chest_pain", "dyspnea", "dizziness"], "weight": 1,
+        "label": { "mn": "Зүрхний хүндрэлийн шинж", "en": "Cardiac complications" },
+        "rationale": { "mn": "Тосгуурын жирвэгнэх, зүрхний дутагдлыг илрүүлнэ.", "en": "Detects AF or heart failure." },
+        "suggestedQuestion": { "mn": "Цээж өвдөх, амьсгаадах, ухаан алдах зүйл байна уу?" }
+      },
+      {
+        "id": "meds-family", "category": "medications_allergies", "topics": ["medications", "family_history"], "weight": 1,
+        "label": { "mn": "Эм, нэмэлт тэжээл, гэр бүлийн түүх", "en": "Medications, supplements, family history" },
+        "rationale": { "mn": "Гаднаас гормон хэрэглэх, удамшлын эрсдэлийг тодруулна.", "en": "Exogenous hormone and hereditary risk." },
+        "suggestedQuestion": { "mn": "Ямар нэг эм, турах эм, нэмэлт тэжээл хэрэглэдэг үү? Гэр бүлд бамбай булчирхайн өвчин бий юу?" }
+      },
+      {
+        "id": "smoking", "category": "risk_factors", "topics": ["smoking"], "weight": 0.5,
+        "label": { "mn": "Тамхи", "en": "Smoking" },
+        "rationale": { "mn": "Нүдний эмгэгийг хүндрүүлнэ.", "en": "Worsens eye disease." },
+        "suggestedQuestion": { "mn": "Тамхи татдаг уу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Залуу эмэгтэйд зүрх дэлсэх, дуршил сайн байхад турах, халуунд тэсвэргүй, хөлрөх, гар чичрэх, өтгөн ойр гарах, нойргүйдэх, сарын тэмдэг багасах, нүд бүлтийх, өвдөлтгүй сарнисан бахлуур нь Грейвсийн өвчин. Түгшүүрийн эмгэг гэж дүгнэхээс өмнө жин, халуунд тэсвэргүй байдал, нүдний шинжийг асууна. Тамхи нүдний эмгэгийг хүндрүүлдэг тул зогсоохыг зөвлөнө.",
+      "en": "Palpitations, weight loss despite appetite, heat intolerance, sweating, tremor, frequent stools, insomnia, light periods, proptosis and a painless diffuse goitre indicate Graves' disease. Before labelling anxiety, ask about weight, heat intolerance and eyes. Advise stopping smoking."
+    },
+    "learningPoints": [
+      { "mn": "Зүрх дэлсэх гомдолтой хүнээс жин, халуунд тэсвэргүй байдлыг асуух.", "en": "Ask palpitations patients about weight and heat intolerance." },
+      { "mn": "Нүдний шинж Грейвсийн өвчинд онцлог.", "en": "Eye signs are specific to Graves'." },
+      { "mn": "Турах эм, гормон хэрэглэсэн эсэхийг тодруулах.", "en": "Ask about diet pills and thyroid hormone." },
+      { "mn": "Түгшүүр гэж оношлохоос өмнө бие махбодын шалтгааныг хасах.", "en": "Exclude organic causes before diagnosing anxiety." }
+    ]
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}
