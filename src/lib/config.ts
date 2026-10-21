@@ -37,6 +37,12 @@ const EnvSchema = z.object({
   CHIMEGE_TTS_TOKEN: z.string().optional(),
   CHIMEGE_VOICE_MALE: z.string().default("MALE1v2"),
   CHIMEGE_VOICE_FEMALE: z.string().default("FEMALE3v2"),
+  // Which service voices the patient: Chimege (Mongolian-only) or ElevenLabs (Eleven v4 models speak Mongolian).
+  TTS_PROVIDER: z.enum(["chimege", "elevenlabs"]).default("chimege"),
+  ELEVENLABS_API_KEY: z.string().optional(),
+  ELEVENLABS_MODEL: z.string().default("eleven_v4_turbo"),
+  ELEVENLABS_VOICE_MALE: z.string().optional(),
+  ELEVENLABS_VOICE_FEMALE: z.string().optional(),
   SIMLI_API_KEY: z.string().optional(),
   SIMLI_FACE_ID_MALE: z.string().optional(),
   SIMLI_FACE_ID_FEMALE: z.string().optional(),

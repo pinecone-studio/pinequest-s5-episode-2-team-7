@@ -6,11 +6,12 @@ import type { SessionData } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/client";
 import { messages } from "@/lib/db/schema";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { isSpeechWav, MAX_STT_BYTES, splitSentences, synthesize, transcribe } from "@/lib/speech/chimege";
-import { createAvatarToken, voiceFor } from "@/lib/speech/features";
+import { getConfig } from "@/lib/config";
+import { isSpeechWav, MAX_STT_BYTES, splitSentences, transcribe } from "@/lib/speech/chimege";
+import { createAvatarToken, speak, voiceFor } from "@/lib/speech/features";
 import { loadOwnedSession } from "./sessions";
 
-/** Spoken replies are cached by message id: each synthesis costs a Chimege credit. */
+/** Spoken replies are cached by message id: each synthesis costs TTS credits. */
 const audioCache = new Map<string, Uint8Array<ArrayBuffer>>();
 const AUDIO_CACHE_LIMIT = 200;
 
@@ -55,13 +56,15 @@ export async function patientReplyAudio(
   const sentences = splitSentences(row.content);
   if (part !== undefined && (part < 0 || part >= sentences.length)) throw Errors.notFound("Хариултын хэсэг");
   // Keyed by session too: a cached reply must never be served to another session.
-  const key = `${session.id}:${messageId}:${part ?? "all"}`;
+  // The voice is part of the key so switching TTS service or voice is not masked by the cache.
+  const sex = session.caseSnapshot.public.patient.sex;
+  const key = `${session.id}:${messageId}:${part ?? "all"}:${getConfig().TTS_PROVIDER}:${voiceFor(sex)}`;
   const cached = audioCache.get(key);
   if (cached) return { wav: cached, parts: sentences.length };
 
   const limit = checkRateLimit(`tts:${auth.userId}`, 60);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
-  const wav = await synthesize(part === undefined ? row.content : sentences[part], voiceFor(session.caseSnapshot.public.patient.sex));
+  const wav = await speak(part === undefined ? row.content : sentences[part], sex);
   remember(key, wav);
   return { wav, parts: sentences.length };
 }
@@ -77,13 +80,13 @@ export async function fillerAudio(auth: SessionData, sessionId: string, index: n
   const filler = FILLERS[index];
   if (filler === undefined) throw Errors.notFound("Дуу");
   const session = await loadOwnedSession(auth, sessionId);
-  const voice = voiceFor(session.caseSnapshot.public.patient.sex);
-  const key = `filler:${voice}:${index}`;
+  const sex = session.caseSnapshot.public.patient.sex;
+  const key = `filler:${getConfig().TTS_PROVIDER}:${voiceFor(sex)}:${index}`;
   const cached = audioCache.get(key);
   if (cached) return cached;
   const limit = checkRateLimit(`tts:${auth.userId}`, 60);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
-  const wav = await synthesize(filler, voice);
+  const wav = await speak(filler, sex);
   remember(key, wav);
   return wav;
 }

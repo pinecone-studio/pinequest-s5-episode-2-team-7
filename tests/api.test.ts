@@ -315,6 +315,7 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
       if (url.includes("/transcribe")) return new Response("Хэзээнээс өвдсөн бэ?");
       if (url.includes("/synthesize")) return new Response(wav());
       if (url.includes("simli")) return Response.json({ session_token: "simli-session" });
+      if (url.includes("api.elevenlabs.io")) return new Response(new Uint8Array(3200)); // raw PCM16
       return new Response("unexpected", { status: 500 });
     });
   }
@@ -397,6 +398,29 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
     expect((calls.at(-1)?.init?.headers as Record<string, string>)["voice-id"]).toBe("FEMALE3v2");
     expect((await fillerRoute(req(`/api/sessions/${id}/filler?i=9`, { cookie: studentCookie }), ctx(id))).status).toBe(400);
     expect((await fillerRoute(req(`/api/sessions/${id}/filler?i=0`, { cookie: otherStudentCookie }), ctx(id))).status).toBe(404);
+  });
+
+  it("can voice the patient with ElevenLabs instead of Chimege", async () => {
+    useVoiceEnv();
+    Object.assign(process.env, { TTS_PROVIDER: "elevenlabs", ELEVENLABS_API_KEY: "el-test", ELEVENLABS_VOICE_FEMALE: "sarnai-voice-id" });
+    resetConfigForTests();
+    try {
+      const id = await newSession("abdominal-pain-01");
+      const reply = (await ask(id, "Хэзээнээс өвдөж эхэлсэн бэ?")).body.messages.find((m: { role: string }) => m.role === "patient");
+      const audio = await replyAudio(req(`/api/sessions/${id}/messages/${reply.id}/audio?part=0`, { cookie: studentCookie }), audioCtx(id, reply.id));
+      expect(audio.status).toBe(200);
+      const wav = new Uint8Array(await audio.arrayBuffer());
+      expect(String.fromCharCode(...wav.subarray(0, 4))).toBe("RIFF"); // raw PCM wrapped as WAV for Simli
+
+      const call = calls.find((c) => c.url.includes("api.elevenlabs.io"));
+      expect(call?.url).toContain("/text-to-speech/sarnai-voice-id?output_format=pcm_16000");
+      const body = JSON.parse(String(call?.init?.body));
+      expect(body.model_id).toBe("eleven_v4_turbo"); // a model that speaks Mongolian
+      expect(body.language_code).toBe("mn");
+      expect(calls.some((c) => c.url.includes("chimege.com/v1.2/synthesize"))).toBe(false);
+    } finally {
+      for (const key of ["TTS_PROVIDER", "ELEVENLABS_API_KEY", "ELEVENLABS_VOICE_FEMALE"]) delete process.env[key];
+    }
   });
 
   it("issues avatar tokens only for the owner's active session", async () => {
