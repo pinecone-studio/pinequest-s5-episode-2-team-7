@@ -21,7 +21,9 @@ export class AnthropicPatientProvider extends ChatModelProvider {
   ) {
     super();
     if (!apiKey) throw new ProviderError("ANTHROPIC_API_KEY is not set.", "anthropic", "config");
-    this.client = new Anthropic({ apiKey, maxRetries: 1 });
+    // Explicit base URL: never inherit ANTHROPIC_BASE_URL from the host
+    // environment (e.g. a developer tool's proxy) and send the key elsewhere.
+    this.client = new Anthropic({ apiKey, maxRetries: 1, baseURL: "https://api.anthropic.com" });
     this.label = `Claude (${model})`;
   }
 
