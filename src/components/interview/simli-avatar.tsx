@@ -68,8 +68,10 @@ export function SimliAvatar({
         import("simli-client/dist/client"),
         apiFetch<{ sessionToken: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST" }),
       ]);
-      // LiveKit transport needs no ICE servers (P2P would).
-      const client = new SimliClient(sessionToken, videoRef.current, audioRef.current, null, LogLevel.ERROR, "livekit");
+      // LiveKit transport needs no ICE servers (P2P would). CRITICAL only: on page exit the
+      // client logs a harmless "FAILED TO SEND FINAL MESSAGE" that Next.js shows as an issue;
+      // real failures still arrive through the "error"/"startup_error" events below.
+      const client = new SimliClient(sessionToken, videoRef.current, audioRef.current, null, LogLevel.CRITICAL, "livekit");
       client.on("start", () => setStatus("live"));
       client.on("speaking", () => setSpeaking(true));
       client.on("silent", () => setSpeaking(false));
