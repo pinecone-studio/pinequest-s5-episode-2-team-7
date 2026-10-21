@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "id": "vomiting-thirst-01",
+  "version": 1,
+  "internalTitle": "Diabetic ketoacidosis as first presentation of type 1 diabetes in a 19-year-old",
+  "public": {
+    "displayTitle": { "mn": "Бөөлжиж, их цангадаг 19 настай залуу", "en": "19-year-old with vomiting and extreme thirst" },
+    "specialty": "Дотоод шүүрэл / Яаралтай тусламж",
+    "difficulty": "intermediate",
+    "tags": ["яаралтай тусламж", "залуучууд"],
+    "setting": { "mn": "Яаралтай тусламжийн тасаг, орой 21:00", "en": "Emergency department, 21:00" },
+    "patient": {
+      "name": "Тэмүүлэн",
+      "age": 19,
+      "sex": "male",
+      "occupation": { "mn": "Их сургуулийн 1-р курсын оюутан", "en": "First-year university student" }
+    },
+    "chiefComplaint": { "mn": "Бөөлжих, их цангах", "en": "Vomiting and thirst" },
+    "chiefComplaintTopics": ["vomiting"],
+    "openingLine": { "mn": "Эмч ээ, өнөөдөр өглөөнөөс хойш бөөлжөөд, амьсгал давхцаад байна.", "en": "Doctor, I've been vomiting since this morning and I'm out of breath." },
+    "initialVitals": { "bloodPressure": "102/64", "heartRate": 124, "respiratoryRate": 30, "temperatureC": 36.9, "spo2": 99 },
+    "estimatedMinutes": 12,
+    "timeCritical": true
+  },
+  "persona": {
+    "personality": { "mn": "Ихэвчлэн хөгжилтэй залуу боловч одоо нойрмог, тэвчээргүй. Эмнэлэгт найз нь авчирсан.", "en": "Usually cheerful but now drowsy and impatient; a friend brought him in." },
+    "speakingStyle": { "mn": "Богино, удаан, ядарсан өнгөөр хариулна. Заримдаа 'мэдэхгүй ээ' гэнэ.", "en": "Short, slow, weary answers; sometimes says 'I don't know'." },
+    "emotionalState": { "mn": "Сульдсан, нойрмог, бага зэрэг айсан.", "en": "Weak, drowsy, a little frightened." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Чихрийн шижингийн кетоацидоз (1-р хэлбэрийн чихрийн шижин анх илэрсэн)", "en": "Diabetic ketoacidosis (new-onset type 1 diabetes)" },
+      "icd10": "E10.1",
+      "acceptedAliases": [
+        "diabetic ketoacidosis", "dka", "ketoacidosis", "new onset type 1 diabetes with dka", "type 1 diabetes with ketoacidosis",
+        "чихрийн шижингийн кетоацидоз", "кетоацидоз", "шижингийн кетоацидоз", "1-р хэлбэрийн чихрийн шижингийн кетоацидоз"
+      ],
+      "partialAliases": ["type 1 diabetes", "diabetes", "hyperglycaemia", "hyperglycemia", "чихрийн шижин", "1-р хэлбэрийн чихрийн шижин", "цусны сахар ихсэх"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Цочмог ходоод гэдэсний үрэвсэл", "en": "Acute gastroenteritis" },
+        "aliases": ["gastroenteritis", "ходоод гэдэсний үрэвсэл", "хоолны хордлого"],
+        "rationale": { "mn": "Бөөлжилт байгаа ч суулгалтгүй, хэдэн долоо хоногийн цангалт, их шээх, турах нь тохирохгүй.", "en": "Vomiting fits, but weeks of thirst, polyuria and weight loss do not." }
+      },
+      {
+        "label": { "mn": "Мухар олгойн цочмог үрэвсэл", "en": "Acute appendicitis" },
+        "aliases": ["appendicitis", "мухар олгой"],
+        "rationale": { "mn": "Кетоацидоз хэвлийгээр өвдүүлж мэс заслын өвчинтэй андуурагдах нь түгээмэл.", "en": "DKA abdominal pain is often mistaken for a surgical abdomen." }
+      },
+      {
+        "label": { "mn": "Уушгины хатгалгаа / сепсис", "en": "Pneumonia / sepsis" },
+        "aliases": ["pneumonia", "sepsis", "хатгалгаа", "сепсис"],
+        "rationale": { "mn": "Түргэн амьсгал нь уушгины өвчин биш, хүчиллэгийг нөхөх Куссмаулын амьсгал.", "en": "Rapid breathing here is Kussmaul compensation, not lung disease." }
+      }
+    ],
+    "summary": {
+      "mn": "19 настай эрэгтэйд 3 долоо хоног их цангах, их шээх (шөнө 3–4 удаа босох), 5 кг турах, ядрах шинж илэрч, өнөөдөр өглөөнөөс олон удаа бөөлжих, хэвлий өвдөх, амьсгал гүн түргэн болох, нойрмоглох шинж нэмэгдсэн. Өмнө нь эрүүл, эм уудаггүй. Авга ах нь бага наснаасаа инсулин тарьдаг.",
+      "en": "19-year-old: 3 weeks of thirst, polyuria and nocturia (3–4 times), 5 kg weight loss and fatigue; since this morning repeated vomiting, abdominal pain, deep rapid breathing and drowsiness. Previously well, no medications. Paternal uncle on insulin since childhood."
+    },
+    "facts": [
+      {
+        "id": "vomiting",
+        "kind": "positive",
+        "topics": ["vomiting", "onset", "progression", "nausea"],
+        "patientKnows": true,
+        "answer": { "mn": "Өнөө өглөөнөөс хойш зургаа, долоон удаа бөөлжсөн. Ус уусан ч гарчихаад байна.", "en": "Six or seven times since this morning. Even water comes back up." },
+        "leakTerms": ["долоон удаа"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "thirst-polyuria",
+        "kind": "positive",
+        "topics": ["urinary", "associated_general", "duration"],
+        "patientKnows": true,
+        "answer": { "mn": "Гурван долоо хоног их цангаад байсан. Өдөрт гурав, дөрвөн литр ус уучихдаг, тэгээд байн байн шээнэ. Шөнө гурав, дөрөв босдог болсон.", "en": "For three weeks I've been very thirsty — three or four litres a day — and peeing all the time. I get up three or four times a night." },
+        "significance": { "mn": "Их цангах, их шээх нь цусан дахь сахар өндөр байгааг илтгэнэ.", "en": "Polydipsia and polyuria indicate hyperglycaemia." },
+        "leakTerms": ["дөрвөн литр", "шөнө гурав"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "weight-loss",
+        "kind": "positive",
+        "topics": ["weight_loss", "appetite"],
+        "patientKnows": true,
+        "answer": { "mn": "Тийм ээ, турсан. Сайн идэж байсан мөртлөө нэг сард таван кг хассан.", "en": "Yes. I was eating well, but lost five kilos in a month." },
+        "significance": { "mn": "Хоолны дуршил сайн байхад турах нь инсулины дутагдлын шинж.", "en": "Weight loss despite eating suggests insulin deficiency." },
+        "leakTerms": ["таван кг"]
+      },
+      {
+        "id": "abdominal-pain",
+        "kind": "positive",
+        "topics": ["abdominal_pain", "location", "character"],
+        "patientKnows": true,
+        "answer": { "mn": "Гэдэс бүхэлдээ базлаад өвдөөд байна, тодорхой нэг газар биш.", "en": "My whole belly is cramping, not one particular spot." },
+        "significance": { "mn": "Кетоацидозын үед хэвлийн өвдөлт түгээмэл.", "en": "Abdominal pain is common in DKA." }
+      },
+      {
+        "id": "breathing",
+        "kind": "positive",
+        "topics": ["dyspnea"],
+        "patientKnows": true,
+        "answer": { "mn": "Амьсгаа давхцаад, гүнзгий амьсгалаад байх шиг. Найз маань чи яагаад ингэж амьсгалаад байгаа юм гэсэн.", "en": "I'm breathing hard and deep. My friend asked why I'm breathing like this." },
+        "significance": { "mn": "Гүн, түргэн (Куссмаулын) амьсгал нь бодисын солилцооны хүчиллэгийг илтгэнэ.", "en": "Kussmaul breathing indicates metabolic acidosis." },
+        "leakTerms": ["гүнзгий амьсгал"]
+      },
+      {
+        "id": "drowsy",
+        "kind": "positive",
+        "topics": ["fatigue", "dizziness"],
+        "patientKnows": true,
+        "answer": { "mn": "Их ядраад, унтмаар байна. Босохоор толгой эргэнэ.", "en": "So tired, I just want to sleep. Dizzy when I stand." },
+        "significance": { "mn": "Ухаан бүдгэрэх нь хүнд кетоацидозын шинж.", "en": "Reduced consciousness signals severe DKA." }
+      },
+      {
+        "id": "no-fever-diarrhea",
+        "kind": "negative",
+        "topics": ["fever", "diarrhea", "cough"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуураагүй. Суулгаагүй. Ханиалгахгүй.", "en": "No fever, no diarrhoea, no cough." },
+        "significance": { "mn": "Халдвар, ходоод гэдэсний үрэвслийн магадлалыг бууруулна.", "en": "Lowers likelihood of infection or gastroenteritis." }
+      },
+      {
+        "id": "trigger",
+        "kind": "positive",
+        "topics": ["trigger", "sick_contacts"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр долоо хоногийн өмнө хоолой өвдөөд, ханиад хүрсэн. Тэрнээс өөр юм болоогүй.", "en": "Two weeks ago I had a sore throat and a cold. Nothing else." }
+      },
+      {
+        "id": "no-diabetes-known",
+        "kind": "history",
+        "topics": ["diabetes", "pmh", "hospitalizations"],
+        "patientKnows": true,
+        "answer": { "mn": "Чихрийн шижин гэж хэлж байгаагүй. Сахараа хэмжүүлж үзээгүй. Өмнө нь эрүүл, эмнэлэгт хэвтэж байгаагүй.", "en": "Nobody ever told me I had diabetes. I've never had my sugar checked. Healthy before, never admitted." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Аавын ах маань багаасаа инсулин тарьдаг. Ээж бамбай булчирхайн эм уудаг.", "en": "My dad's older brother has injected insulin since childhood. Mum takes thyroid tablets." },
+        "significance": { "mn": "Гэр бүлд 1-р хэлбэрийн чихрийн шижин, аутоиммун өвчин байгаа нь эрсдэл.", "en": "Family history of type 1 diabetes and autoimmune disease." },
+        "leakTerms": ["инсулин"]
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications", "allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Эм уудаггүй. Бөөлжилт намдаах гэж аптекаас юм авсан ч ууж чадаагүй. Харшил байхгүй.", "en": "No medicines. I bought something for vomiting but couldn't keep it down. No allergies." }
+      },
+      {
+        "id": "diet-drinks",
+        "kind": "history",
+        "topics": ["diet"],
+        "patientKnows": true,
+        "answer": { "mn": "Цангахаараа ихэнхдээ чихэртэй ундаа, жүүс уучихдаг байсан.", "en": "When thirsty I mostly drank sugary soft drinks and juice." },
+        "leakTerms": ["чихэртэй ундаа"]
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "substance_use", "living_situation", "occupation"],
+        "patientKnows": true,
+        "answer": { "mn": "Оюутны байранд амьдардаг. Тамхи татдаггүй, хааяа пиво уудаг. Өөр юм хэрэглэдэггүй.", "en": "I live in the student dorm. Don't smoke, beer occasionally. No drugs." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоолны хордлого юм болов уу гэж бодсон. Ээж аав маань хөдөө байгаа, мэдээгүй.", "en": "I thought it was food poisoning. My parents are in the countryside and don't know." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 36.9°C, зүрхний цохилт 124/мин, амьсгал 30/мин (гүн, жигд), АД 102/64 мм.муб, SpO₂ 99%. Хуруун цусны сахар: 'HI' (хэмжих хязгаараас дээш).", "en": "T 36.9°C, HR 124, RR 30 (deep, regular), BP 102/64, SpO₂ 99%. Capillary glucose reads 'HI'." }
+      },
+      {
+        "id": "exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Нойрмог боловч дуудахад сэрнэ. Ам, хэл хуурай, нүд хонхойсон. Амнаас ацетоны (алимны) үнэр үнэртэнэ. Хэвлий бүхэлдээ бага зэрэг эмзэглэлтэй, цочролын шинжгүй.", "en": "Drowsy but rousable. Dry mucosa, sunken eyes. Fruity (acetone) breath. Diffuse mild abdominal tenderness without peritonism." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "polyuria-polydipsia", "category": "associated_symptoms", "topics": ["urinary", "associated_general"], "weight": 2.5, "critical": true,
+        "label": { "mn": "Их цангах, их шээх", "en": "Thirst and polyuria" },
+        "rationale": { "mn": "Шинээр илэрсэн чихрийн шижингийн гол түлхүүр шинж.", "en": "The key clue to new-onset diabetes." },
+        "suggestedQuestion": { "mn": "Сүүлийн үед их цангах, ойр ойрхон шээх болсон уу?" }
+      },
+      {
+        "id": "weight-loss", "category": "associated_symptoms", "topics": ["weight_loss"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Жин буурах", "en": "Weight loss" },
+        "rationale": { "mn": "Инсулины дутагдлыг илтгэнэ.", "en": "Suggests insulin deficiency." },
+        "suggestedQuestion": { "mn": "Сүүлийн үед жин хассан уу?" }
+      },
+      {
+        "id": "severity", "category": "red_flags", "topics": ["dyspnea", "fatigue", "dizziness"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Хүндийн шинж (амьсгал, ухаан)", "en": "Severity (breathing, consciousness)" },
+        "rationale": { "mn": "Куссмаулын амьсгал, нойрмоглох нь хүнд хүчиллэгийг заана.", "en": "Kussmaul breathing and drowsiness indicate severe acidosis." },
+        "suggestedQuestion": { "mn": "Амьсгаадаж байна уу? Нойрмоглох, ухаан бүдгэрэх зүйл байна уу?" }
+      },
+      {
+        "id": "vomiting-course", "category": "hpi", "topics": ["onset", "progression", "duration"], "weight": 1,
+        "label": { "mn": "Бөөлжилтийн эхлэл, явц", "en": "Onset and course of vomiting" },
+        "rationale": { "mn": "Шингэн алдалтын зэргийг үнэлнэ.", "en": "Assesses dehydration." },
+        "suggestedQuestion": { "mn": "Хэзээнээс бөөлжсөн бэ? Хэдэн удаа? Ус ууж чадаж байна уу?" }
+      },
+      {
+        "id": "abdominal-pain", "category": "hpi", "topics": ["abdominal_pain"], "weight": 1,
+        "label": { "mn": "Хэвлийн өвдөлт", "en": "Abdominal pain" },
+        "rationale": { "mn": "Кетоацидоз ба мэс заслын шалтгааныг ялгах.", "en": "DKA vs surgical cause." },
+        "suggestedQuestion": { "mn": "Гэдэс өвдөж байна уу? Хаана?" }
+      },
+      {
+        "id": "trigger", "category": "hpi", "topics": ["trigger", "fever", "sick_contacts"], "weight": 1,
+        "label": { "mn": "Өдөөгч хүчин зүйл (халдвар)", "en": "Precipitant (infection)" },
+        "rationale": { "mn": "Халдвар кетоацидозыг өдөөх нь түгээмэл.", "en": "Infection commonly precipitates DKA." },
+        "suggestedQuestion": { "mn": "Саяхан ханиад, халдвар туссан уу? Халуурсан уу?" }
+      },
+      {
+        "id": "family-history", "category": "family_history", "topics": ["family_history", "diabetes"], "weight": 1,
+        "label": { "mn": "Гэр бүлийн чихрийн шижин, аутоиммун өвчин", "en": "Family diabetes and autoimmune disease" },
+        "rationale": { "mn": "1-р хэлбэрийн чихрийн шижингийн удамшлын эрсдэл.", "en": "Hereditary risk for type 1 diabetes." },
+        "suggestedQuestion": { "mn": "Гэр бүлд чихрийн шижинтэй хүн бий юу?" }
+      },
+      {
+        "id": "medications", "category": "medications_allergies", "topics": ["medications", "allergies"], "weight": 1,
+        "label": { "mn": "Эм, харшил", "en": "Medications and allergies" },
+        "rationale": { "mn": "Эмчилгээний өмнө шаардлагатай.", "en": "Needed before treatment." },
+        "suggestedQuestion": { "mn": "Ямар нэг эм уудаг уу? Харшил бий юу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Хэдэн долоо хоногийн их цангах, их шээх, турах шинжийн дараа бөөлжих, хэвлий өвдөх, гүн түргэн амьсгал, нойрмоглох шинж нэмэгдсэн залуу хүнд 1-р хэлбэрийн чихрийн шижин кетоацидозоор анх илэрсэн байх магадлал өндөр. Залуу хүний бөөлжилтийг 'хоолны хордлого' гэж үзэхээс өмнө цангалт, шээс, жин буурахыг асууж, хуруун цусны сахар шалгана.",
+      "en": "Weeks of polydipsia, polyuria and weight loss followed by vomiting, abdominal pain, Kussmaul breathing and drowsiness in a young person suggest DKA as the first presentation of type 1 diabetes. Before calling it food poisoning, ask about thirst, urination and weight, and check capillary glucose."
+    },
+    "learningPoints": [
+      { "mn": "Бөөлжилттэй залуу хүнээс их цангах, их шээх, турахыг асуух.", "en": "Ask young vomiting patients about thirst, urination and weight loss." },
+      { "mn": "Гүн түргэн амьсгал нь уушгины бус, хүчиллэгийн шинж байж болно.", "en": "Deep rapid breathing may be acidosis, not lung disease." },
+      { "mn": "Кетоацидоз хэвлийн өвдөлтөөр мэс заслын өвчинтэй андуурагдана.", "en": "DKA can mimic a surgical abdomen." },
+      { "mn": "Халдвар зэрэг өдөөгч хүчин зүйлийг хайх.", "en": "Look for a precipitant such as infection." }
+    ],
+    "emergency": {
+      "escalation": { "mn": "Нэн даруй венийн шингэн сэлбэж, цусны сахар, кетон, хийн шинжилгээ, калийг шалгаж, инсулины дуслын протокол эхлүүлнэ.", "en": "Start IV fluids immediately, check glucose, ketones, blood gas and potassium, and begin the insulin infusion protocol." }
+    }
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

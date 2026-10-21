@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "id": "dyspnea-swelling-01",
+  "version": 1,
+  "internalTitle": "Acute decompensated chronic heart failure in a 74-year-old woman with long-standing hypertension who stopped her medicines",
+  "public": {
+    "displayTitle": { "mn": "Амьсгаадаж, хөл хавдсан 74 настай эмэгтэй", "en": "74-year-old woman with breathlessness and swollen legs" },
+    "specialty": "Зүрх судас",
+    "difficulty": "intermediate",
+    "tags": ["амьсгаадалт", "ахмад настан"],
+    "setting": { "mn": "Дүүргийн нэгдсэн эмнэлгийн яаралтай тусламж, шөнө 02:00", "en": "District hospital emergency room, 02:00" },
+    "patient": {
+      "name": "Должинсүрэн",
+      "age": 74,
+      "sex": "female",
+      "occupation": { "mn": "Тэтгэвэрт гарсан оёдолчин", "en": "Retired seamstress" }
+    },
+    "chiefComplaint": { "mn": "Амьсгаадах, хөл хавагнах", "en": "Breathlessness and leg swelling" },
+    "chiefComplaintTopics": ["dyspnea", "leg_swelling"],
+    "openingLine": { "mn": "Миний охин, амьсгаа давчдаад хэвтэж чадахгүй байна.", "en": "My dear, I'm so short of breath I can't lie down." },
+    "initialVitals": { "bloodPressure": "172/96", "heartRate": 108, "respiratoryRate": 26, "temperatureC": 36.6, "spo2": 89 },
+    "estimatedMinutes": 15,
+    "timeCritical": true
+  },
+  "persona": {
+    "personality": { "mn": "Эелдэг, хүнд төвөг удах дургүй эмээ. Эмээ ууж байгаагүйгээ хэлэхээс эхэндээ ичнэ.", "en": "Gentle grandmother who hates being a burden; embarrassed at first to admit she stopped her pills." },
+    "speakingStyle": { "mn": "Удаан, амьсгаадангаа богино өгүүлбэрээр ярина. Эмчийг 'миний охин', 'миний хүү' гэж дуудна.", "en": "Slow, breathless short sentences; calls the doctor 'my dear girl/boy'." },
+    "emotionalState": { "mn": "Айсан, ядарсан, амьсгаа давчдаж байгаадаа сандарсан.", "en": "Frightened, exhausted, panicky about breathing." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Зүрхний архаг дутагдлын сэдрэл", "en": "Acute decompensated heart failure" },
+      "icd10": "I50.9",
+      "acceptedAliases": [
+        "heart failure", "acute decompensated heart failure", "decompensated heart failure", "congestive heart failure", "chf", "adhf", "left ventricular failure",
+        "зүрхний дутагдал", "зүрхний архаг дутагдал", "зүрхний архаг дутагдлын сэдрэл", "зүрхний цочмог дутагдал", "зүүн ховдлын дутагдал", "зүрхний дутагдлын сэдрэл"
+      ],
+      "partialAliases": ["pulmonary oedema", "pulmonary edema", "fluid overload", "уушгины хаван", "шингэний ачаалал"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Уушгины архаг бөглөрөлт өвчний сэдрэл", "en": "COPD exacerbation" },
+        "aliases": ["copd", "уушгины архаг бөглөрөлт өвчин", "уабө"],
+        "rationale": { "mn": "Тамхи татаагүй, хэвтэхэд амьсгаадах, хөл хавагнах нь зүрхний шалтгааныг илүү заана.", "en": "Non-smoker; orthopnoea and oedema point to the heart." }
+      },
+      {
+        "label": { "mn": "Уушгины хатгалгаа", "en": "Pneumonia" },
+        "aliases": ["pneumonia", "хатгалгаа"],
+        "rationale": { "mn": "Халууралтгүй, идээт цэргүй.", "en": "No fever or purulent sputum." }
+      },
+      {
+        "label": { "mn": "Зүрхний булчингийн цочмог шигдээс", "en": "Acute myocardial infarction" },
+        "aliases": ["myocardial infarction", "mi", "acs", "шигдээс"],
+        "rationale": { "mn": "Зүрхний дутагдлыг өдөөж болох тул цээжний өвдөлтийг асууж, ЗЦБ хийнэ.", "en": "Can precipitate failure — ask about chest pain and do an ECG." }
+      },
+      {
+        "label": { "mn": "Бөөрний архаг дутагдал / нефроз хам шинж", "en": "Chronic kidney disease / nephrotic syndrome" },
+        "aliases": ["kidney failure", "nephrotic syndrome", "бөөрний дутагдал"],
+        "rationale": { "mn": "Хаван өгнө, гэхдээ хэвтэхэд амьсгаадах, шөнө амьсгал боогдож сэрэх нь зүрхний шинж.", "en": "Causes oedema, but orthopnoea and PND are cardiac." }
+      }
+    ],
+    "summary": {
+      "mn": "74 настай, 20 жил даралт ихсэлттэй, 5 жилийн өмнө 'зүрх томорсон' гэж хэлүүлсэн эмэгтэй 2 сарын өмнө эмээ дуусахад дахин аваагүй. 2 долоо хоногийн турш амьсгаадалт улам нэмэгдэж, одоо 3 дэр дэрлэж унтдаг, шөнө амьсгал боогдож сэрдэг, хоёр хөл хавагнаж, 4 кг нэмэгдсэн, шөнө хуурай ханиалгадаг. Давстай сүүтэй цай их уудаг.",
+      "en": "74-year-old with 20 years of hypertension, told of an 'enlarged heart' 5 years ago, stopped her tablets 2 months ago. Two weeks of worsening breathlessness, now three-pillow orthopnoea and PND, bilateral leg swelling, 4 kg weight gain and night-time dry cough. Drinks a lot of salty milk tea."
+    },
+    "facts": [
+      {
+        "id": "dyspnea-course",
+        "kind": "positive",
+        "topics": ["dyspnea", "onset", "progression", "duration"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр долоо хоногийн өмнөөс ажил хийхэд амьсгаадаад эхэлсэн. Одоо гэрийн дотор явахад ч амьсгаадна.", "en": "Two weeks ago I got breathless doing chores. Now even walking around the flat." },
+        "leakTerms": ["хоёр долоо хоног"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "orthopnea-pnd",
+        "kind": "positive",
+        "topics": ["aggravating", "relieving"],
+        "patientKnows": true,
+        "answer": { "mn": "Хэвтэхээр амьсгаа боогдоод байна. Гурван дэр дэрлэж хагас суугаа байдалтай унтдаг. Өнөө шөнө амьсгал боогдоод сэрчихсэн, цонхны дэргэд суугаад арай гэж амьсгалсан.", "en": "Lying flat chokes me. I sleep propped up on three pillows. Tonight I woke up gasping and had to sit by the window to breathe." },
+        "significance": { "mn": "Хэвтэхэд амьсгаадах, шөнө амьсгал боогдож сэрэх нь зүүн ховдлын дутагдлын онцлог шинж.", "en": "Orthopnoea and PND are characteristic of left heart failure." },
+        "leakTerms": ["гурван дэр", "цонхны дэргэд"]
+      },
+      {
+        "id": "leg-swelling",
+        "kind": "positive",
+        "topics": ["leg_swelling", "location"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр хөл шагайнаас дээш хавдаад, гутал минь багтахгүй болсон. Хуруугаар дарахад хонхойчихдог.", "en": "Both legs are swollen above the ankles; my shoes don't fit. Pressing leaves a dent." },
+        "significance": { "mn": "Хоёр талын жигд хаван нь системийн шингэн хуримтлалыг заана.", "en": "Bilateral pitting oedema indicates systemic fluid overload." },
+        "leakTerms": ["гутал минь багтахгүй"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "weight-gain",
+        "kind": "positive",
+        "topics": ["weight_loss", "appetite"],
+        "patientKnows": true,
+        "answer": { "mn": "Жин хасаагүй, харин нэмэгдсэн. Хоёр долоо хоногт дөрвөн кг нэмэгдчихсэн. Хоолонд дургүй, хэвлий дүүрээд байна.", "en": "No weight loss — I've gained. Four kilos in two weeks. Poor appetite, my belly feels full." },
+        "significance": { "mn": "Хурдан жин нэмэгдэх нь шингэн хуримтлагдсаныг илтгэнэ.", "en": "Rapid weight gain reflects fluid retention." },
+        "leakTerms": ["дөрвөн кг"]
+      },
+      {
+        "id": "night-cough",
+        "kind": "positive",
+        "topics": ["cough", "sputum"],
+        "patientKnows": true,
+        "answer": { "mn": "Шөнө хэвтэхээр хуурай ханиалгадаг. Заримдаа ягаавтар хөөсөрхөг цэр гардаг.", "en": "A dry cough when I lie down at night. Sometimes a little pinkish frothy phlegm." },
+        "significance": { "mn": "Ягаан хөөстэй цэр уушгины хаваныг илтгэж болно.", "en": "Pink frothy sputum can indicate pulmonary oedema." },
+        "leakTerms": ["хөөсөрхөг"]
+      },
+      {
+        "id": "urine-fatigue",
+        "kind": "positive",
+        "topics": ["urinary", "fatigue"],
+        "patientKnows": true,
+        "answer": { "mn": "Өдөр шээс багасчихсан, шөнө хэд хэд босдог. Их ядарч байна.", "en": "I pass less urine in the day and get up several times at night. Very tired." }
+      },
+      {
+        "id": "no-chest-pain-fever",
+        "kind": "negative",
+        "topics": ["chest_pain", "fever", "palpitations"],
+        "patientKnows": true,
+        "answer": { "mn": "Цээж өвдөөгүй, дарагдаагүй. Халуураагүй. Зүрх хааяа түргэн цохилдог.", "en": "No chest pain or pressure. No fever. My heart sometimes races." },
+        "significance": { "mn": "Шигдээс, хатгалгаа өдөөсөн байх магадлалыг бууруулна, гэхдээ ЗЦБ шаардлагатай.", "en": "Makes MI or pneumonia less likely as triggers, but an ECG is still needed." }
+      },
+      {
+        "id": "stopped-meds",
+        "kind": "history",
+        "topics": ["medications", "trigger"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралтын эм — эналаприл, фуросемид уудаг байсан. Хоёр сарын өмнө дуусахад тэтгэвэр гараагүй байсан болоод дахиж аваагүй... Хүүхдүүддээ төвөг удмааргүй байсан.", "en": "I took blood pressure tablets — enalapril and furosemide. They ran out two months ago before my pension came, and I didn't buy more... I didn't want to burden my children." },
+        "significance": { "mn": "Эм тасалсан нь зүрхний дутагдлын сэдрэлийн хамгийн түгээмэл өдөөгч.", "en": "Stopping medication is the commonest trigger of decompensation." },
+        "leakTerms": ["эналаприл", "фуросемид", "тэтгэвэр"]
+      },
+      {
+        "id": "salt-diet",
+        "kind": "history",
+        "topics": ["diet"],
+        "patientKnows": true,
+        "answer": { "mn": "Өдөрт давстай сүүтэй цай таван, зургаан аяга уудаг. Борц, давсалсан мах их иддэг.", "en": "Five or six bowls of salted milk tea a day. Lots of dried and salted meat." },
+        "significance": { "mn": "Давс их хэрэглэх нь шингэн хуримтлалыг нэмэгдүүлнэ.", "en": "High salt intake worsens fluid retention." },
+        "leakTerms": ["давстай сүүтэй цай"]
+      },
+      {
+        "id": "htn-heart",
+        "kind": "history",
+        "topics": ["hypertension", "heart_disease", "pmh"],
+        "patientKnows": true,
+        "answer": { "mn": "Хорин жил даралттай. Таван жилийн өмнө эмч 'зүрх чинь томорсон байна' гэж хэлсэн. Нэг удаа эмнэлэгт хэвтэж байсан.", "en": "High blood pressure for twenty years. Five years ago the doctor said my heart was enlarged. I was admitted once." },
+        "significance": { "mn": "Удаан хугацааны даралт ихсэлт зүрхний дутагдлын гол шалтгаан.", "en": "Long-standing hypertension is the main cause of heart failure." },
+        "leakTerms": ["зүрх чинь томорсон"]
+      },
+      {
+        "id": "other-pmh",
+        "kind": "negative",
+        "topics": ["diabetes", "lung_disease", "hyperlipidemia"],
+        "patientKnows": true,
+        "answer": { "mn": "Чихрийн шижин, уушгины өвчин байхгүй. Холестерол шалгуулж үзээгүй.", "en": "No diabetes or lung disease. Never had my cholesterol checked." }
+      },
+      {
+        "id": "allergies",
+        "kind": "history",
+        "topics": ["allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Эмийн харшил байхгүй.", "en": "No drug allergies." }
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "living_situation", "occupation"],
+        "patientKnows": true,
+        "answer": { "mn": "Тамхи, архи хэрэглэж байгаагүй. Оёдолчин байсан, тэтгэвэрт гарсан. Охиныхоо гэр бүлтэй орон сууцанд амьдардаг.", "en": "Never smoked or drank. I was a seamstress, now retired. I live with my daughter's family in an apartment." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Ээж маань даралттай байгаад, тархиндаа цус харваж нас барсан.", "en": "My mother had high blood pressure and died of a stroke." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Үхчих вий гэж айж байна, миний охин. Хүүхдүүддээ дахиад төвөг удчихлаа.", "en": "I'm scared I'm dying, my dear. And I've troubled my children again." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 36.6°C, зүрхний цохилт 108/мин (жигд бус), амьсгал 26/мин, АД 172/96 мм.муб, SpO₂ 89% (агаараар). Суугаа байдалтай.", "en": "T 36.6°C, HR 108 irregular, RR 26, BP 172/96, SpO₂ 89% RA. Sitting upright." }
+      },
+      {
+        "id": "exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Хүзүүний вен өргөссөн. Хоёр уушгины доод хагаст нойтон жижиг хэржигнүүр. Зүрхний оргилын түлхэлт зүүн тийш шилжсэн, III авиа сонсогдоно. Хоёр шилбэнд хонхойдог хаван. Элэг 3 см томорсон.", "en": "Raised JVP. Bibasal crackles. Displaced apex beat, S3 gallop. Bilateral pitting shin oedema. Liver 3 cm enlarged." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "orthopnea-pnd", "category": "hpi", "topics": ["aggravating", "relieving"], "weight": 2, "critical": true,
+        "label": { "mn": "Хэвтэхэд амьсгаадах, шөнө амьсгал боогдох", "en": "Orthopnoea and PND" },
+        "rationale": { "mn": "Зүрхний дутагдлын хамгийн онцлог шинж.", "en": "The most specific symptoms of heart failure." },
+        "suggestedQuestion": { "mn": "Хэвтэхэд амьсгаадах уу? Хэдэн дэр дэрлэж унтдаг вэ? Шөнө амьсгал боогдож сэрдэг үү?" }
+      },
+      {
+        "id": "medication-adherence", "category": "medications_allergies", "topics": ["medications", "trigger"], "weight": 2, "critical": true,
+        "label": { "mn": "Эмийн хэрэглээ, тасалсан эсэх", "en": "Medication adherence" },
+        "rationale": { "mn": "Эм тасалсан нь сэдрэлийн гол өдөөгч.", "en": "Stopping medicines is the main trigger." },
+        "suggestedQuestion": { "mn": "Ямар эм уудаг вэ? Эмээ тогтмол ууж байгаа юу?" }
+      },
+      {
+        "id": "cardiac-history", "category": "past_history", "topics": ["hypertension", "heart_disease", "pmh"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Даралт ихсэлт, зүрхний өвчний түүх", "en": "Hypertension and cardiac history" },
+        "rationale": { "mn": "Үндсэн шалтгааныг тодорхойлно.", "en": "Identifies the underlying cause." },
+        "suggestedQuestion": { "mn": "Даралт ихсэлт, зүрхний өвчин бий юу?" }
+      },
+      {
+        "id": "fluid", "category": "associated_symptoms", "topics": ["leg_swelling", "weight_loss"], "weight": 1.5,
+        "label": { "mn": "Хаван, жин нэмэгдэх", "en": "Oedema and weight gain" },
+        "rationale": { "mn": "Шингэн хуримтлалын зэргийг үнэлнэ.", "en": "Assesses fluid overload." },
+        "suggestedQuestion": { "mn": "Хөл хавагнасан уу? Жин өөрчлөгдсөн үү?" }
+      },
+      {
+        "id": "ischemia-infection", "category": "pertinent_negatives", "topics": ["chest_pain", "fever", "palpitations"], "weight": 1.5,
+        "label": { "mn": "Өдөөгч шалтгаан (шигдээс, халдвар, хэм алдагдал)", "en": "Precipitants (ischaemia, infection, arrhythmia)" },
+        "rationale": { "mn": "Сэдрэлийн бусад өдөөгчийг хайна.", "en": "Looks for other precipitants." },
+        "suggestedQuestion": { "mn": "Цээж өвдсөн үү? Халуурсан уу? Зүрх тасалдаж цохилдог уу?" }
+      },
+      {
+        "id": "salt", "category": "social_history", "topics": ["diet"], "weight": 1,
+        "label": { "mn": "Давс, шингэний хэрэглээ", "en": "Salt and fluid intake" },
+        "rationale": { "mn": "Монгол хоолны давс өндөр хэрэглээ сэдрэлд нөлөөлнө.", "en": "High-salt Mongolian diet contributes." },
+        "suggestedQuestion": { "mn": "Давс, цай хэр их хэрэглэдэг вэ?" }
+      },
+      {
+        "id": "cough", "category": "associated_symptoms", "topics": ["cough", "sputum"], "weight": 1,
+        "label": { "mn": "Ханиалгах, цэр", "en": "Cough and sputum" },
+        "rationale": { "mn": "Уушгины хаван, хатгалгааг ялгана.", "en": "Pulmonary oedema vs pneumonia." },
+        "suggestedQuestion": { "mn": "Ханиалгадаг уу? Цэр гардаг уу, ямар өнгөтэй?" }
+      },
+      {
+        "id": "social", "category": "social_history", "topics": ["living_situation", "allergies"], "weight": 1,
+        "label": { "mn": "Амьдрах нөхцөл, асаргаа, харшил", "en": "Living situation, support, allergies" },
+        "rationale": { "mn": "Эмийн хүртээмж, гэрээр асрах боломжийг үнэлнэ.", "en": "Medication access and home support." },
+        "suggestedQuestion": { "mn": "Хэнтэй амьдардаг вэ? Эмээ авахад хүндрэл гардаг уу? Харшил бий юу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Удаан хугацааны даралт ихсэлттэй ахмад настанд эм тасалсны дараа ачааллын амьсгаадалт нэмэгдэж, хэвтэхэд амьсгаадах, шөнө амьсгал боогдож сэрэх, хоёр хөл хавагнах, жин хурдан нэмэгдэх нь зүрхний архаг дутагдлын сэдрэл. Эм тасалсан шалтгаан (санхүү, ойлголт)-ыг асууж, давс их хэрэглэдэг Монгол хоолны дадлыг тодруулна. Шигдээс, халдвар, хэм алдагдал зэрэг өдөөгчийг хайна.",
+      "en": "Worsening exertional dyspnoea, orthopnoea, PND, bilateral oedema and rapid weight gain after stopping medication in an elderly hypertensive patient indicate acute decompensated heart failure. Ask why medicines were stopped (cost, understanding), assess salt intake, and look for precipitants such as MI, infection or arrhythmia."
+    },
+    "learningPoints": [
+      { "mn": "Амьсгаадалттай хүнээс хэвтэхэд амьсгаадах, шөнийн амьсгал боогдолтыг асуух.", "en": "Ask about orthopnoea and PND." },
+      { "mn": "Эмээ тогтмол ууж байгаа эсэх, яагаад тасалсныг тодруулах.", "en": "Check adherence and the reason for stopping." },
+      { "mn": "Давс, давстай цайны хэрэглээг асуух.", "en": "Ask about salt and salted tea intake." },
+      { "mn": "Сэдрэлийн өдөөгчийг (шигдээс, халдвар, хэм алдагдал) хайх.", "en": "Look for precipitants." }
+    ],
+    "emergency": {
+      "escalation": { "mn": "Суулгаж, хүчилтөрөгч өгч, венээр шээс хөөх эм тарьж, ЗЦБ хийж, зүрхний эмчид мэдэгдэнэ.", "en": "Sit upright, give oxygen, IV diuretic, ECG, and inform cardiology." }
+    }
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

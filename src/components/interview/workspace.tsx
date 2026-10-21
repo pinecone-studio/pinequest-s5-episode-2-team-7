@@ -1,238 +1,140 @@
 "use client";
 
+import { AnimatePresence, motion, useMotionValue, useReducedMotion } from "motion/react";
+import { ClipboardList, Clock, Keyboard, MessageSquare, Mic, SendHorizontal, Stethoscope, UserRound, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { apiFetch } from "@/lib/fetcher";
-import { SEX_LABELS } from "@/lib/i18n";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { t } from "@/i18n";
+import { describeError, sessionBackend, type ConsultBackend } from "@/lib/api";
+import { offlineBackend } from "@/lib/demo/offline";
+import { useNow } from "@/lib/use-now";
 import type { MessageView, ProviderBadge, SessionView, VoiceFeatures } from "@/lib/views";
-import { Alert, Badge, Button, Card, Spinner, cn } from "../ui";
+import { useToast } from "../providers";
+import { MoodMeter, PatientView, moodForCase } from "../patient/patient-view";
+import { Badge, Button, cn } from "../ui";
+import { ClinicalNotes } from "./clinical-notes";
 import { DiagnosisDialog } from "./diagnosis-dialog";
-import { PatientAvatar } from "./patient-avatar";
-import { Listener, MAX_RECORD_SECONDS, Recorder } from "./recorder";
-import type { EmotionId } from "@/lib/patient/emotions";
-import { AnamAvatar } from "./anam-avatar";
-import { CallView } from "./call-view";
-import { SimliAvatar, type AvatarHandle } from "./simli-avatar";
-import { SpeechPlayer } from "./speech-player";
-
-/** Number of hesitation sounds served by /api/sessions/[id]/filler. */
-const FILLER_COUNT = 3;
+import { VideoConsult } from "./video-consult";
+import { VitalsMonitor } from "./vitals-monitor";
+import { VoiceInput } from "./voice-input";
 
 const MAX_CHARS = 500;
+type Tab = "chat" | "patient" | "notes";
 
-const TIPS = [
-  "Нээлттэй асуултаар эхэлж, дараа нь нарийвчилж асуу.",
-  "Өвдөлтийг эхлэл, байршил, шинж, дамжилт, хүч, хугацаагаар тодруул.",
-  "Хавсарсан шинж, чухал сөрөг шинжийг мартуузай.",
-  "Өмнөх өвчин, эм, харшил, удамшил, нийгмийн түүхийг асуу.",
-];
+export function InterviewWorkspace({ initial, offlineCaseId, voice }: { initial: SessionView; offlineCaseId?: string; voice?: VoiceFeatures }) {
+  // With a talking avatar configured, the consultation is a full-screen video call.
+  if (voice?.avatar && !offlineCaseId) return <VideoConsult initial={initial} voice={voice} />;
+  return <ConsultWorkspace initial={initial} offlineCaseId={offlineCaseId} />;
+}
 
-const NO_VOICE: VoiceFeatures = { speechInput: false, speechOutput: false, avatar: false, avatarProvider: "simli" };
-
-export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: SessionView; voice?: VoiceFeatures }) {
+function ConsultWorkspace({ initial, offlineCaseId }: { initial: SessionView; offlineCaseId?: string }) {
   const router = useRouter();
+  const toast = useToast();
+  const backend: ConsultBackend = useMemo(() => (offlineCaseId ? offlineBackend(offlineCaseId) : sessionBackend(initial.id)), [offlineCaseId, initial.id]);
+  const c = initial.case;
+  const mood = useMemo(() => moodForCase(c), [c]);
+
   const [messages, setMessages] = useState<MessageView[]>(initial.messages);
   const [questionCount, setQuestionCount] = useState(initial.questionCount);
-  const [provider, setProvider] = useState(initial.provider);
+  const [provider, setProvider] = useState<ProviderBadge>(initial.provider);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [revealing, setRevealing] = useState<string | null>(null);
+  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [listening, setListening] = useState(false);
   const [showDiagnosis, setShowDiagnosis] = useState(false);
   const [ending, setEnding] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-  const [speakReplies, setSpeakReplies] = useState(voice.speechOutput);
-  const [recording, setRecording] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
-  const [handsFree, setHandsFree] = useState(false);
-  const [emotion, setEmotion] = useState<EmotionId>("worried");
-  const [studentSpeaking, setStudentSpeaking] = useState(false);
-  const [audioPlaying, setAudioPlaying] = useState(false);
-  const [avatarSpeaking, setAvatarSpeaking] = useState(false);
-  const recorderRef = useRef<Recorder | null>(null);
-  const listenerRef = useRef<Listener | null>(null);
-  const avatarRef = useRef<AvatarHandle>(null);
-  const playerRef = useRef<SpeechPlayer | null>(null);
-  const fillersRef = useRef<Promise<ArrayBuffer | null>[] | null>(null);
-  /** Latest versions of handlers the long-lived microphone listener calls. */
-  const onUtteranceRef = useRef<(wav: Blob) => void>(() => {});
+  const [tab, setTab] = useState<Tab>("chat");
+  const micLevel = useMotionValue(0);
+  const audioLevel = useMotionValue(0);
+  // Messages present on load appear without an entrance animation.
+  const [seen] = useState(() => new Set(initial.messages.map((m) => m.id)));
   const listRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const c = initial.case;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const limitReached = questionCount >= initial.maxQuestions;
+  const speaking = revealing !== null || audioPlaying;
 
+  // Keep the newest message in view, including while a reply is being revealed.
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, pending]);
+    const list = listRef.current;
+    const content = contentRef.current;
+    if (!list || !content) return;
+    const observer = new ResizeObserver(() => list.scrollTo({ top: list.scrollHeight, behavior: "smooth" }));
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [tab]);
 
-  // Release the microphone if the page is left while recording or listening.
-  useEffect(
-    () => () => {
-      void recorderRef.current?.stop();
-      void listenerRef.current?.stop();
-    },
-    [],
-  );
+  useEffect(() => () => audioRef.current?.pause(), []);
 
-  const patientSpeaking = audioPlaying || avatarSpeaking;
-  // While the patient talks, its voice may leak from the speakers into the
-  // microphone; require a louder voice before treating it as the student.
-  useEffect(() => {
-    if (listenerRef.current) listenerRef.current.vad.sensitivity = patientSpeaking ? 2.5 : 1;
-  }, [patientSpeaking]);
-
-  function player(): SpeechPlayer {
-    playerRef.current ??= new SpeechPlayer(() => avatarRef.current, setAudioPlaying);
-    return playerRef.current;
-  }
-
-  /**
-   * Speak one patient reply sentence by sentence: the first sentence starts
-   * playing as soon as it is voiced while the rest are fetched in parallel.
-   */
-  async function playReply(messageId: string) {
-    const p = player();
-    const generation = p.generation;
-    const url = (part: number) => `/api/sessions/${initial.id}/messages/${messageId}/audio?part=${part}&emotion=${emotion}`;
-    const wavOf = async (response: Response) => {
-      if (!response.ok) throw new Error();
-      return response.arrayBuffer();
-    };
+  async function speak(messageId: string) {
+    const blob = await backend.replyAudio(messageId);
+    if (!blob) return;
+    const audio = new Audio(URL.createObjectURL(blob));
+    audioRef.current?.pause();
+    audioRef.current = audio;
+    // Drive the mouth and the ring from the real audio loudness.
+    let raf = 0;
     try {
-      const first = await fetch(url(0));
-      const parts = Number(first.headers.get("x-speech-parts") ?? 1);
-      const rest = Array.from({ length: parts - 1 }, (_, i) => fetch(url(i + 1)).then(wavOf));
-      p.enqueue(await wavOf(first), generation);
-      for (const next of rest) p.enqueue(await next, generation);
+      const ctx = new AudioContext();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 512;
+      ctx.createMediaElementSource(audio).connect(analyser);
+      analyser.connect(ctx.destination);
+      const data = new Uint8Array(analyser.fftSize);
+      const loop = () => {
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (const v of data) sum += ((v - 128) / 128) ** 2;
+        audioLevel.set(Math.min(1, Math.sqrt(sum / data.length) * 4));
+        raf = requestAnimationFrame(loop);
+      };
+      audio.onplay = () => {
+        setAudioPlaying(true);
+        loop();
+      };
+      audio.onended = audio.onpause = () => {
+        cancelAnimationFrame(raf);
+        audioLevel.set(0);
+        setAudioPlaying(false);
+        void ctx.close();
+      };
     } catch {
-      setError("Хариултыг дуугаар тоглуулж чадсангүй.");
+      audio.onplay = () => setAudioPlaying(true);
+      audio.onended = audio.onpause = () => setAudioPlaying(false);
     }
+    await audio.play().catch(() => setAudioPlaying(false));
   }
 
-  /** "Ммм...", "За...": played the moment a question is sent so the pause before the answer feels natural. */
-  async function playFiller() {
-    fillersRef.current ??= Array.from({ length: FILLER_COUNT }, (_, i) =>
-      fetch(`/api/sessions/${initial.id}/filler?i=${i}`)
-        .then((r) => (r.ok ? r.arrayBuffer() : null))
-        .catch(() => null),
-    );
-    const p = player();
-    const generation = p.generation;
-    const wav = await fillersRef.current[Math.floor(Math.random() * FILLER_COUNT)];
-    if (wav) p.enqueue(wav, generation);
-  }
-
-  /** The student started talking: the patient stops mid-sentence, like a person would. */
-  const interruptPatient = useCallback(() => {
-    setStudentSpeaking(true);
-    playerRef.current?.stop();
-  }, []);
-
-  async function transcribe(wav: Blob): Promise<string | null> {
-    const { text } = await apiFetch<{ text: string }>("/api/speech/transcribe", { method: "POST", body: wav, headers: { "content-type": "audio/wav" } });
-    return text || null;
-  }
-
-  // Hands-free: each utterance is transcribed and sent without pressing anything.
-  useEffect(() => {
-    onUtteranceRef.current = async (wav: Blob) => {
-      setStudentSpeaking(false);
-      setTranscribing(true);
-      try {
-        const text = await transcribe(wav);
-        if (!text) return;
-        if (pending || limitReached) setDraft((prev) => (prev ? `${prev} ${text}` : text).slice(0, MAX_CHARS));
-        else void send(undefined, text);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Яриа танигдсангүй.");
-      } finally {
-        setTranscribing(false);
-      }
-    };
-  });
-
-  async function toggleHandsFree() {
-    if (listenerRef.current) {
-      const listener = listenerRef.current;
-      listenerRef.current = null;
-      setHandsFree(false);
-      setStudentSpeaking(false);
-      await listener.stop();
-      return;
-    }
-    const listener = new Listener({ onSpeechStart: interruptPatient, onUtterance: (wav) => onUtteranceRef.current(wav) });
-    try {
-      await listener.start();
-    } catch {
-      setError("Микрофон нээгдсэнгүй. Хөтчийн зөвшөөрлийг шалгана уу.");
-      return;
-    }
-    listenerRef.current = listener;
-    setHandsFree(true);
-    setError(null);
-  }
-
-  /** Mic button: first press records, second press (or the time limit) transcribes into the input. */
-  async function toggleRecording() {
-    if (!recorderRef.current) {
-      const recorder = new Recorder();
-      try {
-        await recorder.start();
-      } catch {
-        setError("Микрофон нээгдсэнгүй. Хөтчийн зөвшөөрлийг шалгана уу.");
-        return;
-      }
-      recorder.onLimit = () => void toggleRecording();
-      recorderRef.current = recorder;
-      setRecording(true);
-      setError(null);
-      return;
-    }
-    const recorder = recorderRef.current;
-    recorderRef.current = null;
-    setRecording(false);
-    setTranscribing(true);
-    try {
-      const text = await transcribe(await recorder.stop());
-      if (!text) setError("Үг танигдсангүй. Дахин ярина уу.");
-      else setDraft((prev) => (prev ? `${prev} ${text}` : text).slice(0, MAX_CHARS));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Яриа танигдсангүй.");
-    } finally {
-      setTranscribing(false);
-      inputRef.current?.focus();
-    }
-  }
-
-  async function send(event?: FormEvent, spoken?: string) {
+  async function send(event?: FormEvent) {
     event?.preventDefault();
-    const content = (spoken ?? draft).trim().slice(0, MAX_CHARS);
+    const content = draft.trim();
     if (!content || pending || limitReached) return;
     setPending(true);
-    setError(null);
-    if (speakReplies) {
-      playerRef.current?.stop(); // a new question replaces whatever the patient was saying
-      void playFiller();
-    }
     const tempId = `pending-${Date.now()}`;
     setMessages((prev) => [...prev, { id: tempId, role: "student", content, createdAt: new Date().toISOString() }]);
-    if (spoken === undefined) setDraft("");
+    setDraft("");
     try {
-      const result = await apiFetch<{ messages: MessageView[]; questionCount: number; provider: ProviderBadge }>(`/api/sessions/${initial.id}/messages`, {
-        method: "POST",
-        json: { content, emotion },
-      });
+      const result = await backend.ask(content);
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), ...result.messages]);
       setQuestionCount(result.questionCount);
       setProvider(result.provider);
-      const reply = result.messages.find((m) => m.role === "patient");
-      if (reply && speakReplies) void playReply(reply.id);
+      const reply = [...result.messages].reverse().find((m) => m.role === "patient");
+      if (reply) {
+        setRevealing(reply.id);
+        if (voiceMode) void speak(reply.id);
+      }
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setDraft(content);
-      setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
+      const { message, offline } = describeError(err);
+      toast({ message, tone: "error", action: offline && !offlineCaseId ? { label: t.errors.useDemo, href: "/demo" } : undefined });
     } finally {
       setPending(false);
-      inputRef.current?.focus();
+      if (!voiceMode) inputRef.current?.focus();
     }
   }
 
@@ -244,334 +146,372 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
   }
 
   async function endInterview() {
-    if (!window.confirm("Оношгүйгээр ярилцлагыг зогсоох уу? Үнэлгээ хийгдэхгүй.")) return;
+    if (!window.confirm(t.consult.endConfirm)) return;
     setEnding(true);
     try {
-      await apiFetch(`/api/sessions/${initial.id}/end`, { method: "POST" });
-      router.push("/dashboard");
+      await backend.end();
+      router.push(backend.casesHref);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
+      toast({ message: describeError(err).message, tone: "error" });
       setEnding(false);
     }
   }
 
-  const patientPanel = (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <PatientAvatar sex={c.patient.sex} age={c.patient.age} size="lg" />
-        <div>
-          <p className="text-lg font-semibold leading-tight">{c.patient.name}</p>
-          <p className="text-sm text-slate-500">
-            {c.patient.age} нас · {SEX_LABELS[c.patient.sex]}
-            {c.patient.occupation && ` · ${c.patient.occupation.mn}`}
-          </p>
-        </div>
+  async function submitDiagnosis(input: { diagnosis: string; reasoning: string }) {
+    await backend.submitDiagnosis(input);
+    router.push(backend.resultsHref);
+    router.refresh();
+  }
+
+  const patientCard = (
+    <div className="flex flex-col items-center gap-4 text-center">
+      <PatientView
+        sex={c.patient.sex}
+        age={c.patient.age}
+        mood={mood}
+        speaking={speaking}
+        listening={listening}
+        level={audioPlaying ? audioLevel : listening ? micLevel : undefined}
+        respiratoryRate={c.initialVitals?.respiratoryRate}
+        size="lg"
+        className="mt-6"
+      />
+      <div>
+        <p className="font-display text-xl font-bold">{c.patient.name}</p>
+        <p className="text-sm text-muted">
+          {t.cases.ageSex(c.patient.age, t.sex[c.patient.sex])}
+          {c.patient.occupation && ` · ${c.patient.occupation.mn}`}
+        </p>
       </div>
-      <dl className="space-y-3 text-sm">
-        <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Үндсэн зовиур</dt>
-          <dd className="mt-0.5 font-medium">{c.chiefComplaint.mn}</dd>
+      <MoodMeter mood={mood} />
+      <dl className="w-full space-y-2 text-left text-sm">
+        <div className="rounded-xl bg-sunken px-3 py-2">
+          <dt className="text-[11px] font-semibold uppercase tracking-wide text-subtle">{t.consult.chiefComplaint}</dt>
+          <dd className="mt-0.5 font-semibold">{c.chiefComplaint.mn}</dd>
         </div>
-        <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Орчин</dt>
+        <div className="rounded-xl bg-sunken px-3 py-2">
+          <dt className="text-[11px] font-semibold uppercase tracking-wide text-subtle">{t.consult.setting}</dt>
           <dd className="mt-0.5">{c.setting.mn}</dd>
         </div>
-        {c.initialVitals && (
-          <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Амин үзүүлэлт</dt>
-            <dd className="mt-1 grid grid-cols-2 gap-1.5 text-xs">
-              {c.initialVitals.bloodPressure && <Vital label="АД" value={c.initialVitals.bloodPressure} />}
-              {c.initialVitals.heartRate && <Vital label="Пульс" value={`${c.initialVitals.heartRate}/мин`} />}
-              {c.initialVitals.respiratoryRate && <Vital label="Амьсгал" value={`${c.initialVitals.respiratoryRate}/мин`} />}
-              {c.initialVitals.temperatureC && <Vital label="Халуун" value={`${c.initialVitals.temperatureC}°C`} />}
-              {c.initialVitals.spo2 && <Vital label="SpO₂" value={`${c.initialVitals.spo2}%`} />}
-            </dd>
-          </div>
-        )}
-        <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">Төлөв</dt>
-          <dd className="mt-1 flex flex-wrap items-center gap-1.5">
-            <Badge tone="emerald">Ярилцлага явагдаж байна</Badge>
-            <Badge>
-              {questionCount}/{initial.maxQuestions} асуулт
-            </Badge>
-            {provider.isDemo ? (
-              <Badge tone="amber">{provider.label}</Badge>
-            ) : (
-              <Badge tone="sky">AI: {provider.label}</Badge>
-            )}
-          </dd>
-        </div>
-        {voice.speechOutput && (
-          <div>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={speakReplies} onChange={(e) => setSpeakReplies(e.target.checked)} className="h-4 w-4 accent-brand-600" />
-              Өвчтөний хариуг чангаар унших
-            </label>
-          </div>
-        )}
       </dl>
-      <div className="rounded-xl bg-slate-50 p-3">
-        <p className="mb-1.5 text-xs font-semibold text-slate-600">Асуумжийн зөвлөмж</p>
-        <ul className="list-disc space-y-1 pl-4 text-xs text-slate-600">
-          {TIPS.map((tip) => (
-            <li key={tip}>{tip}</li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 
-  /** Message list + input: a full column in text mode, a drawer during a video call. */
-  const chatBody = (
-    <>
-      <div ref={listRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-5" aria-live="polite" aria-relevant="additions">
-        {messages.map((m) => (
-          <MessageBubble
-            key={m.id}
-            message={m}
-            sex={c.patient.sex}
-            age={c.patient.age}
-            onPlay={voice.speechOutput && m.role === "patient" && !m.id.startsWith("pending-") ? () => void playReply(m.id) : undefined}
-          />
-        ))}
-        {pending && (
-          <div className="flex items-end gap-2" role="status" aria-label={`${c.patient.name} хариулж байна`}>
-            <PatientAvatar sex={c.patient.sex} age={c.patient.age} size="sm" />
-            <span className="flex gap-1 rounded-2xl rounded-bl-md bg-slate-100 px-4 py-3">
-              <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
-              <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
-              <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
+  return (
+    <main className="mx-auto flex h-[calc(100dvh-3.5rem)] w-full max-w-[1440px] flex-col lg:px-4 lg:pb-4">
+      {/* Top bar */}
+      <div className="flex items-center gap-2 border-b border-line px-3 py-2.5 lg:border-0 lg:px-0 lg:py-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate font-display text-sm font-bold sm:text-base">{c.displayTitle.mn}</h1>
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-muted">
+            <Timer startedAt={initial.startedAt} />
+            <span aria-hidden>·</span>
+            <span className="tabular-nums">{t.consult.questionsUsed(questionCount, initial.maxQuestions)}</span>
+            <span className="hidden sm:inline">
+              {offlineCaseId ? (
+                <Badge tone="amber">{t.consult.offlineBadge}</Badge>
+              ) : provider.isDemo ? (
+                <Badge tone="amber">{provider.label}</Badge>
+              ) : (
+                <Badge tone="brand">{t.consult.aiBadge(provider.label)}</Badge>
+              )}
             </span>
           </div>
-        )}
+        </div>
+        <Button variant="ghost" size="sm" onClick={endInterview} disabled={ending || pending}>
+          <X size={15} aria-hidden />
+          <span className="hidden sm:inline">{t.consult.endInterview}</span>
+        </Button>
+        <Button size="sm" onClick={() => setShowDiagnosis(true)} disabled={pending} className="sm:h-9 sm:px-4">
+          <Stethoscope size={15} aria-hidden />
+          {t.consult.submitDiagnosis}
+        </Button>
       </div>
 
-      <form onSubmit={send} className="border-t border-slate-100 p-3 sm:p-4">
-        {error && (
-          <div className="mb-3">
-            <Alert>{error}</Alert>
-          </div>
-        )}
-        {voice.speechInput && (
-          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-            <Button type="button" size="sm" variant={handsFree ? "primary" : "ghost"} onClick={() => void toggleHandsFree()} aria-pressed={handsFree}>
-              {handsFree ? "Чөлөөт яриа: асаалттай" : "Чөлөөт яриа асаах"}
-            </Button>
-            {handsFree && (
-              <span className="flex items-center gap-1.5 text-slate-500" role="status">
-                <span className={cn("h-2 w-2 rounded-full", studentSpeaking ? "animate-pulse bg-red-500" : transcribing || pending ? "bg-amber-400" : "bg-emerald-500")} />
-                {studentSpeaking ? "Та ярьж байна…" : transcribing ? "Таны яриаг бичиж байна…" : pending ? "Өвчтөн бодож байна…" : patientSpeaking ? "Өвчтөн ярьж байна (ярьвал таслана)" : "Сонсож байна — асуултаа хэлээрэй"}
-              </span>
-            )}
-          </div>
-        )}
-        {limitReached ? (
-          <Alert tone="amber">Асуултын дээд хязгаарт хүрлээ. Оношоо илгээнэ үү.</Alert>
-        ) : (
-          <div className="flex items-end gap-2">
-            <label htmlFor="question" className="sr-only">
-              Өвчтөнд асуулт
-            </label>
-            <textarea
-              id="question"
-              ref={inputRef}
-              value={draft}
-              onChange={(e) => setDraft(e.target.value.slice(0, MAX_CHARS))}
-              onKeyDown={onKeyDown}
-              rows={1}
-              placeholder={recording ? "Сонсож байна… дахин дарж дуусгана" : transcribing ? "Яриаг бичвэр болгож байна…" : "Асуултаа бичнэ үү…"}
-              className="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2.5 text-[15px] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
-              disabled={pending || recording || transcribing}
-              autoFocus
-            />
-            {voice.speechInput && !handsFree && (
-              <Button
-                type="button"
-                variant={recording ? "primary" : "ghost"}
-                className={cn("h-11 shrink-0", recording && "bg-red-600 hover:bg-red-700")}
-                onClick={() => void toggleRecording()}
-                disabled={pending || transcribing}
-                aria-pressed={recording}
-                aria-label={recording ? "Бичлэгийг дуусгах" : "Дуугаар асуух"}
-                title={`Дуугаар асуух (${MAX_RECORD_SECONDS} сек хүртэл)`}
-              >
-                {transcribing ? <Spinner /> : recording ? <span aria-hidden className="block h-3.5 w-3.5 rounded-sm bg-white" /> : <MicIcon />}
-              </Button>
-            )}
-            <Button type="submit" className="h-11 shrink-0" disabled={pending || !draft.trim()}>
-              {pending ? <Spinner /> : "Илгээх"}
-            </Button>
-          </div>
-        )}
-        <p className="mt-1.5 flex justify-between text-[11px] text-slate-400">
-          <span className="hidden sm:inline">Enter — илгээх · Shift+Enter — шинэ мөр</span>
-          <span className="sm:hidden" />
-          <span>
-            {draft.length}/{MAX_CHARS}
-          </span>
-        </p>
-      </form>
-    </>
-  );
-
-  function changeEmotion(next: EmotionId) {
-    setEmotion(next);
-    avatarRef.current?.setEmotion(next);
-  }
-
-  const callStatus = studentSpeaking
-    ? "Та ярьж байна…"
-    : transcribing
-      ? "Таны яриаг бичиж байна…"
-      : pending
-        ? `${c.patient.name} бодож байна…`
-        : patientSpeaking
-          ? `${c.patient.name} ярьж байна — ярьвал таслана`
-          : handsFree
-            ? "Сонсож байна — асуултаа хэлээрэй"
-            : voice.speechInput
-              ? "Микрофоноо асаагаад ярина уу"
-              : "Чатаар асуулт бичнэ үү";
-
-  // Video call: the avatar fills the screen and the chat becomes a drawer.
-  if (voice.avatar) {
-    const fill = "relative h-full w-full overflow-hidden bg-slate-900";
-    const lastReply = [...messages].reverse().find((m) => m.role === "patient");
-    return (
-      <>
-        <CallView
-          patientCase={c}
-          avatar={
-            voice.avatarProvider === "anam" ? (
-              <AnamAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} emotion={emotion} className={fill} />
-            ) : (
-              <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} className={fill} />
-            )
-          }
-          chat={<div className="flex min-h-0 flex-1 flex-col">{chatBody}</div>}
-          status={callStatus}
-          listening={handsFree}
-          studentSpeaking={studentSpeaking}
-          canListen={voice.speechInput}
-          onToggleListen={() => void toggleHandsFree()}
-          speakReplies={speakReplies}
-          onToggleSpeak={() => {
-            if (speakReplies) playerRef.current?.stop();
-            setSpeakReplies((v) => !v);
-          }}
-          emotion={emotion}
-          onEmotion={changeEmotion}
-          caption={pending ? null : (lastReply?.content ?? null)}
-          messageCount={messages.length}
-          onDiagnosis={() => setShowDiagnosis(true)}
-          onEnd={endInterview}
-          busy={pending || ending}
-        />
-        <DiagnosisDialog open={showDiagnosis} onClose={() => setShowDiagnosis(false)} sessionId={initial.id} questionCount={questionCount} />
-      </>
-    );
-  }
-
-  return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-0 py-0 md:flex-row md:px-4 md:py-6">
-      {/* Patient panel: sidebar on desktop, collapsible summary on mobile */}
-      <aside className="md:w-80 md:shrink-0">
-        <Card className="hidden p-5 md:sticky md:top-20 md:block">{patientPanel}</Card>
-        <div className="border-b border-slate-200 bg-white px-4 py-3 md:hidden">
-          <button type="button" className="flex w-full items-center gap-3 text-left" aria-expanded={showInfo} onClick={() => setShowInfo((v) => !v)}>
-            <PatientAvatar sex={c.patient.sex} age={c.patient.age} size="sm" />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-semibold">
-                {c.patient.name}, {c.patient.age} нас
-              </span>
-              <span className="block truncate text-xs text-slate-500">{c.chiefComplaint.mn}</span>
-            </span>
-            <span className="text-xs text-brand-700">{showInfo ? "Хураах" : "Дэлгэрэнгүй"}</span>
+      {/* Mobile tabs */}
+      <div role="tablist" className="flex border-b border-line px-2 lg:hidden">
+        {(
+          [
+            ["chat", MessageSquare],
+            ["patient", UserRound],
+            ["notes", ClipboardList],
+          ] as const
+        ).map(([id, Icon]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={cn("relative flex flex-1 items-center justify-center gap-1.5 py-2.5 text-sm font-semibold", tab === id ? "text-accent" : "text-muted")}
+          >
+            <Icon size={15} aria-hidden />
+            {t.consult.tabs[id]}
+            {tab === id && <motion.span layoutId="consult-tab" className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-accent" />}
           </button>
-          {showInfo && <div className="mt-4">{patientPanel}</div>}
-        </div>
-      </aside>
+        ))}
+      </div>
 
-      <section aria-label="Ярилцлага" className="flex h-[calc(100dvh-7.5rem)] min-h-[420px] flex-1 flex-col bg-white md:h-[calc(100dvh-6.5rem)] md:rounded-2xl md:border md:border-slate-200 md:shadow-sm">
-        <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
-          <h1 className="truncate text-sm font-semibold text-slate-700">{c.displayTitle.mn}</h1>
-          <div className="flex shrink-0 gap-2">
-            <Button variant="ghost" size="sm" onClick={endInterview} disabled={ending || pending}>
-              Зогсоох
-            </Button>
-            <Button size="sm" onClick={() => setShowDiagnosis(true)} disabled={pending}>
-              Онош илгээх
-            </Button>
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)_300px]">
+        {/* Patient + vitals */}
+        <aside className={cn("min-h-0 space-y-4 overflow-y-auto p-4 lg:block lg:p-0", tab === "patient" ? "block" : "hidden")}>
+          <div className="glass rounded-3xl p-5">{patientCard}</div>
+          <VitalsMonitor vitals={c.initialVitals} />
+        </aside>
+
+        {/* Conversation */}
+        <section aria-label={t.consult.tabs.chat} className={cn("glass min-h-0 flex-col lg:flex lg:rounded-3xl", tab === "chat" ? "flex" : "hidden", "rounded-none border-x-0 lg:border-x")}>
+          {/* Mobile: the patient stays visible while chatting */}
+          <div className="flex items-center gap-3 border-b border-line px-4 py-2 lg:hidden">
+            <PatientView
+              sex={c.patient.sex}
+              age={c.patient.age}
+              mood={mood}
+              speaking={speaking}
+              listening={listening}
+              level={audioPlaying ? audioLevel : undefined}
+              size="sm"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">
+                {c.patient.name}, {c.patient.age}
+              </p>
+              <p className="truncate text-xs text-muted">{speaking ? t.consult.typing(c.patient.name) : c.chiefComplaint.mn}</p>
+            </div>
+            <VitalsMonitor vitals={c.initialVitals} compact />
           </div>
-        </div>
 
-        {voice.avatar && (
-          <div className="border-b border-slate-100 px-4 py-3">
-            <div className="mx-auto w-40 sm:w-56">
-              {voice.avatarProvider === "anam" ? (
-                <AnamAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} />
-              ) : (
-                <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} />
-              )}
+          <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6" aria-live="polite" aria-relevant="additions">
+            <div ref={contentRef} className="space-y-4">
+              {messages.map((m) => (
+                <MessageBubble
+                  key={m.id}
+                  message={m}
+                  animate={!seen.has(m.id)}
+                  reveal={m.id === revealing}
+                  onRevealed={() => setRevealing((id) => (id === m.id ? null : id))}
+                  patient={c.patient}
+                  mood={mood}
+                />
+              ))}
+              <AnimatePresence>
+                {pending && (
+                  <motion.div
+                    key="typing"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                    className="flex items-end gap-2"
+                    role="status"
+                    aria-label={t.consult.typing(c.patient.name)}
+                  >
+                    <PatientView sex={c.patient.sex} age={c.patient.age} mood={mood} speaking={false} size="sm" className="!h-8 !w-8" />
+                    <span className="flex gap-1.5 rounded-2xl rounded-bl-md bg-sunken px-4 py-3.5">
+                      <span className="typing-dot h-2 w-2 rounded-full bg-subtle" />
+                      <span className="typing-dot h-2 w-2 rounded-full bg-subtle" />
+                      <span className="typing-dot h-2 w-2 rounded-full bg-subtle" />
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-        )}
 
-        {chatBody}
-      </section>
+          {/* Composer */}
+          <form onSubmit={send} className="border-t border-line p-3 sm:p-4">
+            {limitReached ? (
+              <div className="rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">{t.consult.limitReached}</div>
+            ) : (
+              <>
+                <AnimatePresence initial={false}>
+                  {voiceMode && (
+                    <motion.div
+                      key="voice"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <VoiceInput
+                        transcribe={backend.transcribe}
+                        level={micLevel}
+                        onListeningChange={setListening}
+                        disabled={pending}
+                        onTranscript={(text) => {
+                          setDraft((d) => (d ? `${d} ${text}` : text).slice(0, MAX_CHARS));
+                          inputRef.current?.focus();
+                        }}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <div className="flex items-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setVoiceMode((v) => !v)}
+                    className={cn(
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line transition-colors",
+                      voiceMode ? "bg-accent-soft text-accent" : "text-muted hover:bg-sunken hover:text-ink",
+                    )}
+                    aria-pressed={voiceMode}
+                    aria-label={voiceMode ? t.consult.textMode : t.consult.voiceMode}
+                    title={voiceMode ? t.consult.textMode : t.consult.voiceMode}
+                  >
+                    {voiceMode ? <Keyboard size={18} /> : <Mic size={18} />}
+                  </button>
+                  <label htmlFor="question" className="sr-only">
+                    {t.consult.placeholder}
+                  </label>
+                  <textarea
+                    id="question"
+                    ref={inputRef}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value.slice(0, MAX_CHARS))}
+                    onKeyDown={onKeyDown}
+                    rows={1}
+                    placeholder={t.consult.placeholder}
+                    className="field-sizing-content max-h-36 min-h-11 flex-1 resize-none rounded-xl border border-line bg-surface-solid px-3.5 py-2.5 text-[15px] placeholder:text-subtle focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent-soft"
+                    disabled={pending}
+                  />
+                  <motion.button
+                    type="submit"
+                    whileTap={{ scale: 0.9 }}
+                    disabled={pending || !draft.trim()}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-ink shadow-sm transition-opacity disabled:opacity-40"
+                    aria-label={t.consult.send}
+                  >
+                    <SendHorizontal size={18} />
+                  </motion.button>
+                </div>
+                <p className="mt-1.5 hidden justify-between text-[11px] text-subtle sm:flex">
+                  <span>{t.consult.keyboardHint}</span>
+                  <span className="tabular-nums">
+                    {draft.length}/{MAX_CHARS}
+                  </span>
+                </p>
+              </>
+            )}
+          </form>
+        </section>
 
-      <DiagnosisDialog open={showDiagnosis} onClose={() => setShowDiagnosis(false)} sessionId={initial.id} questionCount={questionCount} />
+        {/* Notes */}
+        <aside className={cn("min-h-0 p-4 lg:block lg:p-0", tab === "notes" ? "block" : "hidden")}>
+          <div className="glass flex h-full flex-col rounded-3xl p-4">
+            <ClinicalNotes messages={messages} storageKey={`pq-notes:${initial.id}`} />
+            <p className="mt-4 rounded-xl bg-accent-soft px-3 py-2 text-xs leading-relaxed text-accent">{t.consult.tips}</p>
+          </div>
+        </aside>
+      </div>
+
+      <DiagnosisDialog
+        open={showDiagnosis}
+        onClose={() => setShowDiagnosis(false)}
+        questionCount={questionCount}
+        confidenceKey={initial.id}
+        onSubmit={submitDiagnosis}
+      />
     </main>
   );
 }
 
-function MicIcon() {
+function Timer({ startedAt }: { startedAt: string }) {
+  const now = useNow();
+  let text = "--:--";
+  if (now !== null) {
+    const s = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000));
+    const h = Math.floor(s / 3600);
+    const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    text = h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
   return (
-    <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="2" width="6" height="12" rx="3" />
-      <path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8" />
-    </svg>
-  );
-}
-
-function Vital({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="rounded-lg bg-slate-50 px-2 py-1">
-      <span className="text-slate-400">{label}</span> <span className="font-medium">{value}</span>
+    <span className="flex items-center gap-1 font-semibold tabular-nums text-ink" aria-label={t.consult.timer}>
+      <Clock size={12} className="text-accent" aria-hidden />
+      {text}
     </span>
   );
 }
 
-function MessageBubble({ message, sex, age, onPlay }: { message: MessageView; sex: "male" | "female"; age: number; onPlay?: () => void }) {
+interface BubbleProps {
+  message: MessageView;
+  animate: boolean;
+  reveal: boolean;
+  onRevealed: () => void;
+  patient: SessionView["case"]["patient"];
+  mood: ReturnType<typeof moodForCase>;
+}
+
+function MessageBubble({ message, animate, reveal, onRevealed, patient, mood }: BubbleProps) {
+  const motionProps = animate
+    ? { initial: { opacity: 0, y: 14, scale: 0.98 }, animate: { opacity: 1, y: 0, scale: 1 }, transition: { type: "spring" as const, stiffness: 420, damping: 34 } }
+    : {};
+
   if (message.role === "narrator") {
     return (
-      <div className="mx-auto max-w-xl rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-sky-700">Үзлэгийн тэмдэглэл</p>
-        <p className="prose-mn whitespace-pre-line">{message.content}</p>
-      </div>
+      <motion.div {...motionProps} className="mx-auto max-w-xl rounded-2xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3 text-sm">
+        <p className="mb-1 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
+          <Stethoscope size={13} aria-hidden />
+          {t.consult.exam}
+        </p>
+        <p className="prose-mn whitespace-pre-line text-ink">{reveal ? <WordReveal text={message.content} onDone={onRevealed} /> : message.content}</p>
+      </motion.div>
     );
   }
   const student = message.role === "student";
   return (
-    <div className={cn("flex items-end gap-2", student && "justify-end")}>
-      {!student && <PatientAvatar sex={sex} age={age} size="sm" />}
+    <motion.div {...motionProps} className={cn("flex items-end gap-2", student && "justify-end")}>
+      {!student && <PatientView sex={patient.sex} age={patient.age} mood={mood} speaking={false} size="sm" className="!h-8 !w-8" />}
       <p
         className={cn(
-          "prose-mn max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[15px] sm:max-w-[75%]",
-          student ? "rounded-br-md bg-brand-600 text-white" : "rounded-bl-md bg-slate-100 text-slate-800",
+          "prose-mn max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[15px] sm:max-w-[72%]",
+          student ? "rounded-br-md bg-accent text-accent-ink" : "rounded-bl-md bg-sunken text-ink",
           message.id.startsWith("pending-") && "opacity-70",
         )}
       >
-        <span className="sr-only">{student ? "Та: " : "Өвчтөн: "}</span>
-        {message.content}
+        <span className="sr-only">{student ? `${t.consult.you}: ` : `${t.consult.patient}: `}</span>
+        {reveal ? <WordReveal text={message.content} onDone={onRevealed} /> : message.content}
       </p>
-      {onPlay && (
-        <button type="button" onClick={onPlay} className="shrink-0 rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Чангаар сонсох" title="Чангаар сонсох">
-          🔊
-        </button>
-      )}
-    </div>
+    </motion.div>
+  );
+}
+
+/**
+ * The API returns the whole reply at once; reveal it word by word so the
+ * patient appears to speak (the avatar's mouth moves meanwhile).
+ */
+function WordReveal({ text, onDone }: { text: string; onDone: () => void }) {
+  const reduce = useReducedMotion();
+  const words = useMemo(() => text.split(/(\s+)/), [text]);
+  const [count, setCount] = useState(reduce ? words.length : 0);
+  const done = useRef(onDone);
+  useEffect(() => {
+    done.current = onDone;
+  });
+
+  useEffect(() => {
+    if (reduce) {
+      done.current();
+      return;
+    }
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 2; // word + following whitespace
+      setCount(i);
+      if (i >= words.length) {
+        window.clearInterval(id);
+        done.current();
+      }
+    }, 70);
+    return () => window.clearInterval(id);
+  }, [words, reduce]);
+
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden>
+        {words.slice(0, count).join("")}
+        {count < words.length && <span className="ml-0.5 inline-block h-4 w-0.5 translate-y-0.5 animate-pulse bg-current opacity-60" />}
+      </span>
+    </>
   );
 }

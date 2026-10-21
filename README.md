@@ -48,6 +48,17 @@ missed and why it matters.
 - **ML:** Python 3.11, uv, Transformers + PEFT (LoRA/QLoRA), bitsandbytes (CUDA), FastAPI inference service
 - **Tests:** Vitest (TypeScript), pytest (Python)
 
+## Frontend (student screens)
+
+- **Stack:** Next.js App Router + Tailwind v4 tokens (`src/app/globals.css`), `motion` for animation, `lucide-react` icons, Inter + Manrope (Cyrillic Extended, so ө/ү render).
+- **Text:** every student-facing string lives in `src/i18n/mn.ts`; `src/i18n/en.ts` is the English copy for judges.
+- **API calls:** all wrapped in `src/lib/api.ts` (`ConsultBackend`). The offline demo (`/demo`, `src/lib/demo/`) implements the same interface with 2 scripted cases, so the demo works without the database or model.
+- **Theme:** light/dark via a `theme` cookie; without it the OS setting applies (CSS `light-dark()`).
+- **Motion:** transform/opacity only; `prefers-reduced-motion` stops loops (global CSS rule + `MotionConfig reducedMotion="user"`).
+- **Vitals / mood / notes:** the API only has *initial* vitals, so the monitor drifts slightly around them; mood is inferred from public case data; clinical notes are a keyword pass over the visible chat. The diagnosis-confidence slider is browser-only (sessionStorage).
+- **Voice:** `src/lib/audio/recorder.ts` records 16 kHz mono WAV and posts it to `POST /api/speech/transcribe` (→ `{ text }`), the contract of the `voice-avatar-and-scoring-fixes` branch. Until that endpoint exists the UI asks the student to type. Patient audio is played from `GET /api/sessions/:id/messages/:messageId/audio` when available.
+- **3D later:** `src/components/patient/patient-view.tsx` is the swap point for a react-three-fiber avatar.
+
 ## Architecture in one paragraph
 
 The browser only ever receives public case fields and chat messages. For each

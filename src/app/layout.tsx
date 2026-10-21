@@ -1,11 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
+import { cookies } from "next/headers";
+import { Providers } from "@/components/providers";
 import { SiteHeader } from "@/components/site-header";
+import { THEME_COOKIE } from "@/lib/theme";
+import { t } from "@/i18n";
 import "./globals.css";
 
+// Both fonts ship Cyrillic Extended, which holds the Mongolian letters ө and ү.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  display: "swap",
+});
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  weight: ["600", "700", "800"],
   display: "swap",
 });
 
@@ -15,22 +26,28 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1f7a72",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4f7fa" },
+    { media: "(prefers-color-scheme: dark)", color: "#06101f" },
+  ],
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Chosen theme from the toggle's cookie; without it CSS follows the OS setting.
+  const theme = (await cookies()).get(THEME_COOKIE)?.value;
+  const themeClass = theme === "dark" || theme === "light" ? theme : "";
   return (
-    <html lang="mn" className={`${inter.variable} h-full antialiased`}>
+    <html lang="mn" className={`${inter.variable} ${manrope.variable} ${themeClass} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">{children}</div>
-        <footer className="border-t border-slate-200 bg-white">
-          <div className="mx-auto max-w-6xl px-4 py-5 text-xs leading-relaxed text-slate-500">
-            <strong className="font-semibold text-slate-600">Анхааруулга:</strong> Энэ нь зөвхөн боловсролын зориулалттай симуляц бөгөөд бодит
-            өвчтөнийг оношлох, эмчлэхэд ашиглахгүй. Кейсүүд нь зохиомол бөгөөд эмнэлзүйн удирдамж биш. Бодит яаралтай тохиолдолд 103-т
-            залгана уу.
-          </div>
-        </footer>
+        <Providers>
+          <SiteHeader />
+          <div className="flex flex-1 flex-col">{children}</div>
+          <footer className="border-t border-line">
+            <div className="mx-auto max-w-6xl px-4 py-5 text-xs leading-relaxed text-subtle">
+              <strong className="font-semibold text-muted">{t.app.disclaimerTitle}</strong> {t.app.disclaimer}
+            </div>
+          </footer>
+        </Providers>
       </body>
     </html>
   );
