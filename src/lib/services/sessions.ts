@@ -108,7 +108,17 @@ export interface QuestionResult {
   provider: ProviderBadge;
 }
 
-export async function askQuestion(auth: SessionData, sessionId: string, content: string, emotion?: EmotionId): Promise<QuestionResult> {
+/**
+ * `onSentence` (optional) receives each validated sentence of the model's
+ * reply while it is still being written, so it can be voiced right away.
+ */
+export async function askQuestion(
+  auth: SessionData,
+  sessionId: string,
+  content: string,
+  emotion?: EmotionId,
+  onSentence?: (sentence: string) => void,
+): Promise<QuestionResult> {
   const config = getConfig();
   const limit = checkRateLimit(`question:${auth.userId}`, config.RATE_LIMIT_MESSAGES_PER_MINUTE);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
@@ -138,7 +148,7 @@ export async function askQuestion(auth: SessionData, sessionId: string, content:
         turnIndex: session.questionCount,
         emotionalState: emotion ? EMOTIONS[emotion].persona : undefined,
       },
-      { provider: getPatientProvider(), fallback: config.PATIENT_FALLBACK_PROVIDER, intentMode: config.INTENT_CLASSIFIER, timeoutMs: config.PROVIDER_TIMEOUT_MS },
+      { provider: getPatientProvider(), fallback: config.PATIENT_FALLBACK_PROVIDER, intentMode: config.INTENT_CLASSIFIER, timeoutMs: config.PROVIDER_TIMEOUT_MS, onSentence },
     );
   } catch (error) {
     if (error instanceof SimulatorError) {

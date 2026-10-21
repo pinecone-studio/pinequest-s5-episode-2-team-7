@@ -24,6 +24,16 @@ export class ProviderError extends Error {
   }
 }
 
+export interface GenerateOptions {
+  signal?: AbortSignal;
+  /**
+   * Called with the reply so far while it streams in (providers that cannot
+   * stream call it once with the whole reply). Lets the first sentence be
+   * checked and voiced before the model has finished.
+   */
+  onText?: (soFar: string) => void;
+}
+
 /**
  * Turns a restricted turn context into the patient's words. Providers never
  * receive the private case — only `PatientTurnContext`.
@@ -33,7 +43,7 @@ export interface PatientProvider {
   readonly model: string;
   /** Human-readable label for diagnostics (no secrets). */
   readonly label: string;
-  generate(ctx: PatientTurnContext, options?: { signal?: AbortSignal }): Promise<string>;
+  generate(ctx: PatientTurnContext, options?: GenerateOptions): Promise<string>;
   health(): Promise<ProviderHealth>;
   /**
    * Optional: map a free-text question onto taxonomy topic ids when the

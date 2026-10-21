@@ -3,8 +3,10 @@ import { classifyQuestion, type Classification } from "./classifier";
 import { buildTurnContext, type TranscriptTurn } from "./context";
 import { planTurn, type TurnPlan } from "./engine";
 import { renderNarratorNote } from "./narrator";
+import { cleanReply } from "./providers/base";
 import { renderMockReply } from "./providers/mock";
 import { ProviderError, type PatientProvider, type ProviderId } from "./providers/types";
+import { splitSentences } from "./sentences";
 import { isTopicId } from "./topics";
 import { validatePatientReply, type ValidationIssue } from "./validator";
 
@@ -15,6 +17,12 @@ export interface SimulatorOptions {
   /** `hybrid` → ask the provider to classify when keywords find nothing. */
   intentMode: "keyword" | "hybrid";
   timeoutMs?: number;
+  /**
+   * Receives each sentence of the model's reply as soon as it is complete and
+   * the reply up to it passes validation — so it can be voiced while the rest
+   * is still being written. Never called for template (mock/fallback) text.
+   */
+  onSentence?: (sentence: string) => void;
 }
 
 export interface TurnInput {
@@ -106,19 +114,39 @@ export async function simulateTurn(input: TurnInput, options: SimulatorOptions):
     };
   }
 
+  const validate = (reply: string) => validatePatientReply({ reply, patientCase: input.patientCase, plan, ctx, disclosedFactIds: input.disclosedFactIds });
+  const early = options.onSentence ? earlySentences(validate, options.onSentence) : null;
+
   let reply: string | null = null;
   let failure: string | undefined;
   let issues: ValidationIssue[] = [];
   try {
-    reply = (await withTimeout((signal) => provider.generate(ctx, { signal }), timeoutMs)).trim();
-    issues = validatePatientReply({ reply, patientCase: input.patientCase, plan, ctx, disclosedFactIds: input.disclosedFactIds });
+    reply = (await withTimeout((signal) => provider.generate(ctx, { signal, onText: early?.push }), timeoutMs)).trim();
+    issues = validate(reply);
     if (issues.length > 0) failure = `validation: ${issues.map((i) => i.code).join(",")}`;
   } catch (error) {
     failure = error instanceof ProviderError ? `${error.kind}: ${error.message}` : error instanceof Error && error.name === "AbortError" ? "timeout" : "provider_error";
   }
 
   if (!failure && reply) {
+    early?.finish(reply);
     return { patientText: reply, narratorText, plan, classification, provider: provider.id, model: provider.model, fallbackUsed: false, validationIssues: [] };
+  }
+
+  // Sentences already voiced passed validation on their own: keep exactly
+  // those (the student has heard them) instead of switching to a template.
+  if (early && early.emitted.length > 0) {
+    return {
+      patientText: early.emitted.join(" "),
+      narratorText,
+      plan,
+      classification,
+      provider: provider.id,
+      model: provider.model,
+      fallbackUsed: false,
+      fallbackReason: `${provider.id}: truncated after ${early.emitted.length} sentence(s) (${failure})`,
+      validationIssues: issues,
+    };
   }
 
   if (options.fallback === "none") {
@@ -134,6 +162,43 @@ export async function simulateTurn(input: TurnInput, options: SimulatorOptions):
     fallbackUsed: true,
     fallbackReason: `${provider.id}: ${failure}`,
     validationIssues: issues,
+  };
+}
+
+/**
+ * Releases complete sentences of a streaming reply one by one, each only if
+ * the reply up to and including it passes validation. Stops at the first
+ * sentence that fails; `finish` releases whatever is left of a valid reply.
+ */
+export function earlySentences(validate: (text: string) => ValidationIssue[], emit: (sentence: string) => void) {
+  const emitted: string[] = [];
+  let blocked = false;
+  const clean = (text: string) => cleanReply(text).replace(/^["«“]/, "");
+  return {
+    emitted,
+    push(soFar: string) {
+      if (blocked) return;
+      const parts = splitSentences(clean(soFar));
+      // The last part may still be growing; everything before it is final.
+      for (let i = emitted.length; i < parts.length - 1; i++) {
+        if (validate([...emitted, parts[i]].join(" ")).length > 0) {
+          blocked = true;
+          return;
+        }
+        emitted.push(parts[i]);
+        emit(parts[i]);
+      }
+    },
+    finish(full: string) {
+      if (blocked) return;
+      const text = full.replace(/\s+/g, " ").trim();
+      const said = emitted.join(" ");
+      const rest = text.startsWith(said) ? text.slice(said.length).trim() : emitted.length === 0 ? text : "";
+      if (rest) {
+        emitted.push(rest);
+        emit(rest);
+      }
+    },
   };
 }
 

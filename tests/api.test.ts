@@ -458,6 +458,23 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
     expect(bad.status).toBe(400);
   });
 
+  it("streams a spoken turn as NDJSON ending with the stored messages", async () => {
+    const id = await newSession();
+    const request = req(`/api/sessions/${id}/messages`, { body: { content: "Тамхи татдаг уу?", emotion: "calm" }, cookie: studentCookie });
+    request.headers.set("accept", "application/x-ndjson");
+    const response = await sendMessage(request, ctx(id));
+    expect(response.headers.get("content-type")).toContain("application/x-ndjson");
+    const events = (await response.text())
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line) as { type: string; messages?: { role: string }[]; spokenParts?: number });
+    const done = events.at(-1)!;
+    expect(done.type).toBe("done");
+    expect(done.messages?.some((m) => m.role === "patient")).toBe(true);
+    // Template (mock) replies are not streamed; the client fetches their audio as before.
+    expect(done.spokenParts).toBe(0);
+  });
+
   it("issues avatar tokens only for the owner's active session", async () => {
     useVoiceEnv();
     const id = await newSession();

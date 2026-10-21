@@ -13,6 +13,7 @@ import { AnamAvatar } from "./anam-avatar";
 import { CallView } from "./call-view";
 import { SimliAvatar, type AvatarHandle } from "./simli-avatar";
 import { SpeechPlayer } from "./speech-player";
+import { askSpoken } from "./spoken-turn";
 
 /** Number of hesitation sounds served by /api/sessions/[id]/filler. */
 const FILLER_COUNT = 3;
@@ -44,6 +45,8 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
   const [studentSpeaking, setStudentSpeaking] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [avatarSpeaking, setAvatarSpeaking] = useState(false);
+  /** Reply sentences shown as captions while the reply is still streaming in. */
+  const [liveCaption, setLiveCaption] = useState<string | null>(null);
   const recorderRef = useRef<Recorder | null>(null);
   const listenerRef = useRef<Listener | null>(null);
   const avatarRef = useRef<AvatarHandle>(null);
@@ -215,20 +218,30 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
     setMessages((prev) => [...prev, { id: tempId, role: "student", content, createdAt: new Date().toISOString() }]);
     if (spoken === undefined) setDraft("");
     try {
-      const result = await apiFetch<{ messages: MessageView[]; questionCount: number; provider: ProviderBadge }>(`/api/sessions/${initial.id}/messages`, {
-        method: "POST",
-        json: { content, emotion },
-      });
+      const url = `/api/sessions/${initial.id}/messages`;
+      let result: { messages: MessageView[]; questionCount: number; provider: ProviderBadge; spokenParts?: number };
+      if (speakReplies) {
+        // Voice each sentence the moment it is ready instead of after the whole reply.
+        const p = player();
+        const generation = p.generation;
+        result = await askSpoken(url, { content, emotion }, ({ text, wav }) => {
+          setLiveCaption((prev) => (prev ? `${prev} ${text}` : text));
+          if (wav) p.enqueue(wav, generation);
+        });
+      } else {
+        result = await apiFetch(url, { method: "POST", json: { content, emotion } });
+      }
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), ...result.messages]);
       setQuestionCount(result.questionCount);
       const reply = result.messages.find((m) => m.role === "patient");
-      if (reply && speakReplies) void playReply(reply.id);
+      if (reply && speakReplies && !result.spokenParts) void playReply(reply.id);
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setDraft(content);
       setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
     } finally {
       setPending(false);
+      setLiveCaption(null);
       inputRef.current?.focus();
     }
   }
@@ -397,7 +410,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
           }}
           emotion={emotion}
           onEmotion={changeEmotion}
-          caption={pending ? null : (lastReply?.content ?? null)}
+          caption={liveCaption ?? (pending ? null : (lastReply?.content ?? null))}
           messageCount={messages.length}
           onDiagnosis={() => setShowDiagnosis(true)}
           onEnd={endInterview}

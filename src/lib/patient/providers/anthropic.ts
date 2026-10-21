@@ -54,23 +54,41 @@ export class AnthropicPatientProvider extends ChatModelProvider {
     return parseTopicList(text);
   }
 
-  private async send(model: string, request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string> {
+  override async completeStream(request: ChatRequest, options: { signal?: AbortSignal; onText: (soFar: string) => void }): Promise<string> {
+    return this.send(this.model, request, options);
+  }
+
+  private params(model: string, request: ChatRequest) {
     const thinking = NO_THINKING[model];
+    return {
+      model,
+      // Without thinking the reply alone needs little room; with adaptive
+      // thinking (other models) keep headroom so the text is not cut off.
+      max_tokens: thinking ? Math.max(512, request.maxTokens) : Math.max(2048, request.maxTokens),
+      system: request.system,
+      messages: request.messages,
+      output_config: { effort: "low" as const },
+      ...(thinking ? { thinking } : {}),
+      ...(FALLBACK_MODELS.has(model) ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
+    };
+  }
+
+  /** One request; with `onText` the reply is streamed and reported as it grows. */
+  private async send(model: string, request: ChatRequest, options?: { signal?: AbortSignal; onText?: (soFar: string) => void }): Promise<string> {
     try {
-      const response = await this.client.beta.messages.create(
-        {
-          model,
-          // Without thinking the reply alone needs little room; with adaptive
-          // thinking (other models) keep headroom so the text is not cut off.
-          max_tokens: thinking ? Math.max(512, request.maxTokens) : Math.max(2048, request.maxTokens),
-          system: request.system,
-          messages: request.messages,
-          output_config: { effort: "low" },
-          ...(thinking ? { thinking } : {}),
-          ...(FALLBACK_MODELS.has(model) ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
-        },
-        { signal: options?.signal },
-      );
+      let response;
+      if (options?.onText) {
+        const onText = options.onText;
+        let soFar = "";
+        const stream = this.client.beta.messages.stream(this.params(model, request), { signal: options.signal });
+        stream.on("text", (delta) => {
+          soFar += delta;
+          onText(soFar);
+        });
+        response = await stream.finalMessage();
+      } else {
+        response = await this.client.beta.messages.create(this.params(model, request), { signal: options?.signal });
+      }
       if (response.stop_reason === "refusal") throw new ProviderError("Claude declined the request", "anthropic", "bad_response");
       const text = response.content
         .map((block) => (block.type === "text" ? block.text : ""))

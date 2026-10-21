@@ -45,7 +45,8 @@ export class SpeechSegmenter {
     options: VadOptions,
     private readonly events: VadEvents = {},
   ) {
-    this.o = { startMs: 160, endSilenceMs: 750, maxMs: 14_000, minSpeechMs: 350, prerollMs: 300, ...options };
+    // 550 ms: short enough to answer promptly, long enough not to cut a question at a natural pause.
+    this.o = { startMs: 160, endSilenceMs: 550, maxMs: 14_000, minSpeechMs: 350, prerollMs: 300, ...options };
   }
 
   get threshold(): number {

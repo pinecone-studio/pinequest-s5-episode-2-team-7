@@ -213,6 +213,54 @@ describe("LLM provider safety net", () => {
     };
   }
 
+  /** Streams the reply word by word, like a real model. */
+  function streamingProvider(reply: string): PatientProvider {
+    return {
+      ...fakeProvider(reply),
+      async generate(_ctx, options) {
+        let soFar = "";
+        for (const word of reply.split(" ")) {
+          soFar = soFar ? `${soFar} ${word}` : word;
+          options?.onText?.(soFar);
+        }
+        return reply;
+      },
+    };
+  }
+
+  async function askStreaming(reply: string) {
+    const sentences: string[] = [];
+    const result = await simulateTurn(
+      { patientCase: chest, question: "Хэзээнээс өвдсөн бэ?", disclosedFactIds: new Set(), history: [], turnIndex: 0 },
+      { provider: streamingProvider(reply), fallback: "mock", intentMode: "keyword", onSentence: (s) => sentences.push(s) },
+    );
+    return { result, sentences };
+  }
+
+  it("releases each sentence of a streamed reply as soon as it is complete", async () => {
+    const reply = "Өнөө өглөө машинаа халааж байхад гэнэт өвдөж эхэлсэн. Одоо ч өвдөөд л байна, эмч ээ.";
+    const { result, sentences } = await askStreaming(reply);
+    expect(result.fallbackUsed).toBe(false);
+    expect(sentences).toEqual(["Өнөө өглөө машинаа халааж байхад гэнэт өвдөж эхэлсэн.", "Одоо ч өвдөөд л байна, эмч ээ."]);
+    expect(sentences.join(" ")).toBe(result.patientText);
+  });
+
+  it("stops before a streamed sentence that leaks the diagnosis and keeps only what was said", async () => {
+    const { result, sentences } = await askStreaming("Өнөө өглөө машинаа халааж байхад гэнэт өвдөж эхэлсэн. Надад зүрхний шигдээс болсон байх.");
+    expect(sentences).toEqual(["Өнөө өглөө машинаа халааж байхад гэнэт өвдөж эхэлсэн."]);
+    expect(result.patientText).toBe(sentences[0]);
+    expect(result.fallbackUsed).toBe(false);
+    expect(result.validationIssues.map((i) => i.code)).toContain("diagnosis_leak");
+    expectNoDiagnosis(result.patientText, chest);
+  });
+
+  it("falls back to templates when the first streamed sentence is already invalid", async () => {
+    const { result, sentences } = await askStreaming("Надад зүрхний шигдээс болсон байх, эмч ээ. Өглөө эхэлсэн.");
+    expect(sentences).toEqual([]);
+    expect(result.fallbackUsed).toBe(true);
+    expectNoDiagnosis(result.patientText, chest);
+  });
+
   it("uses a valid model reply as-is", async () => {
     const session = interview(chest, fakeProvider("Өнөө өглөө машинаа халааж байхад гэнэт өвдөж эхэлсэн, эмч ээ."));
     const result = await session.ask("Хэзээнээс өвдсөн бэ?");

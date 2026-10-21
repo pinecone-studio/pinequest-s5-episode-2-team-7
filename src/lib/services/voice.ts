@@ -9,8 +9,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { getConfig } from "@/lib/config";
 import { isSpeechWav, MAX_STT_BYTES, splitSentences, transcribe } from "@/lib/speech/chimege";
 import type { EmotionId } from "@/lib/patient/emotions";
-import { createAvatarToken, speak, voiceFor, voiceUsesEmotion } from "@/lib/speech/features";
-import { loadOwnedSession } from "./sessions";
+import { createAvatarToken, getVoiceFeatures, speak, voiceFor, voiceUsesEmotion } from "@/lib/speech/features";
+import { askQuestion, loadOwnedSession, type QuestionResult } from "./sessions";
 
 /** Spoken replies are cached by message id: each synthesis costs TTS credits. */
 const audioCache = new Map<string, Uint8Array<ArrayBuffer>>();
@@ -70,6 +70,59 @@ export async function patientReplyAudio(
   const wav = await speak(part === undefined ? row.content : sentences[part], sex, emotion);
   remember(key, wav);
   return { wav, parts: sentences.length };
+}
+
+/** One event of a spoken question (NDJSON line). */
+export type SpokenTurnEvent =
+  | { type: "sentence"; index: number; text: string; audio: string | null }
+  | ({ type: "done"; spokenParts: number } & QuestionResult);
+
+/**
+ * Asks a question and voices the reply sentence by sentence while the model
+ * is still writing it: each validated sentence is synthesized at once and
+ * sent (base64 WAV) in order, then the stored result follows. Saves the
+ * round trip of fetching audio after the whole reply is ready.
+ */
+export async function askQuestionSpoken(
+  auth: SessionData,
+  sessionId: string,
+  content: string,
+  emotion: EmotionId | undefined,
+  send: (event: SpokenTurnEvent) => void,
+): Promise<void> {
+  const session = await loadOwnedSession(auth, sessionId);
+  const sex = session.caseSnapshot.public.patient.sex;
+  const canSpeak = getVoiceFeatures(sex).speechOutput;
+  const voiced: { text: string; wav: Promise<Uint8Array<ArrayBuffer> | null> }[] = [];
+  let delivered = Promise.resolve();
+
+  const onSentence = (text: string) => {
+    const index = voiced.length;
+    const allowed = canSpeak && checkRateLimit(`tts:${auth.userId}`, 60).ok;
+    const wav = allowed ? speak(text, sex, emotion).catch(() => null) : Promise.resolve(null);
+    voiced.push({ text, wav });
+    delivered = delivered.then(async () => {
+      const audio = await wav;
+      send({ type: "sentence", index, text, audio: audio ? Buffer.from(audio).toString("base64") : null });
+    });
+  };
+
+  const result = await askQuestion(auth, sessionId, content, emotion, onSentence);
+  await delivered;
+
+  // Keep the audio for replays when the stored reply splits the same way.
+  const reply = result.messages.find((m) => m.role === "patient");
+  if (reply && voiced.length > 0) {
+    const parts = splitSentences(reply.content);
+    const mood = voiceUsesEmotion() ? (emotion ?? "") : "";
+    if (parts.length === voiced.length && parts.every((part, i) => part === voiced[i].text)) {
+      for (const [i, v] of voiced.entries()) {
+        const wav = await v.wav;
+        if (wav) remember(`${session.id}:${reply.id}:${i}:${getConfig().TTS_PROVIDER}:${voiceFor(sex)}:${mood}`, wav);
+      }
+    }
+  }
+  send({ type: "done", spokenParts: voiced.length, ...result });
 }
 
 /**

@@ -1,6 +1,7 @@
 import "server-only";
 import { ApiError } from "@/lib/api/http";
 import { getConfig } from "@/lib/config";
+import { splitSentences } from "@/lib/patient/sentences";
 
 /**
  * Chimege (chimege.com) Mongolian speech services, called only from the
@@ -55,26 +56,6 @@ export function splitForSpeech(text: string, max = 200): string[] {
   return parts;
 }
 
-/**
- * Splits a reply into spoken parts at sentence ends so the first sentence can
- * be voiced and played while the rest is still being synthesized. Very short
- * pieces ("Тийм.") are merged with the next one to keep requests few.
- */
-export function splitSentences(text: string, minChars = 12): string[] {
-  const sentences = text
-    .trim()
-    .replace(/\s+/g, " ")
-    .split(/(?<=[.!?…])\s+/)
-    .filter(Boolean);
-  const parts: string[] = [];
-  for (const sentence of sentences) {
-    const last = parts.at(-1);
-    if (last !== undefined && last.length < minChars) parts[parts.length - 1] = `${last} ${sentence}`;
-    else parts.push(sentence);
-  }
-  if (parts.length > 1 && parts.at(-1)!.length < minChars) parts[parts.length - 2] += ` ${parts.pop()}`;
-  return parts;
-}
 
 export async function synthesize(text: string, voice: string, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
   const token = getConfig().CHIMEGE_TTS_TOKEN;
@@ -155,3 +136,5 @@ export function isSpeechWav(wav: Uint8Array): boolean {
   const v = new DataView(wav.buffer, wav.byteOffset, wav.byteLength);
   return v.getUint16(20, true) === 1 && v.getUint16(22, true) === 1 && v.getUint32(24, true) === SAMPLE_RATE && v.getUint16(34, true) === 16;
 }
+
+export { splitSentences };
