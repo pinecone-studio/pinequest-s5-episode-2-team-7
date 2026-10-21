@@ -70,7 +70,7 @@ export function CallView({
   const clock = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
   return (
-    <main className="relative flex h-[calc(100dvh-3.5rem)] w-full flex-1 overflow-hidden bg-slate-950 text-white">
+    <main className="relative flex h-[calc(100dvh-3.5rem)] w-full flex-1 overflow-hidden bg-[#05080d] text-[#ffffff]">
       <div className="relative min-w-0 flex-1">
         {/* The patient, full screen */}
         <div className="absolute inset-0">{avatar}</div>
@@ -81,8 +81,8 @@ export function CallView({
             <p className="truncate text-lg font-semibold">
               {c.patient.name}, {c.patient.age}
             </p>
-            <p className="truncate text-sm text-white/70">{c.chiefComplaint.mn}</p>
-            <p className="mt-1 flex items-center gap-2 text-xs text-white/80">
+            <p className="truncate text-sm text-[#ffffff]/70">{c.chiefComplaint.mn}</p>
+            <p className="mt-1 flex items-center gap-2 text-xs text-[#ffffff]/80">
               <span className="font-mono">{clock}</span>
               <span aria-hidden>·</span>
               <span>
@@ -98,8 +98,8 @@ export function CallView({
           {captions && caption && (
             <p className="pointer-events-none max-h-28 max-w-2xl overflow-hidden rounded-xl bg-black/65 px-4 py-2 text-center text-base leading-snug sm:text-lg">{caption}</p>
           )}
-          <p className="flex items-center gap-2 text-sm text-white/85" role="status">
-            <span className={cn("h-2 w-2 rounded-full", studentSpeaking ? "animate-pulse bg-red-500" : listening ? "bg-emerald-400" : "bg-white/40")} />
+          <p className="flex items-center gap-2 text-sm text-[#ffffff]/85" role="status">
+            <span className={cn("h-2 w-2 rounded-full", studentSpeaking ? "animate-pulse bg-red-500" : listening ? "bg-emerald-400" : "bg-[#ffffff]/40")} />
             {status}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2.5">
@@ -116,7 +116,7 @@ export function CallView({
                 {mood.emoji}
               </RoundButton>
               {moodOpen && (
-                <div className="absolute bottom-14 left-1/2 z-10 w-52 -translate-x-1/2 rounded-2xl bg-slate-900/95 p-1.5 shadow-xl ring-1 ring-white/10">
+                <div className="absolute bottom-14 left-1/2 z-10 w-52 -translate-x-1/2 rounded-2xl bg-[#0b1220]/95 p-1.5 shadow-xl ring-1 ring-white/10">
                   {EMOTION_IDS.map((id) => (
                     <button
                       key={id}
@@ -125,7 +125,7 @@ export function CallView({
                         onEmotion(id);
                         setMoodOpen(false);
                       }}
-                      className={cn("flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm hover:bg-white/10", id === emotion && "bg-white/15")}
+                      className={cn("flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm hover:bg-[#ffffff]/10", id === emotion && "bg-[#ffffff]/15")}
                     >
                       <span>{EMOTIONS[id].emoji}</span>
                       {EMOTIONS[id].label}
@@ -143,7 +143,7 @@ export function CallView({
               </RoundButton>
               {unread > 0 && <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[11px] font-semibold">{unread}</span>}
             </div>
-            <button type="button" onClick={onDiagnosis} disabled={busy} className="h-12 rounded-full bg-white px-4 text-sm font-semibold text-slate-900 hover:bg-white/90 disabled:opacity-50">
+            <button type="button" onClick={onDiagnosis} disabled={busy} className="h-12 rounded-full bg-[#ffffff] px-4 text-sm font-semibold text-[#0f172a] hover:bg-[#ffffff]/90 disabled:opacity-50">
               Онош илгээх
             </button>
             <RoundButton label="Дуудлага дуусгах" onClick={onEnd} danger>
@@ -159,7 +159,7 @@ export function CallView({
       <aside
         aria-label="Чат"
         className={cn(
-          "absolute inset-y-0 right-0 z-20 flex w-full max-w-md flex-col bg-white text-slate-900 shadow-2xl transition-transform duration-200 sm:relative sm:shadow-none",
+          "absolute inset-y-0 right-0 z-20 flex w-full max-w-md flex-col bg-surface-solid text-ink shadow-2xl transition-transform duration-200 sm:relative sm:shadow-none",
           chatOpen ? "translate-x-0" : "pointer-events-none translate-x-full sm:hidden",
         )}
       >
@@ -200,7 +200,7 @@ function RoundButton({
       className={cn(
         "flex shrink-0 items-center justify-center rounded-full text-lg font-semibold backdrop-blur transition",
         big ? "h-14 w-14" : "h-12 w-12",
-        danger ? "bg-red-600 hover:bg-red-500" : active ? "bg-white text-slate-900" : "bg-white/15 hover:bg-white/25",
+        danger ? "bg-red-600 hover:bg-red-500" : active ? "bg-[#ffffff] text-[#0f172a]" : "bg-[#ffffff]/15 hover:bg-[#ffffff]/25",
       )}
     >
       {children}
@@ -246,7 +246,7 @@ function VitalsMonitor({ vitals }: { vitals: NonNullable<PublicCase["initialVita
   const cell = (label: string, value: string | number | undefined, color: string) =>
     value !== undefined && (
       <div>
-        <p className="text-[10px] uppercase tracking-wide text-white/50">{label}</p>
+        <p className="text-[10px] uppercase tracking-wide text-[#ffffff]/50">{label}</p>
         <p className={cn("font-mono text-xl font-bold leading-none", color)}>{value}</p>
       </div>
     );
@@ -260,7 +260,7 @@ function VitalsMonitor({ vitals }: { vitals: NonNullable<PublicCase["initialVita
         {cell("Халуун", vitals.temperatureC !== undefined ? `${vitals.temperatureC}°` : undefined, "text-amber-300")}
       </div>
       {hr && (
-        <button type="button" onClick={() => setBeep((v) => !v)} className="mt-2 w-full rounded-lg bg-white/10 px-2 py-1 text-[11px] text-white/80 hover:bg-white/20">
+        <button type="button" onClick={() => setBeep((v) => !v)} className="mt-2 w-full rounded-lg bg-[#ffffff]/10 px-2 py-1 text-[11px] text-[#ffffff]/80 hover:bg-[#ffffff]/20">
           {beep ? "♥ Мониторын дуу: асаалттай" : "♡ Мониторын дуу"}
         </button>
       )}

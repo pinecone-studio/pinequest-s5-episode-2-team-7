@@ -13,7 +13,7 @@ import { getTopic } from "./topics";
  * change here must bump PROMPT_FORMAT_VERSION and regenerate the golden
  * fixture (`npm run ml:fixtures`).
  */
-export const PROMPT_FORMAT_VERSION = "pq-patient-v1";
+export const PROMPT_FORMAT_VERSION = "pq-patient-v2";
 
 export interface TranscriptTurn {
   role: "student" | "patient";
@@ -104,7 +104,7 @@ export function buildTurnContext(args: {
 }
 
 const MODE_INSTRUCTIONS: Record<TurnMode, string> = {
-  answer: "Эмчийн асуултад зөвхөн доорх ЗӨВШӨӨРСӨН мэдээллээр хариул.",
+  answer: "Эмчийн асуултад доорх ЗӨВШӨӨРСӨН мэдээллээр, өөрийнхөө үгээр, сэтгэл санаандаа тохирсон өнгөөр хариул.",
   chief_complaint: "Эмч таны үндсэн зовиурыг тодруулж байна. Зовиураа баталж, товч хариул. Шинэ мэдээлэл бүү нэм.",
   broad:
     "Эмч ерөнхий асуулт асуулаа. Доорх ЗӨВШӨӨРСӨН мэдээллээс л товч хэлж, бусдыг нь эмч асуухыг хүлээ. Хэрэв зөвшөөрсөн мэдээлэл байхгүй бол өөр онцгой зүйл санаанд орохгүй байгаагаа хэлж, эмчийг асуухыг урь.",
@@ -115,7 +115,7 @@ const MODE_INSTRUCTIONS: Record<TurnMode, string> = {
   greeting: "Эмч мэндэллээ. Эелдгээр хариу мэндэлж, шинэ мэдээлэл бүү нэм.",
   identity: "Эмч таны нэр, насыг асууж байна. Нэр, насаа хэл.",
   exam: "Эмч таныг үзэх эсвэл хэмжилт хийхийг хүсэж байна. Зөвшөөрч, товч хариул. Үзлэгийн дүгнэлт бүү хэл — та үүнийг мэдэхгүй.",
-  clarify: "Эмчийн асуултыг ойлгосонгүй. Эелдгээр өөрөөр асуухыг хүс. Шинэ мэдээлэл бүү нэм.",
+  clarify: "Эмчийн хэлснийг сайн ойлгосонгүй. Жирийн хүн шиг байгалиар хариул (жишээ нь «Юу гэсэн үг вэ, эмч ээ?»), шаардлагатай бол өөрөөр асуухыг хүс. Шинэ эмнэлзүйн мэдээлэл бүү нэм.",
 };
 
 /** Render the restricted context into a chat prompt (system + turns). */
@@ -145,6 +145,7 @@ export function renderPatientPrompt(ctx: PatientTurnContext): {
   lines.push("4. Онош, өвчний нэр, эмнэлзүйн тайлбар хэзээ ч бүү хэл. Эмчид юу асуухыг бүү заа.");
   lines.push("5. Өмнө хэлсэн зүйлтэйгээ бүү зөрчилд.");
   lines.push("6. Үзлэг, шинжилгээний хариуг та мэдэхгүй.");
+  lines.push("7. Жинхэнэ хүн шиг яр: баримтыг үгчлэн бүү давт, өөрийнхөө үгээр хэл. Сэтгэл санаагаа илэрхийл, заримдаа эмчээс эргэж асуу (айдас, санаа зовнилоо), гэр бүл, ажлаа дурсаж болно — гэхдээ шинэ шинж тэмдэг, өвчний түүх бүү нэм.");
   lines.push("");
   lines.push("## Энэ удаагийн даалгавар");
   lines.push(MODE_INSTRUCTIONS[ctx.mode]);

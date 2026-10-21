@@ -369,7 +369,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
 
   // Video call: the avatar fills the screen and the chat becomes a drawer.
   {
-    const fill = "relative h-full w-full overflow-hidden bg-slate-900";
+    const fill = "relative h-full w-full overflow-hidden bg-[#0b1220]";
     const lastReply = [...messages].reverse().find((m) => m.role === "patient");
     return (
       <>
