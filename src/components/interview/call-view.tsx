@@ -70,13 +70,15 @@ export function CallView({
   const clock = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
   return (
-    <main className="relative flex h-[calc(100dvh-3.5rem)] w-full flex-1 overflow-hidden bg-[#05080d] text-[#ffffff]">
+    // Phones: the call covers the whole screen like FaceTime; larger screens keep the site header.
+    // overflow-clip (not hidden) so focusing something off-screen can never scroll the call sideways.
+    <main className="fixed inset-0 z-40 flex h-dvh w-full overflow-clip bg-[#05080d] text-[#ffffff] sm:relative sm:inset-auto sm:z-auto sm:h-[calc(100dvh-3.5rem)] sm:flex-1">
       <div className="relative min-w-0 flex-1">
         {/* The patient, full screen */}
         <div className="absolute inset-0">{avatar}</div>
 
         {/* Top bar */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent p-4 sm:p-5">
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent p-4 pt-[max(1rem,env(safe-area-inset-top))] sm:p-5">
           <div className="min-w-0">
             <p className="truncate text-lg font-semibold">
               {c.patient.name}, {c.patient.age}
@@ -94,7 +96,7 @@ export function CallView({
         </div>
 
         {/* Captions, status and controls stacked so they never overlap on narrow screens */}
-        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-black/80 to-transparent px-3 pb-5 pt-10">
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-black/80 to-transparent px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-10">
           {captions && caption && (
             <p className="pointer-events-none max-h-28 max-w-2xl overflow-hidden rounded-xl bg-black/65 px-4 py-2 text-center text-base leading-snug sm:text-lg">{caption}</p>
           )}
@@ -160,7 +162,8 @@ export function CallView({
         aria-label="Чат"
         className={cn(
           "absolute inset-y-0 right-0 z-20 flex w-full max-w-md flex-col bg-surface-solid text-ink shadow-2xl transition-transform duration-200 sm:relative sm:shadow-none",
-          chatOpen ? "translate-x-0" : "pointer-events-none translate-x-full sm:hidden",
+          // Closed: invisible too, so its input cannot take focus (and pop the keyboard) while hidden.
+          chatOpen ? "translate-x-0" : "pointer-events-none invisible translate-x-full sm:hidden",
         )}
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">

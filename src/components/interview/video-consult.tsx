@@ -59,6 +59,13 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
   const c = initial.case;
   const limitReached = questionCount >= initial.maxQuestions;
 
+  /** Back to the question box — only where it is on screen and typing is likely (not on touch phones). */
+  function focusInput() {
+    const input = inputRef.current;
+    if (!input || input.checkVisibility?.() === false || !window.matchMedia("(pointer: fine)").matches) return;
+    input.focus();
+  }
+
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, pending]);
@@ -199,7 +206,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
       setError(err instanceof Error ? err.message : "Яриа танигдсангүй.");
     } finally {
       setTranscribing(false);
-      inputRef.current?.focus();
+      focusInput();
     }
   }
 
@@ -250,7 +257,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
     } finally {
       setPending(false);
       setLiveCaption(null);
-      inputRef.current?.focus();
+      focusInput();
     }
   }
 
@@ -331,7 +338,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
               onKeyDown={onKeyDown}
               rows={1}
               placeholder={recording ? "Сонсож байна… дахин дарж дуусгана" : transcribing ? "Яриаг бичвэр болгож байна…" : "Асуултаа бичнэ үү…"}
-              className="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2.5 text-[15px] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2.5 text-base focus:border-brand-500 sm:text-[15px] focus:outline-none focus:ring-2 focus:ring-brand-200"
               disabled={pending || recording || transcribing}
               autoFocus
             />
