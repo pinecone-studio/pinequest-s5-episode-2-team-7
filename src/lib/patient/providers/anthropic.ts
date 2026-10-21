@@ -1,14 +1,27 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { ChatModelProvider, type ChatRequest } from "./base";
+import type { TopicId } from "../topics";
+import { ChatModelProvider, parseTopicList, TOPIC_CLASSIFIER_SYSTEM, type ChatRequest } from "./base";
 import { ProviderError, type ProviderHealth } from "./types";
 
 /** Models that accept the server-side refusal fallback (`fallbacks: "default"`). */
 const FALLBACK_MODELS = new Set(["claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5"]);
 
 /**
+ * How to switch thinking off per model: patient replies are 1–3 sentences, so
+ * thinking only adds latency. Sonnet 5.5 cannot fully disable it; between_tools
+ * skips it outside tool loops (we use no tools).
+ */
+const NO_THINKING: Record<string, { type: "disabled" } | { type: "between_tools" }> = {
+  "claude-sonnet-5-5": { type: "between_tools" },
+  "claude-haiku-5-5": { type: "disabled" },
+};
+
+/**
  * Anthropic Claude (paid). Patient replies are short, so `effort: "low"` is
- * used; the server-side refusal fallback is enabled where supported so a
- * classifier decline is re-run on Anthropic's recommended model.
+ * used and thinking is off where the model allows; the server-side refusal
+ * fallback is enabled where supported so a classifier decline is re-run on
+ * Anthropic's recommended model. Topic classification goes to a fast model
+ * (Haiku) so a keyword miss does not add a slow second round trip.
  */
 export class AnthropicPatientProvider extends ChatModelProvider {
   readonly id = "anthropic" as const;
@@ -18,6 +31,7 @@ export class AnthropicPatientProvider extends ChatModelProvider {
   constructor(
     apiKey: string,
     readonly model: string,
+    private readonly classifierModel: string = model,
   ) {
     super();
     if (!apiKey) throw new ProviderError("ANTHROPIC_API_KEY is not set.", "anthropic", "config");
@@ -27,17 +41,33 @@ export class AnthropicPatientProvider extends ChatModelProvider {
     this.label = `Claude (${model})`;
   }
 
-  async complete(request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string> {
+  complete(request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string> {
+    return this.send(this.model, request, options);
+  }
+
+  override async classifyTopics(question: string, options?: { signal?: AbortSignal }): Promise<TopicId[]> {
+    const text = await this.send(
+      this.classifierModel,
+      { system: TOPIC_CLASSIFIER_SYSTEM, messages: [{ role: "user", content: question.slice(0, 500) }], maxTokens: 60, temperature: 0 },
+      options,
+    );
+    return parseTopicList(text);
+  }
+
+  private async send(model: string, request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string> {
+    const thinking = NO_THINKING[model];
     try {
       const response = await this.client.beta.messages.create(
         {
-          model: this.model,
-          // Headroom for adaptive thinking on current models; replies are short.
-          max_tokens: Math.max(2048, request.maxTokens),
+          model,
+          // Without thinking the reply alone needs little room; with adaptive
+          // thinking (other models) keep headroom so the text is not cut off.
+          max_tokens: thinking ? Math.max(512, request.maxTokens) : Math.max(2048, request.maxTokens),
           system: request.system,
           messages: request.messages,
           output_config: { effort: "low" },
-          ...(FALLBACK_MODELS.has(this.model) ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
+          ...(thinking ? { thinking } : {}),
+          ...(FALLBACK_MODELS.has(model) ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
         },
         { signal: options?.signal },
       );
@@ -51,7 +81,7 @@ export class AnthropicPatientProvider extends ChatModelProvider {
     } catch (error) {
       if (error instanceof ProviderError) throw error;
       if (error instanceof Anthropic.AuthenticationError) throw new ProviderError("Invalid ANTHROPIC_API_KEY", "anthropic", "config");
-      if (error instanceof Anthropic.NotFoundError) throw new ProviderError(`Unknown model ${this.model}`, "anthropic", "config");
+      if (error instanceof Anthropic.NotFoundError) throw new ProviderError(`Unknown model ${model}`, "anthropic", "config");
       if (error instanceof Anthropic.RateLimitError) throw new ProviderError("Claude rate limit", "anthropic", "rate_limit");
       if (error instanceof Anthropic.APIConnectionTimeoutError) throw new ProviderError("Claude request timed out", "anthropic", "timeout");
       if (error instanceof Anthropic.APIUserAbortError) throw new ProviderError("Claude request aborted", "anthropic", "timeout");

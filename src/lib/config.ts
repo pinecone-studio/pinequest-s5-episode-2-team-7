@@ -22,6 +22,8 @@ const EnvSchema = z.object({
   GEMINI_MODEL: z.string().default("gemini-3.8-flash"),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default("claude-opus-5-5"),
+  /** Fast model for hybrid topic classification (keyword misses). */
+  ANTHROPIC_CLASSIFIER_MODEL: z.string().default("claude-haiku-5-5"),
   OPENAI_COMPAT_BASE_URL: z.string().optional(),
   OPENAI_COMPAT_API_KEY: z.string().optional(),
   OPENAI_COMPAT_MODEL: z.string().optional(),
