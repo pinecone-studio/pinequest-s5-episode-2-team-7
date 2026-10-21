@@ -25,6 +25,8 @@
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.4",
     "iron-session": "^9.0.1",
+    "lucide-react": "^1.60.0",
+    "motion": "^14.5.0",
     "next": "16.4.2",
     "pg": "^8.23.1",
     "react": "19.3.0",
