@@ -34,6 +34,16 @@ function simliFaceFor(sex: Sex): string | undefined {
   return sex === "male" ? c.SIMLI_FACE_ID_MALE : c.SIMLI_FACE_ID_FEMALE;
 }
 
+function anamAvatarFor(sex: Sex): string | undefined {
+  const c = getConfig();
+  return sex === "male" ? c.ANAM_AVATAR_ID_MALE : c.ANAM_AVATAR_ID_FEMALE;
+}
+
+function avatarConfigured(sex: Sex): boolean {
+  const c = getConfig();
+  return c.AVATAR_PROVIDER === "anam" ? Boolean(c.ANAM_API_KEY && anamAvatarFor(sex)) : Boolean(c.SIMLI_API_KEY && simliFaceFor(sex));
+}
+
 export function getVoiceFeatures(sex: Sex): VoiceFeatures {
   const c = getConfig();
   const speechOutput = ttsConfigured(sex);
@@ -41,15 +51,55 @@ export function getVoiceFeatures(sex: Sex): VoiceFeatures {
     speechInput: Boolean(c.CHIMEGE_STT_TOKEN),
     speechOutput,
     // The avatar lip-syncs to the patient's synthesized voice, so it needs TTS too.
-    avatar: speechOutput && Boolean(c.SIMLI_API_KEY && simliFaceFor(sex)),
+    avatar: speechOutput && avatarConfigured(sex),
+    avatarProvider: c.AVATAR_PROVIDER,
   };
 }
 
 /**
- * Short-lived Simli session token for the patient's face. The Simli API key
- * stays on the server; sessions are capped to keep paid minutes bounded.
+ * Short-lived session token for the patient's face from the configured avatar
+ * service. API keys stay on the server; sessions are capped to keep paid
+ * minutes bounded.
  */
 export async function createAvatarToken(sex: Sex, signal?: AbortSignal): Promise<string> {
+  return getConfig().AVATAR_PROVIDER === "anam" ? createAnamToken(sex, signal) : createSimliToken(sex, signal);
+}
+
+/**
+ * Anam session in audio-passthrough mode: Anam renders the face and lip-syncs
+ * to the PCM we stream (our TTS voice); its own LLM and voice are not used.
+ */
+async function createAnamToken(sex: Sex, signal?: AbortSignal): Promise<string> {
+  const c = getConfig();
+  const avatarId = anamAvatarFor(sex);
+  if (!c.ANAM_API_KEY || !avatarId) throw new ApiError(503, "avatar_unavailable", "Аватар тохируулагдаагүй байна.");
+  let response: Response;
+  try {
+    response = await fetch("https://api.anam.ai/v1/auth/session-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${c.ANAM_API_KEY}` },
+      body: JSON.stringify({
+        personaConfig: {
+          avatarId,
+          ...(c.ANAM_AVATAR_MODEL ? { avatarModel: c.ANAM_AVATAR_MODEL } : {}),
+          enableAudioPassthrough: true,
+          maxSessionLengthSeconds: 900,
+        },
+      }),
+      signal,
+    });
+  } catch {
+    throw new ApiError(503, "avatar_unavailable", "Аватарын үйлчилгээнд холбогдож чадсангүй.");
+  }
+  const body = (await response.json().catch(() => null)) as { sessionToken?: string } | null;
+  if (!response.ok || !body?.sessionToken) {
+    console.error(`[avatar] Anam HTTP ${response.status}: ${JSON.stringify(body).slice(0, 300)}`);
+    throw new ApiError(503, "avatar_unavailable", "Аватарын үйлчилгээ хариу өгсөнгүй.");
+  }
+  return body.sessionToken;
+}
+
+async function createSimliToken(sex: Sex, signal?: AbortSignal): Promise<string> {
   const c = getConfig();
   const faceId = simliFaceFor(sex);
   if (!c.SIMLI_API_KEY || !faceId) throw new ApiError(503, "avatar_unavailable", "Аватар тохируулагдаагүй байна.");

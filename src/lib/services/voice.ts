@@ -91,10 +91,10 @@ export async function fillerAudio(auth: SessionData, sessionId: string, index: n
   return wav;
 }
 
-export async function startAvatar(auth: SessionData, sessionId: string): Promise<{ sessionToken: string }> {
+export async function startAvatar(auth: SessionData, sessionId: string): Promise<{ sessionToken: string; provider: "simli" | "anam" }> {
   const session = await loadOwnedSession(auth, sessionId);
   if (session.status !== "active") throw Errors.conflict("Энэ ярилцлага дууссан байна.");
   const limit = checkRateLimit(`avatar:${auth.userId}`, 5);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
-  return { sessionToken: await createAvatarToken(session.caseSnapshot.public.patient.sex) };
+  return { sessionToken: await createAvatarToken(session.caseSnapshot.public.patient.sex), provider: getConfig().AVATAR_PROVIDER };
 }

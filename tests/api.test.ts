@@ -316,6 +316,7 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
       if (url.includes("/synthesize")) return new Response(wav());
       if (url.includes("simli")) return Response.json({ session_token: "simli-session" });
       if (url.includes("api.elevenlabs.io")) return new Response(new Uint8Array(3200)); // raw PCM16
+      if (url.includes("api.anam.ai")) return Response.json({ sessionToken: "anam-session" });
       return new Response("unexpected", { status: 500 });
     });
   }
@@ -423,12 +424,31 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
     }
   });
 
+  it("can render the patient with Anam in audio-passthrough mode", async () => {
+    useVoiceEnv();
+    Object.assign(process.env, { AVATAR_PROVIDER: "anam", ANAM_API_KEY: "anam-test", ANAM_AVATAR_ID_FEMALE: "hana-avatar-id" });
+    resetConfigForTests();
+    try {
+      const id = await newSession("abdominal-pain-01");
+      const response = await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: {}, cookie: studentCookie }), ctx(id));
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ sessionToken: "anam-session", provider: "anam" });
+      const call = calls.find((c) => c.url === "https://api.anam.ai/v1/auth/session-token");
+      expect((call?.init?.headers as Record<string, string>).Authorization).toBe("Bearer anam-test");
+      const persona = JSON.parse(String(call?.init?.body)).personaConfig;
+      expect(persona).toMatchObject({ avatarId: "hana-avatar-id", enableAudioPassthrough: true }); // our own voice drives the lips
+      expect(calls.some((c) => c.url.includes("simli"))).toBe(false);
+    } finally {
+      for (const key of ["AVATAR_PROVIDER", "ANAM_API_KEY", "ANAM_AVATAR_ID_FEMALE"]) delete process.env[key];
+    }
+  });
+
   it("issues avatar tokens only for the owner's active session", async () => {
     useVoiceEnv();
     const id = await newSession();
     const ok = await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: {}, cookie: studentCookie }), ctx(id));
     expect(ok.status).toBe(200);
-    expect((await ok.json()).sessionToken).toBe("simli-session");
+    expect(await ok.json()).toEqual({ sessionToken: "simli-session", provider: "simli" });
     const simli = calls.find((c) => c.url.includes("simli"));
     expect(JSON.parse(String(simli?.init?.body)).faceId).toBe("face-m");
     expect((await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: {}, cookie: otherStudentCookie }), ctx(id))).status).toBe(404);

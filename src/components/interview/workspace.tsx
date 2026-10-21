@@ -9,6 +9,7 @@ import { Alert, Badge, Button, Card, Spinner, cn } from "../ui";
 import { DiagnosisDialog } from "./diagnosis-dialog";
 import { PatientAvatar } from "./patient-avatar";
 import { Listener, MAX_RECORD_SECONDS, Recorder } from "./recorder";
+import { AnamAvatar } from "./anam-avatar";
 import { SimliAvatar, type AvatarHandle } from "./simli-avatar";
 import { SpeechPlayer } from "./speech-player";
 
@@ -24,7 +25,7 @@ const TIPS = [
   "Өмнөх өвчин, эм, харшил, удамшил, нийгмийн түүхийг асуу.",
 ];
 
-const NO_VOICE: VoiceFeatures = { speechInput: false, speechOutput: false, avatar: false };
+const NO_VOICE: VoiceFeatures = { speechInput: false, speechOutput: false, avatar: false, avatarProvider: "simli" };
 
 export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: SessionView; voice?: VoiceFeatures }) {
   const router = useRouter();
@@ -355,7 +356,11 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
         {voice.avatar && (
           <div className="border-b border-slate-100 px-4 py-3">
             <div className="mx-auto w-40 sm:w-56">
-              <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} />
+              {voice.avatarProvider === "anam" ? (
+                <AnamAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} />
+              ) : (
+                <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} />
+              )}
             </div>
           </div>
         )}
