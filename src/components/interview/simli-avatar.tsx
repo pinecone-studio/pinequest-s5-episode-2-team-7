@@ -67,7 +67,18 @@ export function SimliAvatar({
     [status],
   );
 
-  useEffect(() => () => void clientRef.current?.stop(), []);
+  // Close the Simli session on unmount and when the tab is closed or reloaded.
+  useEffect(() => {
+    const end = () => {
+      void clientRef.current?.stop();
+      clientRef.current = null;
+    };
+    window.addEventListener("pagehide", end);
+    return () => {
+      window.removeEventListener("pagehide", end);
+      end();
+    };
+  }, []);
   useEffect(() => onSpeakingChange?.(speaking), [speaking, onSpeakingChange]);
 
   async function start() {

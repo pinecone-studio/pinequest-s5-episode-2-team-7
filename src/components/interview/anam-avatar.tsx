@@ -83,13 +83,21 @@ export function AnamAvatar({
     [status],
   );
 
-  useEffect(
-    () => () => {
+  // End the Anam session whenever the call goes away — unmount, reload, tab
+  // close or navigation. Free plans allow one live session, and a session
+  // left open blocks the next call until it times out.
+  useEffect(() => {
+    const end = () => {
       clearTimeout(speakingTimer.current);
       void clientRef.current?.stopStreaming();
-    },
-    [],
-  );
+      clientRef.current = null;
+    };
+    window.addEventListener("pagehide", end);
+    return () => {
+      window.removeEventListener("pagehide", end);
+      end();
+    };
+  }, []);
   useEffect(() => onSpeakingChange?.(speaking), [speaking, onSpeakingChange]);
 
   async function start() {
@@ -109,7 +117,12 @@ export function AnamAvatar({
       setStatus("live");
     } catch (error) {
       console.error("[avatar] Anam failed to start", error);
-      setFailure(error instanceof Error ? error.message : String(error));
+      const message = error instanceof Error ? error.message : String(error);
+      setFailure(
+        /concurrency/i.test(message)
+          ? "Өөр цонхонд нээлттэй дуудлага байна (үнэгүй эрх нэг дуудлага зөвшөөрдөг). Бусад цонхыг хаагаад 1–2 минутын дараа дахин оролдоно уу."
+          : message,
+      );
       void clientRef.current?.stopStreaming();
       clientRef.current = null;
       setStatus("error");
