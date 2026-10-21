@@ -1,6 +1,7 @@
 import "server-only";
 import { ApiError } from "@/lib/api/http";
 import { getConfig } from "@/lib/config";
+import { EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
 import type { VoiceFeatures } from "@/lib/views";
 import { synthesize as synthesizeChimege } from "./chimege";
 import { synthesizeElevenLabs } from "./elevenlabs";
@@ -19,9 +20,18 @@ export function voiceFor(sex: Sex): string {
 }
 
 /** Text → 16 kHz mono WAV in the patient's voice, using the configured TTS service. */
-export function speak(text: string, sex: Sex, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
+export function speak(text: string, sex: Sex, emotion?: EmotionId, signal?: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
+  const c = getConfig();
   const voice = voiceFor(sex);
-  return getConfig().TTS_PROVIDER === "elevenlabs" ? synthesizeElevenLabs(text, voice, signal) : synthesizeChimege(text, voice, signal);
+  if (c.TTS_PROVIDER !== "elevenlabs") return synthesizeChimege(text, voice, signal);
+  const tag = c.ELEVENLABS_EMOTION_TAGS === "on" && emotion ? EMOTIONS[emotion].voiceTag : "";
+  return synthesizeElevenLabs(tag ? `${tag} ${text}` : text, voice, signal);
+}
+
+/** Whether `emotion` changes the synthesized audio (so it must be part of cache keys). */
+export function voiceUsesEmotion(): boolean {
+  const c = getConfig();
+  return c.TTS_PROVIDER === "elevenlabs" && c.ELEVENLABS_EMOTION_TAGS === "on";
 }
 
 function ttsConfigured(sex: Sex): boolean {
@@ -61,15 +71,15 @@ export function getVoiceFeatures(sex: Sex): VoiceFeatures {
  * service. API keys stay on the server; sessions are capped to keep paid
  * minutes bounded.
  */
-export async function createAvatarToken(sex: Sex, signal?: AbortSignal): Promise<string> {
-  return getConfig().AVATAR_PROVIDER === "anam" ? createAnamToken(sex, signal) : createSimliToken(sex, signal);
+export async function createAvatarToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal): Promise<string> {
+  return getConfig().AVATAR_PROVIDER === "anam" ? createAnamToken(sex, emotion, signal) : createSimliToken(sex, signal);
 }
 
 /**
  * Anam session in audio-passthrough mode: Anam renders the face and lip-syncs
  * to the PCM we stream (our TTS voice); its own LLM and voice are not used.
  */
-async function createAnamToken(sex: Sex, signal?: AbortSignal): Promise<string> {
+async function createAnamToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal): Promise<string> {
   const c = getConfig();
   const avatarId = anamAvatarFor(sex);
   if (!c.ANAM_API_KEY || !avatarId) throw new ApiError(503, "avatar_unavailable", "Аватар тохируулагдаагүй байна.");
@@ -84,6 +94,8 @@ async function createAnamToken(sex: Sex, signal?: AbortSignal): Promise<string> 
           ...(c.ANAM_AVATAR_MODEL ? { avatarModel: c.ANAM_AVATAR_MODEL } : {}),
           enableAudioPassthrough: true,
           maxSessionLengthSeconds: 900,
+          // Facial performance style (Cara 4 avatars; ignored by older models).
+          ...(emotion ? { directorNotes: { presetStyle: EMOTIONS[emotion].anamPreset, expressivity: 0.7 } } : {}),
         },
       }),
       signal,

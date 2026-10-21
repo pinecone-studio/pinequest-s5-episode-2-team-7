@@ -5,6 +5,7 @@ import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "reac
 // importing the real file directly works on case-sensitive bundlers (Turbopack).
 import type { SimliClient } from "simli-client/dist/client";
 import { apiFetch } from "@/lib/fetcher";
+import type { EmotionId } from "@/lib/patient/emotions";
 import { Button, Spinner } from "../ui";
 
 export interface AvatarHandle {
@@ -14,6 +15,8 @@ export interface AvatarHandle {
   speak(wav: ArrayBuffer): void;
   /** Stop talking now and drop queued audio (the student interrupted). */
   interrupt(): void;
+  /** Change the facial expression (no-op where the service cannot). */
+  setEmotion(emotion: EmotionId): void;
 }
 
 type Status = "off" | "connecting" | "live" | "error";
@@ -26,11 +29,14 @@ export function SimliAvatar({
   sessionId,
   name,
   onSpeakingChange,
+  className,
   ref,
 }: {
   sessionId: string;
   name: string;
   onSpeakingChange?: (speaking: boolean) => void;
+  /** Container classes; defaults to a square tile. */
+  className?: string;
   ref?: Ref<AvatarHandle>;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -53,6 +59,9 @@ export function SimliAvatar({
       },
       interrupt() {
         if (status === "live") clientRef.current?.ClearBuffer();
+      },
+      setEmotion() {
+        // Simli faces have no expression control.
       },
     }),
     [status],
@@ -93,7 +102,7 @@ export function SimliAvatar({
   }
 
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-900">
+    <div className={className ?? "relative aspect-square w-full overflow-hidden rounded-xl bg-slate-900"}>
       <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" aria-label={`${name} — видео аватар`} />
       <audio ref={audioRef} autoPlay />
       {status !== "live" && (

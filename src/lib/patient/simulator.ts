@@ -24,6 +24,8 @@ export interface TurnInput {
   /** Prior student/patient turns (excluding the opening line and narrator notes). */
   history: TranscriptTurn[];
   turnIndex: number;
+  /** Optional emotional state for this turn (see emotions.ts). */
+  emotionalState?: string;
 }
 
 export interface TurnResult {
@@ -80,6 +82,7 @@ export async function simulateTurn(input: TurnInput, options: SimulatorOptions):
     turnIndex: input.turnIndex,
   });
   const ctx = buildTurnContext({
+    emotionalState: input.emotionalState,
     patientCase: input.patientCase,
     plan,
     question: input.question,

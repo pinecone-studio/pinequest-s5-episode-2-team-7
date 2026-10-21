@@ -3,6 +3,7 @@
 import { useEffect, useId, useImperativeHandle, useRef, useState, type Ref } from "react";
 import type { AgentAudioInputStream, AnamClient } from "@anam-ai/js-sdk";
 import { apiFetch } from "@/lib/fetcher";
+import { EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
 import { Button, Spinner } from "../ui";
 import type { AvatarHandle } from "./simli-avatar";
 
@@ -20,11 +21,17 @@ export function AnamAvatar({
   sessionId,
   name,
   onSpeakingChange,
+  emotion,
+  className,
   ref,
 }: {
   sessionId: string;
   name: string;
   onSpeakingChange?: (speaking: boolean) => void;
+  /** Starting expression style (Anam Director Notes). */
+  emotion?: EmotionId;
+  /** Container classes; defaults to a square tile. */
+  className?: string;
   ref?: Ref<AvatarHandle>;
 }) {
   const videoId = `anam-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
@@ -68,6 +75,10 @@ export function AnamAvatar({
         clearTimeout(speakingTimer.current);
         setSpeaking(false);
       },
+      setEmotion(next: EmotionId) {
+        // Live facial cue (Cara 4 avatars); older models ignore it.
+        if (status === "live") clientRef.current?.sendDirectorNoteCue(EMOTIONS[next].anamCue);
+      },
     }),
     [status],
   );
@@ -87,7 +98,7 @@ export function AnamAvatar({
     try {
       const [{ createClient }, { sessionToken, provider }] = await Promise.all([
         import("@anam-ai/js-sdk"),
-        apiFetch<{ sessionToken: string; provider: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST" }),
+        apiFetch<{ sessionToken: string; provider: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST", json: { emotion } }),
       ]);
       if (provider !== "anam") throw new Error("Аватарын тохиргоо өөрчлөгдсөн байна. Хуудсаа дахин ачаална уу.");
       // Our own microphone handling (Chimege STT) stays in charge.
@@ -106,7 +117,7 @@ export function AnamAvatar({
   }
 
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-900">
+    <div className={className ?? "relative aspect-square w-full overflow-hidden rounded-xl bg-slate-900"}>
       <video id={videoId} autoPlay playsInline className="h-full w-full object-cover" aria-label={`${name} — видео аватар`} />
       {status !== "live" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center text-sm text-slate-200">

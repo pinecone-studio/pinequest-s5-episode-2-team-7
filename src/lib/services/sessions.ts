@@ -13,6 +13,7 @@ import { getPatientProvider } from "@/lib/patient/providers";
 import type { ProviderId } from "@/lib/patient/providers/types";
 import { openingMessage, simulateTurn, SimulatorError } from "@/lib/patient/simulator";
 import type { TopicId } from "@/lib/patient/topics";
+import { EMOTION_IDS, EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
 import { checkRateLimit } from "@/lib/rate-limit";
 import type { EvaluationView, MessageView, ProviderBadge, SessionSummary, SessionView } from "@/lib/views";
 import { generateFeedbackNarrative } from "./narrative";
@@ -21,6 +22,7 @@ export const MAX_QUESTIONS_PER_SESSION = 60;
 export const MAX_QUESTION_LENGTH = 500;
 
 export const QuestionInput = z.object({
+  emotion: z.enum(EMOTION_IDS).optional(),
   content: z.string().trim().min(1, "Асуултаа бичнэ үү").max(MAX_QUESTION_LENGTH, `Асуулт ${MAX_QUESTION_LENGTH} тэмдэгтээс хэтрэхгүй`),
 });
 
@@ -106,7 +108,7 @@ export interface QuestionResult {
   provider: ProviderBadge;
 }
 
-export async function askQuestion(auth: SessionData, sessionId: string, content: string): Promise<QuestionResult> {
+export async function askQuestion(auth: SessionData, sessionId: string, content: string, emotion?: EmotionId): Promise<QuestionResult> {
   const config = getConfig();
   const limit = checkRateLimit(`question:${auth.userId}`, config.RATE_LIMIT_MESSAGES_PER_MINUTE);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
@@ -128,7 +130,14 @@ export async function askQuestion(auth: SessionData, sessionId: string, content:
   let turn;
   try {
     turn = await simulateTurn(
-      { patientCase: session.caseSnapshot, question: content, disclosedFactIds: disclosed, history, turnIndex: session.questionCount },
+      {
+        patientCase: session.caseSnapshot,
+        question: content,
+        disclosedFactIds: disclosed,
+        history,
+        turnIndex: session.questionCount,
+        emotionalState: emotion ? EMOTIONS[emotion].persona : undefined,
+      },
       { provider: getPatientProvider(), fallback: config.PATIENT_FALLBACK_PROVIDER, intentMode: config.INTENT_CLASSIFIER, timeoutMs: config.PROVIDER_TIMEOUT_MS },
     );
   } catch (error) {

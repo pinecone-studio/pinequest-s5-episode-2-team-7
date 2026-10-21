@@ -286,3 +286,18 @@ describe("grounding check", () => {
     expect(result.patientText).toContain("татаж");
   });
 });
+
+describe("patient emotion", () => {
+  it("replaces the case's emotional state in the prompt, nothing else", async () => {
+    const { buildTurnContext, renderPatientPrompt } = await import("./context");
+    const { planTurn } = await import("./engine");
+    const { classifyQuestion } = await import("./classifier");
+    const q = "Тамхи татдаг уу?";
+    const plan = planTurn(chest, classifyQuestion(q), { disclosedFactIds: new Set(), turnIndex: 0 });
+    const base = { patientCase: chest, plan, question: q, alreadySharedFactIds: new Set<string>(), history: [] };
+    const normal = renderPatientPrompt(buildTurnContext(base)).system;
+    const angry = renderPatientPrompt(buildTurnContext({ ...base, emotionalState: "Уурласан." })).system;
+    expect(angry).toContain("- Сэтгэл санаа: Уурласан.");
+    expect(angry.replace("Уурласан.", "")).toBe(normal.replace(chest.persona.emotionalState.mn, ""));
+  });
+});

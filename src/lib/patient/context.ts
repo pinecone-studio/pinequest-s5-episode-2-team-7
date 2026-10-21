@@ -63,6 +63,8 @@ function trimHistory(history: TranscriptTurn[]): TranscriptTurn[] {
 }
 
 export function buildTurnContext(args: {
+  /** Emotional state chosen during the call; replaces the case's default wording. */
+  emotionalState?: string;
   patientCase: PatientCase;
   plan: TurnPlan;
   question: string;
@@ -85,7 +87,7 @@ export function buildTurnContext(args: {
       setting: c.public.setting.mn,
       personality: c.persona.personality.mn,
       speakingStyle: c.persona.speakingStyle.mn,
-      emotionalState: c.persona.emotionalState.mn,
+      emotionalState: args.emotionalState ?? c.persona.emotionalState.mn,
     },
     chiefComplaint: c.public.chiefComplaint.mn,
     openingLine: c.public.openingLine.mn,

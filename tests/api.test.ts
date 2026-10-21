@@ -437,10 +437,23 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
       expect((call?.init?.headers as Record<string, string>).Authorization).toBe("Bearer anam-test");
       const persona = JSON.parse(String(call?.init?.body)).personaConfig;
       expect(persona).toMatchObject({ avatarId: "hana-avatar-id", enableAudioPassthrough: true }); // our own voice drives the lips
+
+      // A chosen emotion sets the face's starting style (Director Notes).
+      await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: { emotion: "scared" }, cookie: studentCookie }), ctx(id));
+      const scared = JSON.parse(String(calls.filter((c) => c.url.includes("api.anam.ai")).at(-1)?.init?.body)).personaConfig;
+      expect(scared.directorNotes).toMatchObject({ presetStyle: "distressed" });
       expect(calls.some((c) => c.url.includes("simli"))).toBe(false);
     } finally {
       for (const key of ["AVATAR_PROVIDER", "ANAM_API_KEY", "ANAM_AVATAR_ID_FEMALE"]) delete process.env[key];
     }
+  });
+
+  it("accepts the patient's emotion with a question and rejects unknown ones", async () => {
+    const id = await newSession();
+    const ok = await sendMessage(req(`/api/sessions/${id}/messages`, { body: { content: "Тамхи татдаг уу?", emotion: "angry" }, cookie: studentCookie }), ctx(id));
+    expect(ok.status).toBe(201);
+    const bad = await sendMessage(req(`/api/sessions/${id}/messages`, { body: { content: "Тамхи татдаг уу?", emotion: "bored" }, cookie: studentCookie }), ctx(id));
+    expect(bad.status).toBe(400);
   });
 
   it("issues avatar tokens only for the owner's active session", async () => {

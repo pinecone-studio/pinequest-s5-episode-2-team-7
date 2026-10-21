@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser, route } from "@/lib/api/http";
+import { isEmotionId } from "@/lib/patient/emotions";
 import { startAvatar } from "@/lib/services/voice";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -8,5 +9,6 @@ type Ctx = { params: Promise<{ id: string }> };
 export const POST = route<Ctx>(async (request, { params }) => {
   const auth = await requireUser(request);
   const { id } = await params;
-  return NextResponse.json(await startAvatar(auth, id));
+  const body = (await request.json().catch(() => ({}))) as { emotion?: unknown };
+  return NextResponse.json(await startAvatar(auth, id, isEmotionId(body.emotion) ? body.emotion : undefined));
 });

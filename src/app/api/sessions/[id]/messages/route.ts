@@ -14,6 +14,6 @@ export const GET = route<Ctx>(async (request, { params }) => {
 export const POST = route<Ctx>(async (request, { params }) => {
   const auth = await requireUser(request);
   const { id } = await params;
-  const { content } = await parseJson(request, QuestionInput);
-  return NextResponse.json(await askQuestion(auth, id, content), { status: 201 });
+  const { content, emotion } = await parseJson(request, QuestionInput);
+  return NextResponse.json(await askQuestion(auth, id, content, emotion), { status: 201 });
 });

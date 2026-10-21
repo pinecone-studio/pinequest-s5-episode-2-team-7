@@ -9,7 +9,9 @@ import { Alert, Badge, Button, Card, Spinner, cn } from "../ui";
 import { DiagnosisDialog } from "./diagnosis-dialog";
 import { PatientAvatar } from "./patient-avatar";
 import { Listener, MAX_RECORD_SECONDS, Recorder } from "./recorder";
+import type { EmotionId } from "@/lib/patient/emotions";
 import { AnamAvatar } from "./anam-avatar";
+import { CallView } from "./call-view";
 import { SimliAvatar, type AvatarHandle } from "./simli-avatar";
 import { SpeechPlayer } from "./speech-player";
 
@@ -42,6 +44,7 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [handsFree, setHandsFree] = useState(false);
+  const [emotion, setEmotion] = useState<EmotionId>("worried");
   const [studentSpeaking, setStudentSpeaking] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [avatarSpeaking, setAvatarSpeaking] = useState(false);
@@ -89,7 +92,7 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
   async function playReply(messageId: string) {
     const p = player();
     const generation = p.generation;
-    const url = (part: number) => `/api/sessions/${initial.id}/messages/${messageId}/audio?part=${part}`;
+    const url = (part: number) => `/api/sessions/${initial.id}/messages/${messageId}/audio?part=${part}&emotion=${emotion}`;
     const wavOf = async (response: Response) => {
       if (!response.ok) throw new Error();
       return response.arrayBuffer();
@@ -216,7 +219,7 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
     try {
       const result = await apiFetch<{ messages: MessageView[]; questionCount: number; provider: ProviderBadge }>(`/api/sessions/${initial.id}/messages`, {
         method: "POST",
-        json: { content },
+        json: { content, emotion },
       });
       setMessages((prev) => [...prev.filter((m) => m.id !== tempId), ...result.messages]);
       setQuestionCount(result.questionCount);
@@ -320,6 +323,157 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
     </div>
   );
 
+  /** Message list + input: a full column in text mode, a drawer during a video call. */
+  const chatBody = (
+    <>
+      <div ref={listRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-5" aria-live="polite" aria-relevant="additions">
+        {messages.map((m) => (
+          <MessageBubble
+            key={m.id}
+            message={m}
+            sex={c.patient.sex}
+            age={c.patient.age}
+            onPlay={voice.speechOutput && m.role === "patient" && !m.id.startsWith("pending-") ? () => void playReply(m.id) : undefined}
+          />
+        ))}
+        {pending && (
+          <div className="flex items-end gap-2" role="status" aria-label={`${c.patient.name} хариулж байна`}>
+            <PatientAvatar sex={c.patient.sex} age={c.patient.age} size="sm" />
+            <span className="flex gap-1 rounded-2xl rounded-bl-md bg-slate-100 px-4 py-3">
+              <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
+              <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
+              <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
+            </span>
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={send} className="border-t border-slate-100 p-3 sm:p-4">
+        {error && (
+          <div className="mb-3">
+            <Alert>{error}</Alert>
+          </div>
+        )}
+        {voice.speechInput && (
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
+            <Button type="button" size="sm" variant={handsFree ? "primary" : "ghost"} onClick={() => void toggleHandsFree()} aria-pressed={handsFree}>
+              {handsFree ? "Чөлөөт яриа: асаалттай" : "Чөлөөт яриа асаах"}
+            </Button>
+            {handsFree && (
+              <span className="flex items-center gap-1.5 text-slate-500" role="status">
+                <span className={cn("h-2 w-2 rounded-full", studentSpeaking ? "animate-pulse bg-red-500" : transcribing || pending ? "bg-amber-400" : "bg-emerald-500")} />
+                {studentSpeaking ? "Та ярьж байна…" : transcribing ? "Таны яриаг бичиж байна…" : pending ? "Өвчтөн бодож байна…" : patientSpeaking ? "Өвчтөн ярьж байна (ярьвал таслана)" : "Сонсож байна — асуултаа хэлээрэй"}
+              </span>
+            )}
+          </div>
+        )}
+        {limitReached ? (
+          <Alert tone="amber">Асуултын дээд хязгаарт хүрлээ. Оношоо илгээнэ үү.</Alert>
+        ) : (
+          <div className="flex items-end gap-2">
+            <label htmlFor="question" className="sr-only">
+              Өвчтөнд асуулт
+            </label>
+            <textarea
+              id="question"
+              ref={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.slice(0, MAX_CHARS))}
+              onKeyDown={onKeyDown}
+              rows={1}
+              placeholder={recording ? "Сонсож байна… дахин дарж дуусгана" : transcribing ? "Яриаг бичвэр болгож байна…" : "Асуултаа бичнэ үү…"}
+              className="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2.5 text-[15px] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              disabled={pending || recording || transcribing}
+              autoFocus
+            />
+            {voice.speechInput && !handsFree && (
+              <Button
+                type="button"
+                variant={recording ? "primary" : "ghost"}
+                className={cn("h-11 shrink-0", recording && "bg-red-600 hover:bg-red-700")}
+                onClick={() => void toggleRecording()}
+                disabled={pending || transcribing}
+                aria-pressed={recording}
+                aria-label={recording ? "Бичлэгийг дуусгах" : "Дуугаар асуух"}
+                title={`Дуугаар асуух (${MAX_RECORD_SECONDS} сек хүртэл)`}
+              >
+                {transcribing ? <Spinner /> : recording ? <span aria-hidden className="block h-3.5 w-3.5 rounded-sm bg-white" /> : <MicIcon />}
+              </Button>
+            )}
+            <Button type="submit" className="h-11 shrink-0" disabled={pending || !draft.trim()}>
+              {pending ? <Spinner /> : "Илгээх"}
+            </Button>
+          </div>
+        )}
+        <p className="mt-1.5 flex justify-between text-[11px] text-slate-400">
+          <span className="hidden sm:inline">Enter — илгээх · Shift+Enter — шинэ мөр</span>
+          <span className="sm:hidden" />
+          <span>
+            {draft.length}/{MAX_CHARS}
+          </span>
+        </p>
+      </form>
+    </>
+  );
+
+  function changeEmotion(next: EmotionId) {
+    setEmotion(next);
+    avatarRef.current?.setEmotion(next);
+  }
+
+  const callStatus = studentSpeaking
+    ? "Та ярьж байна…"
+    : transcribing
+      ? "Таны яриаг бичиж байна…"
+      : pending
+        ? `${c.patient.name} бодож байна…`
+        : patientSpeaking
+          ? `${c.patient.name} ярьж байна — ярьвал таслана`
+          : handsFree
+            ? "Сонсож байна — асуултаа хэлээрэй"
+            : voice.speechInput
+              ? "Микрофоноо асаагаад ярина уу"
+              : "Чатаар асуулт бичнэ үү";
+
+  // Video call: the avatar fills the screen and the chat becomes a drawer.
+  if (voice.avatar) {
+    const fill = "relative h-full w-full overflow-hidden bg-slate-900";
+    const lastReply = [...messages].reverse().find((m) => m.role === "patient");
+    return (
+      <>
+        <CallView
+          patientCase={c}
+          avatar={
+            voice.avatarProvider === "anam" ? (
+              <AnamAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} emotion={emotion} className={fill} />
+            ) : (
+              <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} className={fill} />
+            )
+          }
+          chat={<div className="flex min-h-0 flex-1 flex-col">{chatBody}</div>}
+          status={callStatus}
+          listening={handsFree}
+          studentSpeaking={studentSpeaking}
+          canListen={voice.speechInput}
+          onToggleListen={() => void toggleHandsFree()}
+          speakReplies={speakReplies}
+          onToggleSpeak={() => {
+            if (speakReplies) playerRef.current?.stop();
+            setSpeakReplies((v) => !v);
+          }}
+          emotion={emotion}
+          onEmotion={changeEmotion}
+          caption={pending ? null : (lastReply?.content ?? null)}
+          messageCount={messages.length}
+          onDiagnosis={() => setShowDiagnosis(true)}
+          onEnd={endInterview}
+          busy={pending || ending}
+        />
+        <DiagnosisDialog open={showDiagnosis} onClose={() => setShowDiagnosis(false)} sessionId={initial.id} questionCount={questionCount} />
+      </>
+    );
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-0 py-0 md:flex-row md:px-4 md:py-6">
       {/* Patient panel: sidebar on desktop, collapsible summary on mobile */}
@@ -365,93 +519,7 @@ export function InterviewWorkspace({ initial, voice = NO_VOICE }: { initial: Ses
           </div>
         )}
 
-        <div ref={listRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-5" aria-live="polite" aria-relevant="additions">
-          {messages.map((m) => (
-            <MessageBubble
-              key={m.id}
-              message={m}
-              sex={c.patient.sex}
-              age={c.patient.age}
-              onPlay={voice.speechOutput && m.role === "patient" && !m.id.startsWith("pending-") ? () => void playReply(m.id) : undefined}
-            />
-          ))}
-          {pending && (
-            <div className="flex items-end gap-2" role="status" aria-label={`${c.patient.name} хариулж байна`}>
-              <PatientAvatar sex={c.patient.sex} age={c.patient.age} size="sm" />
-              <span className="flex gap-1 rounded-2xl rounded-bl-md bg-slate-100 px-4 py-3">
-                <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
-                <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
-                <span className="typing-dot h-2 w-2 rounded-full bg-slate-400" />
-              </span>
-            </div>
-          )}
-        </div>
-
-        <form onSubmit={send} className="border-t border-slate-100 p-3 sm:p-4">
-          {error && (
-            <div className="mb-3">
-              <Alert>{error}</Alert>
-            </div>
-          )}
-          {voice.speechInput && (
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-xs">
-              <Button type="button" size="sm" variant={handsFree ? "primary" : "ghost"} onClick={() => void toggleHandsFree()} aria-pressed={handsFree}>
-                {handsFree ? "Чөлөөт яриа: асаалттай" : "Чөлөөт яриа асаах"}
-              </Button>
-              {handsFree && (
-                <span className="flex items-center gap-1.5 text-slate-500" role="status">
-                  <span className={cn("h-2 w-2 rounded-full", studentSpeaking ? "animate-pulse bg-red-500" : transcribing || pending ? "bg-amber-400" : "bg-emerald-500")} />
-                  {studentSpeaking ? "Та ярьж байна…" : transcribing ? "Таны яриаг бичиж байна…" : pending ? "Өвчтөн бодож байна…" : patientSpeaking ? "Өвчтөн ярьж байна (ярьвал таслана)" : "Сонсож байна — асуултаа хэлээрэй"}
-                </span>
-              )}
-            </div>
-          )}
-          {limitReached ? (
-            <Alert tone="amber">Асуултын дээд хязгаарт хүрлээ. Оношоо илгээнэ үү.</Alert>
-          ) : (
-            <div className="flex items-end gap-2">
-              <label htmlFor="question" className="sr-only">
-                Өвчтөнд асуулт
-              </label>
-              <textarea
-                id="question"
-                ref={inputRef}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value.slice(0, MAX_CHARS))}
-                onKeyDown={onKeyDown}
-                rows={1}
-                placeholder={recording ? "Сонсож байна… дахин дарж дуусгана" : transcribing ? "Яриаг бичвэр болгож байна…" : "Асуултаа бичнэ үү…"}
-                className="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2.5 text-[15px] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
-                disabled={pending || recording || transcribing}
-                autoFocus
-              />
-              {voice.speechInput && !handsFree && (
-                <Button
-                  type="button"
-                  variant={recording ? "primary" : "ghost"}
-                  className={cn("h-11 shrink-0", recording && "bg-red-600 hover:bg-red-700")}
-                  onClick={() => void toggleRecording()}
-                  disabled={pending || transcribing}
-                  aria-pressed={recording}
-                  aria-label={recording ? "Бичлэгийг дуусгах" : "Дуугаар асуух"}
-                  title={`Дуугаар асуух (${MAX_RECORD_SECONDS} сек хүртэл)`}
-                >
-                  {transcribing ? <Spinner /> : recording ? <span aria-hidden className="block h-3.5 w-3.5 rounded-sm bg-white" /> : <MicIcon />}
-                </Button>
-              )}
-              <Button type="submit" className="h-11 shrink-0" disabled={pending || !draft.trim()}>
-                {pending ? <Spinner /> : "Илгээх"}
-              </Button>
-            </div>
-          )}
-          <p className="mt-1.5 flex justify-between text-[11px] text-slate-400">
-            <span className="hidden sm:inline">Enter — илгээх · Shift+Enter — шинэ мөр</span>
-            <span className="sm:hidden" />
-            <span>
-              {draft.length}/{MAX_CHARS}
-            </span>
-          </p>
-        </form>
+        {chatBody}
       </section>
 
       <DiagnosisDialog open={showDiagnosis} onClose={() => setShowDiagnosis(false)} sessionId={initial.id} questionCount={questionCount} />

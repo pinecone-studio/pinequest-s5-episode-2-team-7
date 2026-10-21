@@ -8,7 +8,8 @@ import { messages } from "@/lib/db/schema";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getConfig } from "@/lib/config";
 import { isSpeechWav, MAX_STT_BYTES, splitSentences, transcribe } from "@/lib/speech/chimege";
-import { createAvatarToken, speak, voiceFor } from "@/lib/speech/features";
+import type { EmotionId } from "@/lib/patient/emotions";
+import { createAvatarToken, speak, voiceFor, voiceUsesEmotion } from "@/lib/speech/features";
 import { loadOwnedSession } from "./sessions";
 
 /** Spoken replies are cached by message id: each synthesis costs TTS credits. */
@@ -42,6 +43,7 @@ export async function patientReplyAudio(
   sessionId: string,
   messageId: string,
   part?: number,
+  emotion?: EmotionId,
 ): Promise<{ wav: Uint8Array<ArrayBuffer>; parts: number }> {
   if (!z.string().uuid().safeParse(messageId).success) throw Errors.notFound("Хариулт");
   const session = await loadOwnedSession(auth, sessionId);
@@ -58,13 +60,14 @@ export async function patientReplyAudio(
   // Keyed by session too: a cached reply must never be served to another session.
   // The voice is part of the key so switching TTS service or voice is not masked by the cache.
   const sex = session.caseSnapshot.public.patient.sex;
-  const key = `${session.id}:${messageId}:${part ?? "all"}:${getConfig().TTS_PROVIDER}:${voiceFor(sex)}`;
+  const mood = voiceUsesEmotion() ? (emotion ?? "") : "";
+  const key = `${session.id}:${messageId}:${part ?? "all"}:${getConfig().TTS_PROVIDER}:${voiceFor(sex)}:${mood}`;
   const cached = audioCache.get(key);
   if (cached) return { wav: cached, parts: sentences.length };
 
   const limit = checkRateLimit(`tts:${auth.userId}`, 60);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
-  const wav = await speak(part === undefined ? row.content : sentences[part], sex);
+  const wav = await speak(part === undefined ? row.content : sentences[part], sex, emotion);
   remember(key, wav);
   return { wav, parts: sentences.length };
 }
@@ -91,10 +94,10 @@ export async function fillerAudio(auth: SessionData, sessionId: string, index: n
   return wav;
 }
 
-export async function startAvatar(auth: SessionData, sessionId: string): Promise<{ sessionToken: string; provider: "simli" | "anam" }> {
+export async function startAvatar(auth: SessionData, sessionId: string, emotion?: EmotionId): Promise<{ sessionToken: string; provider: "simli" | "anam" }> {
   const session = await loadOwnedSession(auth, sessionId);
   if (session.status !== "active") throw Errors.conflict("Энэ ярилцлага дууссан байна.");
   const limit = checkRateLimit(`avatar:${auth.userId}`, 5);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
-  return { sessionToken: await createAvatarToken(session.caseSnapshot.public.patient.sex), provider: getConfig().AVATAR_PROVIDER };
+  return { sessionToken: await createAvatarToken(session.caseSnapshot.public.patient.sex, emotion), provider: getConfig().AVATAR_PROVIDER };
 }
