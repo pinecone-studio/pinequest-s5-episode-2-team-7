@@ -1,4 +1,5 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import caseAvatars from "../data/avatars.json";
 import { POST as login } from "@/app/api/auth/login/route";
 import { POST as register } from "@/app/api/auth/register/route";
 import { GET as adminCases, POST as adminCreateCase } from "@/app/api/admin/cases/route";
@@ -436,7 +437,8 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
       const call = calls.find((c) => c.url === "https://api.anam.ai/v1/auth/session-token");
       expect((call?.init?.headers as Record<string, string>).Authorization).toBe("Bearer anam-test");
       const persona = JSON.parse(String(call?.init?.body)).personaConfig;
-      expect(persona).toMatchObject({ avatarId: "hana-avatar-id", enableAudioPassthrough: true }); // our own voice drives the lips
+      // The case's own face from data/avatars.json wins over the env list.
+      expect(persona).toMatchObject({ avatarId: caseAvatars["abdominal-pain-01"].anam, enableAudioPassthrough: true }); // our own voice drives the lips
 
       // A chosen emotion sets the face's starting style (Director Notes).
       await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: { emotion: "scared" }, cookie: studentCookie }), ctx(id));

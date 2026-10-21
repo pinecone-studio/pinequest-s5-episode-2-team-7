@@ -1,4 +1,5 @@
 import "server-only";
+import CASE_AVATARS from "../../../data/avatars.json";
 import { ApiError } from "@/lib/api/http";
 import { getConfig } from "@/lib/config";
 import { EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
@@ -54,12 +55,17 @@ export function anamAvatars(sex: Sex): string[] {
     .filter(Boolean);
 }
 
-/** Picks one avatar per case (stable: the same case always gets the same face). */
-export function anamAvatarFor(sex: Sex, seed = ""): string | undefined {
+/**
+ * The face for a case: its own avatar from data/avatars.json when listed,
+ * otherwise one of the configured ids (stable: a case always gets the same one).
+ */
+export function anamAvatarFor(sex: Sex, caseId = ""): string | undefined {
+  const own = (CASE_AVATARS as Record<string, { anam?: string } | string>)[caseId];
+  if (typeof own === "object" && own.anam) return own.anam;
   const ids = anamAvatars(sex);
   if (ids.length === 0) return undefined;
   let hash = 0;
-  for (const ch of seed) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  for (const ch of caseId) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   return ids[hash % ids.length];
 }
 
@@ -85,17 +91,17 @@ export function getVoiceFeatures(sex: Sex): VoiceFeatures {
  * service. API keys stay on the server; sessions are capped to keep paid
  * minutes bounded.
  */
-export async function createAvatarToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal, seed?: string): Promise<string> {
-  return getConfig().AVATAR_PROVIDER === "anam" ? createAnamToken(sex, emotion, signal, seed) : createSimliToken(sex, signal);
+export async function createAvatarToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal, caseId?: string): Promise<string> {
+  return getConfig().AVATAR_PROVIDER === "anam" ? createAnamToken(sex, emotion, signal, caseId) : createSimliToken(sex, signal);
 }
 
 /**
  * Anam session in audio-passthrough mode: Anam renders the face and lip-syncs
  * to the PCM we stream (our TTS voice); its own LLM and voice are not used.
  */
-async function createAnamToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal, seed?: string): Promise<string> {
+async function createAnamToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal, caseId?: string): Promise<string> {
   const c = getConfig();
-  const avatarId = anamAvatarFor(sex, seed);
+  const avatarId = anamAvatarFor(sex, caseId);
   if (!c.ANAM_API_KEY || !avatarId) throw new ApiError(503, "avatar_unavailable", "Аватар тохируулагдаагүй байна.");
   let response: Response;
   try {

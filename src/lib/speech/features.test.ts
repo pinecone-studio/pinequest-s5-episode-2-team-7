@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetConfigForTests } from "../config";
+import avatars from "../../../data/avatars.json";
 import { anamAvatarFor, anamAvatars } from "./features";
 
 afterEach(() => {
@@ -19,9 +20,15 @@ describe("Anam avatars", () => {
   it("gives each case a stable face", () => {
     vi.stubEnv("ANAM_AVATAR_ID_FEMALE", "a,b,c");
     resetConfigForTests();
-    const first = anamAvatarFor("female", "abdominal-pain-01");
-    expect(anamAvatarFor("female", "abdominal-pain-01")).toBe(first);
+    const first = anamAvatarFor("female", "case-not-in-avatars-json");
+    expect(anamAvatarFor("female", "case-not-in-avatars-json")).toBe(first);
     expect(["a", "b", "c"]).toContain(first);
+  });
+
+  it("uses a case's own avatar from data/avatars.json", () => {
+    vi.stubEnv("ANAM_AVATAR_ID_FEMALE", "a,b,c");
+    resetConfigForTests();
+    expect(anamAvatarFor("female", "abdominal-pain-02")).toBe(avatars["abdominal-pain-02"].anam);
   });
 
   it("returns undefined when none is configured", () => {
