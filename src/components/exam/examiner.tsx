@@ -6,12 +6,14 @@ import { AnamAvatar } from "../interview/anam-avatar";
 import { MAX_RECORD_SECONDS, Recorder } from "../interview/recorder";
 import type { AvatarHandle } from "../interview/simli-avatar";
 import { Spinner, cn } from "../ui";
+import { EXAM_ANSWERS_KEY } from "@/lib/quiz-client";
 
 /**
  * «Шүүлэг» oral exam: a talking examiner (Anam avatar, male TTS voice) asks
  * the questions one by one and the student answers by voice (Chimege STT) or
  * by typing. The quiz comes from the Otech AI iOS app (injected as
- * `window.__OTOCH_QUIZ`); the answers go back to it, and the app grades them.
+ * `window.__OTOCH_QUIZ`) or from the web page /shuulleg (sessionStorage); the
+ * answers go back to whichever opened it, and that side grades them.
  */
 
 interface ExamQuestion {
@@ -50,7 +52,16 @@ function injectedQuiz(): ExamQuiz | null {
 
 /** Tell the iOS app (no-op in a normal browser). "text" = continue the same quiz in the app's typed mode. */
 function toApp(message: { type: "answers"; answers: string[] } | { type: "text" }) {
-  window.webkit?.messageHandlers?.otoch?.postMessage(message);
+  const app = window.webkit?.messageHandlers?.otoch;
+  if (app) {
+    app.postMessage(message);
+    return;
+  }
+  // Opened from the web page /shuulleg: hand the answers back through sessionStorage.
+  if (message.type === "answers") sessionStorage.setItem(EXAM_ANSWERS_KEY, JSON.stringify(message.answers));
+  // A full load: /shuulleg reads the hand-off once on arrival.
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+  window.location.assign(`/shuulleg?oral=${message.type === "answers" ? "done" : "text"}`);
 }
 
 /** Speaking time of a 16 kHz PCM16 WAV in ms (44-byte header). */
@@ -216,7 +227,7 @@ export function Examiner() {
   if (!quiz) {
     return (
       <main className="flex flex-1 items-center justify-center p-6 text-center text-muted">
-        Шалгалтыг Otech AI аппын «Шүүлэг» хэсгээс эхлүүлнэ үү.
+        Шалгалтыг «Шүүлэг» хэсгээс эхлүүлнэ үү.
       </main>
     );
   }

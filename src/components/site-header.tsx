@@ -5,7 +5,20 @@ import { LogoutButton } from "./logout-button";
 import { ThemeToggle } from "./theme-toggle";
 import { buttonClass } from "./ui";
 
-const navLink = "rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-sunken hover:text-ink";
+const navLink = "shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-sunken hover:text-ink";
+
+/** Signed-in sections; on phones they scroll in a row under the header. */
+function sectionLinks(admin: boolean) {
+  return [
+    { href: "/dashboard", label: t.nav.cases },
+    { href: "/shuulleg", label: t.nav.shuulleg },
+    { href: "/atlas", label: t.nav.anatomy },
+    { href: "/vr", label: t.nav.vr },
+    { href: "/news", label: t.nav.news },
+    { href: "/sessions", label: t.nav.history },
+    ...(admin ? [{ href: "/admin", label: t.nav.admin }] : []),
+  ];
+}
 
 export async function SiteHeader() {
   // If the database is unreachable, still render the header so /demo keeps working on stage.
@@ -22,20 +35,13 @@ export async function SiteHeader() {
         <nav aria-label={t.nav.mainMenu} className="flex items-center gap-1 text-sm font-medium">
           {session ? (
             <>
-              <Link href="/dashboard" className={navLink}>
-                {t.nav.cases}
-              </Link>
-              <Link href="/news" className={navLink}>
-                {t.nav.news}
-              </Link>
-              <Link href="/sessions" className={`${navLink} hidden sm:inline`}>
-                {t.nav.history}
-              </Link>
-              {session.role === "admin" && (
-                <Link href="/admin" className={`${navLink} hidden sm:inline`}>
-                  {t.nav.admin}
-                </Link>
-              )}
+              <span className="hidden items-center gap-1 lg:flex">
+                {sectionLinks(session.role === "admin").map((l) => (
+                  <Link key={l.href} href={l.href} className={navLink}>
+                    {l.label}
+                  </Link>
+                ))}
+              </span>
               <span className="ml-1 hidden max-w-32 truncate text-subtle md:inline" title={session.name}>
                 {session.name}
               </span>
@@ -57,6 +63,15 @@ export async function SiteHeader() {
           <ThemeToggle />
         </nav>
       </div>
+      {session && (
+        <nav aria-label={t.nav.mainMenu} className="flex gap-1 overflow-x-auto border-t border-line px-3 py-1.5 text-sm font-medium [scrollbar-width:none] lg:hidden">
+          {sectionLinks(session.role === "admin").map((l) => (
+            <Link key={l.href} href={l.href} className={navLink}>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
