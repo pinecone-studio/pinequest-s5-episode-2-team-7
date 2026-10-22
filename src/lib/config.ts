@@ -57,6 +57,8 @@ const EnvSchema = z.object({
   ANAM_AVATAR_ID_FEMALE: z.string().optional(),
   /** Optional Anam avatar model, e.g. "cara-4"; empty = the avatar's default. */
   ANAM_AVATAR_MODEL: z.string().optional(),
+  /** Examiner face for «Шүүлэг» (default: stock avatar "Robert"). Speaks with the male voice. */
+  ANAM_EXAMINER_AVATAR_ID: z.string().default("8bbf1f70-c286-4da9-8bd7-e99fcf9834a6"),
   SIMLI_API_KEY: z.string().optional(),
   SIMLI_FACE_ID_MALE: z.string().optional(),
   SIMLI_FACE_ID_FEMALE: z.string().optional(),

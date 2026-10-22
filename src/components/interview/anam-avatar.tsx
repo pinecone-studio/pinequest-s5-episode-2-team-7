@@ -4,6 +4,8 @@ import { useEffect, useId, useImperativeHandle, useRef, useState, type Ref } fro
 import type { AgentAudioInputStream, AnamClient } from "@anam-ai/js-sdk";
 import { apiFetch } from "@/lib/fetcher";
 import { EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
+import type { SceneId } from "@/lib/scenes";
+import { SceneLayer } from "./scene";
 import { Button, Spinner } from "../ui";
 import type { AvatarHandle } from "./simli-avatar";
 
@@ -31,9 +33,21 @@ export function AnamAvatar({
   onSpeakingChange,
   emotion,
   className,
+  tokenUrl,
+  autoStart,
+  onLive,
+  scene,
   ref,
 }: {
+  /** Background scene behind the cut-out avatar ("original" or unset: the avatar's own). */
+  scene?: SceneId;
+  /** Connect on mount instead of waiting for the start button. */
+  autoStart?: boolean;
+  /** Called once the video is live and can lip-sync. */
+  onLive?: () => void;
   sessionId: string;
+  /** Where to get the Anam session token (default: this interview's patient face). */
+  tokenUrl?: string;
   name: string;
   onSpeakingChange?: (speaking: boolean) => void;
   /** Starting expression style (Anam Director Notes). */
@@ -160,6 +174,14 @@ export function AnamAvatar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => onSpeakingChange?.(speaking), [speaking, onSpeakingChange]);
+  useEffect(() => {
+    if (status === "live") onLive?.();
+  }, [status, onLive]);
+  useEffect(() => {
+    if (autoStart) void start();
+    // Only on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function start() {
     if (statusRef.current === "connecting") return;
@@ -169,7 +191,7 @@ export function AnamAvatar({
     try {
       const [{ createClient, AnamEvent }, { sessionToken, provider }] = await Promise.all([
         import("@anam-ai/js-sdk"),
-        apiFetch<{ sessionToken: string; provider: string }>(`/api/sessions/${sessionId}/avatar`, { method: "POST", json: { emotion } }),
+        apiFetch<{ sessionToken: string; provider: string }>(tokenUrl ?? `/api/sessions/${sessionId}/avatar`, { method: "POST", json: { emotion } }),
       ]);
       if (provider !== "anam") throw new Error("Аватарын тохиргоо өөрчлөгдсөн байна. Хуудсаа дахин ачаална уу.");
       // Our own microphone handling (Chimege STT) stays in charge.
@@ -206,6 +228,7 @@ export function AnamAvatar({
   return (
     <div className={className ?? "relative aspect-square w-full overflow-hidden rounded-xl bg-slate-900"}>
       <video id={videoId} autoPlay playsInline className="h-full w-full object-cover" aria-label={`${name} — видео аватар`} />
+      {status === "live" && scene && scene !== "original" && <SceneLayer scene={scene} videoId={videoId} />}
       {status !== "live" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center text-sm text-[#e2e8f0]">
           {status === "connecting" ? (

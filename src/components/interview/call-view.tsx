@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { EMOTION_IDS, EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
+import { SCENE_IDS, SCENES, type SceneId } from "@/lib/scenes";
 import type { PublicCase } from "@/lib/cases/public";
 import { cn } from "../ui";
 
@@ -23,6 +24,8 @@ export function CallView({
   onToggleSpeak,
   emotion,
   onEmotion,
+  scene,
+  onScene,
   caption,
   messageCount,
   onDiagnosis,
@@ -41,6 +44,9 @@ export function CallView({
   onToggleSpeak: () => void;
   emotion: EmotionId;
   onEmotion: (emotion: EmotionId) => void;
+  /** Background scene; the picker is hidden when `onScene` is not given. */
+  scene?: SceneId;
+  onScene?: (scene: SceneId) => void;
   caption: string | null;
   messageCount: number;
   onDiagnosis: () => void;
@@ -49,6 +55,7 @@ export function CallView({
 }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [moodOpen, setMoodOpen] = useState(false);
+  const [sceneOpen, setSceneOpen] = useState(false);
   const [captions, setCaptions] = useState(true);
   const [seen, setSeen] = useState(messageCount);
   const [elapsed, setElapsed] = useState(0);
@@ -136,6 +143,31 @@ export function CallView({
                 </div>
               )}
             </div>
+            {onScene && scene && (
+              <div className="relative">
+                <RoundButton label="Орчин солих" active={sceneOpen} onClick={() => setSceneOpen((v) => !v)}>
+                  {SCENES[scene].emoji}
+                </RoundButton>
+                {sceneOpen && (
+                  <div className="absolute bottom-14 left-1/2 z-10 w-52 -translate-x-1/2 rounded-2xl bg-[#0b1220]/95 p-1.5 shadow-xl ring-1 ring-white/10">
+                    {SCENE_IDS.map((id) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => {
+                          onScene(id);
+                          setSceneOpen(false);
+                        }}
+                        className={cn("flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm hover:bg-[#ffffff]/10", id === scene && "bg-[#ffffff]/15")}
+                      >
+                        <span>{SCENES[id].emoji}</span>
+                        {SCENES[id].label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <RoundButton label={captions ? "Хадмал нуух" : "Хадмал харуулах"} active={captions} onClick={() => setCaptions((v) => !v)}>
               CC
             </RoundButton>
