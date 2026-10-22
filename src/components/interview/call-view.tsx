@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { EMOTION_IDS, EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
+import { SCENE_IDS, SCENES, type SceneId } from "@/lib/scenes";
 import type { PublicCase } from "@/lib/cases/public";
 import { cn } from "../ui";
 
@@ -23,6 +24,8 @@ export function CallView({
   onToggleSpeak,
   emotion,
   onEmotion,
+  scene,
+  onScene,
   caption,
   messageCount,
   onDiagnosis,
@@ -41,6 +44,9 @@ export function CallView({
   onToggleSpeak: () => void;
   emotion: EmotionId;
   onEmotion: (emotion: EmotionId) => void;
+  /** Background scene; the picker is hidden when `onScene` is not given. */
+  scene?: SceneId;
+  onScene?: (scene: SceneId) => void;
   caption: string | null;
   messageCount: number;
   onDiagnosis: () => void;
@@ -49,6 +55,7 @@ export function CallView({
 }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [moodOpen, setMoodOpen] = useState(false);
+  const [sceneOpen, setSceneOpen] = useState(false);
   const [captions, setCaptions] = useState(true);
   const [seen, setSeen] = useState(messageCount);
   const [elapsed, setElapsed] = useState(0);
@@ -70,13 +77,15 @@ export function CallView({
   const clock = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
   return (
-    <main className="relative flex h-[calc(100dvh-3.5rem)] w-full flex-1 overflow-hidden bg-[#05080d] text-[#ffffff]">
+    // Phones: the call covers the whole screen like FaceTime; larger screens keep the site header.
+    // overflow-clip (not hidden) so focusing something off-screen can never scroll the call sideways.
+    <main className="fixed inset-0 z-40 flex h-dvh w-full overflow-clip bg-[#05080d] text-[#ffffff] sm:relative sm:inset-auto sm:z-auto sm:h-[calc(100dvh-3.5rem)] sm:flex-1">
       <div className="relative min-w-0 flex-1">
         {/* The patient, full screen */}
         <div className="absolute inset-0">{avatar}</div>
 
         {/* Top bar */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent p-4 sm:p-5">
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent p-4 pt-[max(1rem,env(safe-area-inset-top))] sm:p-5">
           <div className="min-w-0">
             <p className="truncate text-lg font-semibold">
               {c.patient.name}, {c.patient.age}
@@ -94,7 +103,7 @@ export function CallView({
         </div>
 
         {/* Captions, status and controls stacked so they never overlap on narrow screens */}
-        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-black/80 to-transparent px-3 pb-5 pt-10">
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 bg-gradient-to-t from-black/80 to-transparent px-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-10">
           {captions && caption && (
             <p className="pointer-events-none max-h-28 max-w-2xl overflow-hidden rounded-xl bg-black/65 px-4 py-2 text-center text-base leading-snug sm:text-lg">{caption}</p>
           )}
@@ -134,6 +143,31 @@ export function CallView({
                 </div>
               )}
             </div>
+            {onScene && scene && (
+              <div className="relative">
+                <RoundButton label="Орчин солих" active={sceneOpen} onClick={() => setSceneOpen((v) => !v)}>
+                  {SCENES[scene].emoji}
+                </RoundButton>
+                {sceneOpen && (
+                  <div className="absolute bottom-14 left-1/2 z-10 w-52 -translate-x-1/2 rounded-2xl bg-[#0b1220]/95 p-1.5 shadow-xl ring-1 ring-white/10">
+                    {SCENE_IDS.map((id) => (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => {
+                          onScene(id);
+                          setSceneOpen(false);
+                        }}
+                        className={cn("flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm hover:bg-[#ffffff]/10", id === scene && "bg-[#ffffff]/15")}
+                      >
+                        <span>{SCENES[id].emoji}</span>
+                        {SCENES[id].label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <RoundButton label={captions ? "Хадмал нуух" : "Хадмал харуулах"} active={captions} onClick={() => setCaptions((v) => !v)}>
               CC
             </RoundButton>
@@ -160,7 +194,8 @@ export function CallView({
         aria-label="Чат"
         className={cn(
           "absolute inset-y-0 right-0 z-20 flex w-full max-w-md flex-col bg-surface-solid text-ink shadow-2xl transition-transform duration-200 sm:relative sm:shadow-none",
-          chatOpen ? "translate-x-0" : "pointer-events-none translate-x-full sm:hidden",
+          // Closed: invisible too, so its input cannot take focus (and pop the keyboard) while hidden.
+          chatOpen ? "translate-x-0" : "pointer-events-none invisible translate-x-full sm:hidden",
         )}
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">

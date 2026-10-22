@@ -9,6 +9,8 @@ import { Alert, Button, Spinner, cn } from "../ui";
 import { DiagnosisDialog } from "./diagnosis-dialog";
 import { Listener, MAX_RECORD_SECONDS, Recorder } from "./recorder";
 import type { EmotionId } from "@/lib/patient/emotions";
+import { defaultScene, type SceneId } from "@/lib/scenes";
+import { Ambience } from "./ambience";
 import { AnamAvatar } from "./anam-avatar";
 import { CallView } from "./call-view";
 import { SimliAvatar, type AvatarHandle } from "./simli-avatar";
@@ -43,6 +45,8 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
   const [handsFree, setHandsFree] = useState(false);
   const [emotion, setEmotion] = useState<EmotionId>("worried");
   const [studentSpeaking, setStudentSpeaking] = useState(false);
+  const [scene, setScene] = useState<SceneId>(() => defaultScene(initial.case.id));
+  const ambienceRef = useRef<Ambience | null>(null);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [avatarSpeaking, setAvatarSpeaking] = useState(false);
   /** Reply sentences shown as captions while the reply is still streaming in. */
@@ -58,6 +62,13 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const c = initial.case;
   const limitReached = questionCount >= initial.maxQuestions;
+
+  /** Back to the question box — only where it is on screen and typing is likely (not on touch phones). */
+  function focusInput() {
+    const input = inputRef.current;
+    if (!input || input.checkVisibility?.() === false || !window.matchMedia("(pointer: fine)").matches) return;
+    input.focus();
+  }
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -199,7 +210,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
       setError(err instanceof Error ? err.message : "Яриа танигдсангүй.");
     } finally {
       setTranscribing(false);
-      inputRef.current?.focus();
+      focusInput();
     }
   }
 
@@ -250,7 +261,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
     } finally {
       setPending(false);
       setLiveCaption(null);
-      inputRef.current?.focus();
+      focusInput();
     }
   }
 
@@ -331,7 +342,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
               onKeyDown={onKeyDown}
               rows={1}
               placeholder={recording ? "Сонсож байна… дахин дарж дуусгана" : transcribing ? "Яриаг бичвэр болгож байна…" : "Асуултаа бичнэ үү…"}
-              className="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2.5 text-[15px] focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="max-h-40 min-h-11 flex-1 resize-none rounded-xl border border-slate-300 px-3.5 py-2.5 text-base focus:border-brand-500 sm:text-[15px] focus:outline-none focus:ring-2 focus:ring-brand-200"
               disabled={pending || recording || transcribing}
               autoFocus
             />
@@ -371,6 +382,30 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
     router.refresh();
   }
 
+  /** Background scene + its ambient sound (AudioContext needs a tap, so it starts with the first one). */
+  function changeScene(next: SceneId) {
+    setScene(next);
+    ambienceRef.current ??= new Ambience();
+    ambienceRef.current.start(next);
+  }
+
+  const sceneRef = useRef(scene);
+  sceneRef.current = scene;
+  useEffect(() => {
+    if (voice.avatarProvider !== "anam") return;
+    const startOnTap = () => {
+      if (ambienceRef.current) return;
+      ambienceRef.current = new Ambience();
+      ambienceRef.current.start(sceneRef.current);
+    };
+    window.addEventListener("pointerdown", startOnTap, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", startOnTap);
+      ambienceRef.current?.stop();
+    };
+  }, [voice.avatarProvider]);
+  useEffect(() => ambienceRef.current?.duck(studentSpeaking), [studentSpeaking]);
+
   function changeEmotion(next: EmotionId) {
     setEmotion(next);
     avatarRef.current?.setEmotion(next);
@@ -400,7 +435,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
           patientCase={c}
           avatar={
             voice.avatarProvider === "anam" ? (
-              <AnamAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} emotion={emotion} className={fill} />
+              <AnamAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} emotion={emotion} scene={scene} className={fill} />
             ) : (
               <SimliAvatar ref={avatarRef} sessionId={initial.id} name={c.patient.name} onSpeakingChange={setAvatarSpeaking} className={fill} />
             )
@@ -418,6 +453,8 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
           }}
           emotion={emotion}
           onEmotion={changeEmotion}
+          scene={voice.avatarProvider === "anam" ? scene : undefined}
+          onScene={voice.avatarProvider === "anam" ? changeScene : undefined}
           caption={liveCaption ?? (pending ? null : (lastReply?.content ?? null))}
           messageCount={messages.length}
           onDiagnosis={() => setShowDiagnosis(true)}

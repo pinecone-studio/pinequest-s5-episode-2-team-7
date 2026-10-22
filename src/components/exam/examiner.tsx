@@ -1,0 +1,333 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { apiFetch } from "@/lib/fetcher";
+import { AnamAvatar } from "../interview/anam-avatar";
+import { MAX_RECORD_SECONDS, Recorder } from "../interview/recorder";
+import type { AvatarHandle } from "../interview/simli-avatar";
+import { Spinner, cn } from "../ui";
+
+/**
+ * «Шүүлэг» oral exam: a talking examiner (Anam avatar, male TTS voice) asks
+ * the questions one by one and the student answers by voice (Chimege STT) or
+ * by typing. The quiz comes from the Otech AI iOS app (injected as
+ * `window.__OTOCH_QUIZ`); the answers go back to it, and the app grades them.
+ */
+
+interface ExamQuestion {
+  id: string;
+  kind: "open" | "choice";
+  prompt: string;
+  options: string[];
+}
+
+interface ExamQuiz {
+  title: string;
+  questions: ExamQuestion[];
+}
+
+type Phase = "intro" | "connecting" | "asking" | "answering" | "finished";
+
+declare global {
+  interface Window {
+    __OTOCH_QUIZ?: ExamQuiz;
+    webkit?: { messageHandlers?: { otoch?: { postMessage(message: unknown): void } } };
+  }
+}
+
+/** The app's quiz, or (for testing in a browser) one saved as sessionStorage "otoch-quiz". */
+function injectedQuiz(): ExamQuiz | null {
+  if (!window.__OTOCH_QUIZ) {
+    try {
+      const saved = sessionStorage.getItem("otoch-quiz");
+      if (saved) window.__OTOCH_QUIZ = JSON.parse(saved) as ExamQuiz;
+    } catch {
+      // No storage or bad JSON: no quiz.
+    }
+  }
+  return window.__OTOCH_QUIZ ?? null;
+}
+
+/** Tell the iOS app (no-op in a normal browser). "text" = continue the same quiz in the app's typed mode. */
+function toApp(message: { type: "answers"; answers: string[] } | { type: "text" }) {
+  window.webkit?.messageHandlers?.otoch?.postMessage(message);
+}
+
+/** Speaking time of a 16 kHz PCM16 WAV in ms (44-byte header). */
+function wavMs(wav: ArrayBuffer): number {
+  return Math.max(0, wav.byteLength - 44) / 32;
+}
+
+function spokenQuestion(q: ExamQuestion, index: number, total: number): string {
+  const head = index === 0 ? "Эхний асуулт." : index === total - 1 ? "Сүүлийн асуулт." : `${index + 1}-р асуулт.`;
+  const options = q.kind === "choice" && q.options.length ? ` Сонголтууд: ${q.options.join(". ")}.` : "";
+  return `${head} ${q.prompt}${options}`;
+}
+
+export function Examiner() {
+  // Injected by the app before the page loads; never changes afterwards.
+  const quiz = useSyncExternalStore(
+    () => () => {},
+    injectedQuiz,
+    () => null,
+  );
+  const [phase, setPhase] = useState<Phase>("intro");
+  const [index, setIndex] = useState(0);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [speaking, setSpeaking] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [avatarOn, setAvatarOn] = useState(false);
+  const avatarRef = useRef<AvatarHandle>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const recorderRef = useRef<Recorder | null>(null);
+  const speakTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const liveResolve = useRef<(() => void) | null>(null);
+  const answersRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(speakTimer.current);
+      void recorderRef.current?.stop();
+      audioRef.current?.pause();
+    };
+  }, []);
+
+  const onLive = useCallback(() => liveResolve.current?.(), []);
+
+  /** Say a line with the avatar (or plain audio when the video is unavailable); resolves when finished. */
+  async function say(text: string): Promise<void> {
+    setSpeaking(true);
+    try {
+      const response = await fetch("/api/quiz/speak", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
+      if (!response.ok) throw new Error("tts");
+      const wav = await response.arrayBuffer();
+      const avatar = avatarRef.current;
+      if (avatar?.ready) {
+        avatar.speak(wav);
+        await new Promise<void>((resolve) => (speakTimer.current = setTimeout(resolve, wavMs(wav) + 900)));
+      } else {
+        const audio = new Audio(URL.createObjectURL(new Blob([wav], { type: "audio/wav" })));
+        audioRef.current = audio;
+        await new Promise<void>((resolve) => {
+          audio.onended = () => resolve();
+          audio.onerror = () => resolve();
+          void audio.play().catch(() => resolve());
+        });
+      }
+    } catch {
+      // No voice: the question is on screen anyway.
+    } finally {
+      setSpeaking(false);
+    }
+  }
+
+  async function ask(i: number, current: ExamQuiz) {
+    setIndex(i);
+    setPhase("asking");
+    await say(spokenQuestion(current.questions[i], i, current.questions.length));
+    setPhase("answering");
+  }
+
+  async function begin() {
+    if (!quiz) return;
+    setError(null);
+    setAnswers(quiz.questions.map(() => ""));
+    setPhase("connecting");
+    // Ask for the microphone now, while the tap still counts as a user gesture.
+    await navigator.mediaDevices
+      ?.getUserMedia({ audio: true })
+      .then((s) => s.getTracks().forEach((t) => t.stop()))
+      .catch(() => {});
+    setAvatarOn(true);
+    // Wait for the video (max 12 s); without it the examiner talks as audio only.
+    await new Promise<void>((resolve) => {
+      liveResolve.current = resolve;
+      setTimeout(resolve, 12_000);
+    });
+    liveResolve.current = null;
+    setPhase("asking");
+    await say(`Сайн байна уу. Би таны шалгагч багш. «${quiz.title}» сэдвээр ${quiz.questions.length} асуулт асууна. Хариултаа дуугаар хэлж эсвэл бичиж болно. Эхэлье.`);
+    await ask(0, quiz);
+  }
+
+  async function transcribeInto(i: number, wav: Blob) {
+    setTranscribing(true);
+    try {
+      const { text } = await apiFetch<{ text: string }>("/api/speech/transcribe", { method: "POST", body: wav, headers: { "content-type": "audio/wav" } });
+      if (text.trim()) setAnswers((prev) => prev.map((a, j) => (j === i ? (a ? `${a} ${text.trim()}` : text.trim()) : a)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Яриаг таньж чадсангүй.");
+    } finally {
+      setTranscribing(false);
+    }
+  }
+
+  /** Mic: first press records; the second press (or each 14 s limit) transcribes and appends. */
+  async function toggleMic() {
+    setError(null);
+    if (recorderRef.current) {
+      const recorder = recorderRef.current;
+      recorderRef.current = null;
+      setRecording(false);
+      await transcribeInto(index, await recorder.stop());
+      return;
+    }
+    avatarRef.current?.interrupt();
+    const startRecorder = async () => {
+      const recorder = new Recorder();
+      // Chimege takes 15 s at most: keep going in pieces until the student stops.
+      recorder.onLimit = () => {
+        if (recorderRef.current !== recorder) return;
+        recorderRef.current = null;
+        void recorder.stop().then(async (wav) => {
+          void transcribeInto(index, wav);
+          await startRecorder();
+        });
+      };
+      await recorder.start();
+      recorderRef.current = recorder;
+    };
+    try {
+      await startRecorder();
+      setRecording(true);
+    } catch {
+      setError("Микрофон ашиглах зөвшөөрөл алга. Тохиргооноос зөвшөөрнө үү.");
+    }
+  }
+
+  async function next() {
+    if (!quiz) return;
+    if (recorderRef.current) await toggleMic();
+    if (index < quiz.questions.length - 1) {
+      await ask(index + 1, quiz);
+      return;
+    }
+    setPhase("finished");
+    await say("Баярлалаа. Таны хариултуудыг одоо шалгая.");
+    toApp({ type: "answers", answers: answersRef.current });
+  }
+
+  if (!quiz) {
+    return (
+      <main className="flex flex-1 items-center justify-center p-6 text-center text-muted">
+        Шалгалтыг Otech AI аппын «Шүүлэг» хэсгээс эхлүүлнэ үү.
+      </main>
+    );
+  }
+
+  const q = quiz.questions[index];
+  const busy = speaking || transcribing || phase === "asking" || phase === "connecting" || phase === "finished";
+
+  return (
+    <main className="fixed inset-0 z-50 flex h-dvh flex-col bg-[#06101f] text-[#ffffff]">
+      <div className="relative min-h-0 flex-1">
+        {avatarOn ? (
+          <AnamAvatar
+            ref={avatarRef}
+            sessionId=""
+            name="Шалгагч багш"
+            tokenUrl="/api/quiz/avatar"
+            autoStart
+            onLive={onLive}
+            className="relative h-full w-full overflow-hidden bg-[#0b1220]"
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2dd4c4]/15 text-5xl">🎓</div>
+            <h1 className="text-xl font-bold">Шалгагч багш</h1>
+            <p className="max-w-sm text-sm text-[#cbd5e1]">
+              «{quiz.title}» сэдвээр {quiz.questions.length} асуулт асууна. Хариултаа дуугаар хэлж эсвэл бичиж өгнө.
+            </p>
+            <button onClick={begin} className="rounded-full bg-[#2dd4c4] px-8 py-3 text-base font-semibold text-[#04201e]">
+              Шалгалт эхлэх
+            </button>
+          </div>
+        )}
+        <button
+          onClick={() => toApp({ type: "text" })}
+          className="absolute right-3 top-[max(0.75rem,env(safe-area-inset-top))] rounded-full bg-black/50 px-3 py-1.5 text-sm"
+        >
+          Бичгээр хариулах
+        </button>
+      </div>
+
+      {phase !== "intro" && (
+        <section className="max-h-[55%] overflow-y-auto rounded-t-3xl bg-[#0c1a2e] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {phase === "connecting" ? (
+            <div className="flex items-center gap-3 py-4 text-sm text-[#cbd5e1]">
+              <Spinner /> Багш холбогдож байна…
+            </div>
+          ) : (
+            <>
+              <p className="mb-1 text-xs font-semibold text-[#5fe0d3]">
+                Асуулт {index + 1} / {quiz.questions.length}
+              </p>
+              <p className="text-base font-semibold leading-snug">{q.prompt}</p>
+              {q.kind === "choice" && (
+                <div className="mt-3 grid gap-2">
+                  {q.options.map((option) => (
+                    <button
+                      key={option}
+                      disabled={phase !== "answering"}
+                      onClick={() => setAnswers((prev) => prev.map((a, j) => (j === index ? option : a)))}
+                      className={cn(
+                        "rounded-xl border px-3 py-2 text-left text-sm",
+                        answers[index] === option ? "border-[#2dd4c4] bg-[#2dd4c4]/20" : "border-[#334155] bg-[#1e293b]",
+                      )}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <textarea
+                value={answers[index] ?? ""}
+                onChange={(e) => setAnswers((prev) => prev.map((a, j) => (j === index ? e.target.value : a)))}
+                disabled={phase !== "answering"}
+                placeholder={phase === "answering" ? "Микрофон дээр дарж хариултаа хэлнэ үү, эсвэл бичнэ үү…" : "Багш асууж байна…"}
+                rows={3}
+                className="mt-3 w-full resize-none rounded-xl border border-[#334155] bg-[#1e293b] p-3 text-sm text-[#ffffff] placeholder:text-[#64748b]"
+              />
+              {error && <p className="mt-2 text-xs text-[#fda4af]">{error}</p>}
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={toggleMic}
+                  disabled={phase !== "answering" || transcribing}
+                  aria-label={recording ? "Бичлэг зогсоох" : "Дуугаар хариулах"}
+                  className={cn(
+                    "flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl disabled:opacity-40",
+                    recording ? "animate-pulse bg-[#e11d48]" : "bg-[#2dd4c4] text-[#04201e]",
+                  )}
+                >
+                  {transcribing ? <Spinner /> : recording ? "■" : "🎤"}
+                </button>
+                <button
+                  onClick={() => void say(spokenQuestion(q, index, quiz.questions.length))}
+                  disabled={busy || recording}
+                  className="rounded-full border border-[#334155] px-4 py-3 text-sm disabled:opacity-40"
+                >
+                  Дахин сонсох
+                </button>
+                <button
+                  onClick={() => void next()}
+                  disabled={busy}
+                  className="ml-auto rounded-full bg-[#ffffff] px-5 py-3 text-sm font-semibold text-[#0f172a] disabled:opacity-40"
+                >
+                  {index === quiz.questions.length - 1 ? "Дуусгах" : "Дараах"}
+                </button>
+              </div>
+              {recording && <p className="mt-2 text-xs text-[#cbd5e1]">Сонсож байна… дуусаад ■ дарна уу (урт хариултыг {MAX_RECORD_SECONDS} сек тутам хэсэглэн таньна).</p>}
+              {phase === "finished" && <p className="mt-2 text-xs text-[#cbd5e1]">Хариултыг шалгаж байна…</p>}
+            </>
+          )}
+        </section>
+      )}
+    </main>
+  );
+}
