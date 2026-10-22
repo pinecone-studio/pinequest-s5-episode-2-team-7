@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" }, // /atlas embeds /anatomy
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           // Microphone only for this origin: students may ask the patient by voice.
           { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
