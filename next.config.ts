@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 // Cache Components is intentionally disabled: almost every route in this app
@@ -9,6 +10,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@electric-sql/pglite"],
   poweredByHeader: false,
   turbopack: {
+    // Pin the root: a stray lockfile in a parent folder (e.g. ~/package-lock.json) would otherwise win.
+    root: path.resolve(__dirname),
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
