@@ -24,10 +24,10 @@ type Tab = "chat" | "patient" | "notes";
 export function InterviewWorkspace({ initial, offlineCaseId, voice }: { initial: SessionView; offlineCaseId?: string; voice?: VoiceFeatures }) {
   // With a talking avatar configured, the consultation is a full-screen video call.
   if (voice?.avatar && !offlineCaseId) return <VideoConsult initial={initial} voice={voice} />;
-  return <ConsultWorkspace initial={initial} offlineCaseId={offlineCaseId} />;
+  return <ConsultWorkspace initial={initial} offlineCaseId={offlineCaseId} voice={voice} />;
 }
 
-function ConsultWorkspace({ initial, offlineCaseId }: { initial: SessionView; offlineCaseId?: string }) {
+function ConsultWorkspace({ initial, offlineCaseId, voice }: { initial: SessionView; offlineCaseId?: string; voice?: VoiceFeatures }) {
   const router = useRouter();
   const toast = useToast();
   const backend: ConsultBackend = useMemo(() => (offlineCaseId ? offlineBackend(offlineCaseId) : sessionBackend(initial.id)), [offlineCaseId, initial.id]);
@@ -129,7 +129,8 @@ function ConsultWorkspace({ initial, offlineCaseId }: { initial: SessionView; of
       }
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      setDraft(content);
+      // Keep whatever the student started typing while waiting.
+      setDraft((d) => d || content);
       const { message, offline } = describeError(err);
       toast({ message, tone: "error", action: offline && !offlineCaseId ? { label: t.errors.useDemo, href: "/demo" } : undefined });
     } finally {
@@ -334,6 +335,7 @@ function ConsultWorkspace({ initial, offlineCaseId }: { initial: SessionView; of
                     >
                       <VoiceInput
                         transcribe={backend.transcribe}
+                        serverTranscription={Boolean(voice?.speechInput)}
                         level={micLevel}
                         onListeningChange={setListening}
                         disabled={pending}
@@ -371,7 +373,6 @@ function ConsultWorkspace({ initial, offlineCaseId }: { initial: SessionView; of
                     rows={1}
                     placeholder={t.consult.placeholder}
                     className="field-sizing-content max-h-36 min-h-11 flex-1 resize-none rounded-xl border border-line bg-surface-solid px-3.5 py-2.5 text-[15px] placeholder:text-subtle focus:border-accent focus:outline-none focus:ring-4 focus:ring-accent-soft"
-                    disabled={pending}
                   />
                   <motion.button
                     type="submit"

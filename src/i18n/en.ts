@@ -214,6 +214,7 @@ export const en: Strings = {
     micDenied: "Microphone permission was denied. Check your browser settings.",
     micUnsupported: "This browser cannot record audio.",
     sttUnavailable: "Speech-to-text is not available right now. Please type your question.",
+    sttRetryBrowser: "The server speech service is down — switched to the browser's recogniser. Press the mic and speak again.",
     sttEmpty: "No speech recognised. Please speak again, closer to the mic.",
     tooLong: "Recordings can be at most 14 seconds.",
     rateLimited: "Too many requests. Wait a moment and try again.",

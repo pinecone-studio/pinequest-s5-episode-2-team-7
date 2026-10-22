@@ -39,6 +39,10 @@ const EnvSchema = z.object({
 
   // Optional voice features (all off when unset).
   CHIMEGE_STT_TOKEN: z.string().optional(),
+  // Speech-to-text falls back to Gemini, then Whisper on OPENAI_COMPAT_BASE_URL (see speech/stt.ts).
+  // A lite model: the patient model (GEMINI_MODEL) can take over a minute on audio.
+  STT_GEMINI_MODEL: z.string().default("gemini-3.5-flash-lite"),
+  STT_WHISPER_MODEL: z.string().default("whisper-large-v3"),
   CHIMEGE_TTS_TOKEN: z.string().optional(),
   CHIMEGE_VOICE_MALE: z.string().default("MALE1v2"),
   CHIMEGE_VOICE_FEMALE: z.string().default("FEMALE3v2"),
