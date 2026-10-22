@@ -51,4 +51,9 @@ export interface PatientProvider {
    * public topic list — never case data.
    */
   classifyTopics?(question: string, options?: { signal?: AbortSignal }): Promise<TopicId[]>;
+  /**
+   * Optional: wake a model that sleeps when idle (e.g. a GPU on Modal) so it
+   * is ready by the student's first question. Must never throw.
+   */
+  warmUp?(): Promise<void>;
 }
