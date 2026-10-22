@@ -8,6 +8,7 @@ import { newsArticles, type NewsArticleRow } from "@/lib/db/schema";
 export type NewsStatus = "draft" | "published" | "archived";
 
 export const NEWS_CATEGORIES = ["general", "research", "public-health", "clinical", "education"] as const;
+export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
 
 const optionalText = (max: number) =>
   z
@@ -36,6 +37,8 @@ export interface NewsArticle {
   category: string;
   sourceName: string | null;
   sourceUrl: string | null;
+  origin: "manual" | "rss";
+  originalTitle: string | null;
   status: NewsStatus;
   publishedAt: string | null;
   updatedAt: string;
@@ -50,6 +53,8 @@ function toArticle(row: NewsArticleRow): NewsArticle {
     category: row.category,
     sourceName: row.sourceName,
     sourceUrl: row.sourceUrl,
+    origin: row.origin,
+    originalTitle: row.originalTitle,
     status: row.status,
     publishedAt: row.publishedAt?.toISOString() ?? null,
     updatedAt: row.updatedAt.toISOString(),
@@ -86,7 +91,11 @@ export async function getNewsAdmin(id: string): Promise<NewsArticle> {
 export async function createNews(input: unknown, userId: string | null): Promise<NewsArticle> {
   const data = NewsInput.parse(input);
   const db = await getDb();
-  const [row] = await db.insert(newsArticles).values({ ...data, createdBy: userId }).returning();
+  const [row] = await db
+    .insert(newsArticles)
+    .values({ ...data, createdBy: userId })
+    .returning()
+    .catch(rethrowDuplicateSource);
   return toArticle(row);
 }
 
@@ -94,7 +103,12 @@ export async function updateNews(id: string, input: unknown): Promise<NewsArticl
   const data = NewsInput.parse(input);
   if (!isUuid(id)) throw Errors.notFound("Мэдээ");
   const db = await getDb();
-  const [row] = await db.update(newsArticles).set({ ...data, updatedAt: new Date() }).where(eq(newsArticles.id, id)).returning();
+  const [row] = await db
+    .update(newsArticles)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(newsArticles.id, id))
+    .returning()
+    .catch(rethrowDuplicateSource);
   if (!row) throw Errors.notFound("Мэдээ");
   return toArticle(row);
 }
@@ -114,6 +128,19 @@ export async function deleteNews(id: string): Promise<void> {
   const db = await getDb();
   const rows = await db.delete(newsArticles).where(eq(newsArticles.id, id)).returning({ id: newsArticles.id });
   if (rows.length === 0) throw Errors.notFound("Мэдээ");
+}
+
+/** sourceUrl is unique (imports rely on it to skip articles they already have). */
+export function isUniqueViolation(error: unknown): boolean {
+  for (let e = error; e instanceof Error; e = e.cause) {
+    if ((e as { code?: string }).code === "23505" || /unique|duplicate/i.test(e.message)) return true;
+  }
+  return false;
+}
+
+function rethrowDuplicateSource(error: unknown): never {
+  if (isUniqueViolation(error)) throw Errors.conflict("Энэ эх сурвалжийн холбоостой мэдээ аль хэдийн бүртгэлтэй байна.");
+  throw error;
 }
 
 // A malformed id can never match a uuid column (and would make Postgres throw).

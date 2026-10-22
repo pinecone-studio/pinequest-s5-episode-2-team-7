@@ -29,6 +29,7 @@ export default async function NewsArticlePage({ params }: PageProps<"/news/[id]"
       <Card className="p-6">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Badge tone="brand">{NEWS_CATEGORY_LABELS[article.category] ?? article.category}</Badge>
+          {article.origin === "rss" && <Badge tone="sky">Машин орчуулга</Badge>}
           {article.publishedAt && <span className="text-xs text-slate-500">{formatDateTime(article.publishedAt)}</span>}
         </div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">{article.title}</h1>

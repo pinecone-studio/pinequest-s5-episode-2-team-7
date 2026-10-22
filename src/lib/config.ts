@@ -31,6 +31,9 @@ const EnvSchema = z.object({
   FINETUNED_EXPECTED_ADAPTER: z.string().optional(),
 
   RATE_LIMIT_MESSAGES_PER_MINUTE: z.coerce.number().int().positive().default(20),
+
+  /** Bearer token Vercel Cron sends to /api/cron/news-import (unset = endpoint disabled). */
+  CRON_SECRET: z.string().optional(),
 });
 
 export type AppConfig = z.infer<typeof EnvSchema> & { sessionSecret: string };

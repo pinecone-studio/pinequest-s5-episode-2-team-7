@@ -15,6 +15,13 @@
       "when": 1792638948167,
       "tag": "0001_news",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792640202963,
+      "tag": "0002_news_import",
+      "breakpoints": true
     }
   ]
 }

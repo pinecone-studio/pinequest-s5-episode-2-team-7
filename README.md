@@ -30,6 +30,7 @@ missed and why it matters.
 | Interview workspace (desktop two-column, mobile stacked), typing indicator, narrator exam notes | ✅ |
 | Hidden structured cases, strict disclosure engine, leak/consistency validation | ✅ |
 | Diagnosis submission and deterministic, case-specific evaluation + feedback | ✅ |
+| Health news: admin-written articles plus a daily RSS import (ScienceDaily, Medical Xpress, The BMJ, The Lancet) machine-translated to Mongolian by Gemini and held as drafts until an admin publishes them | ✅ |
 | Admin: JSON case editor with validation, student preview, publish status, import/export, data-quality report, training-data approval, provider diagnostics | ✅ |
 | Providers: mock (no key), Gemini (free tier), Claude (paid), OpenAI-compatible (Ollama/vLLM), fine-tuned (verified) | ✅ implemented · Gemini/Claude/fine-tuned not exercised against live services in this environment (no keys) |
 | PostgreSQL (Neon) + embedded PGlite for local/tests | ✅ |
@@ -66,7 +67,8 @@ src/
   lib/cases/              canonical case schema, public view, demo loader
   lib/patient/            topics, classifier, disclosure engine, context/prompt, validator, simulator, providers/
   lib/evaluation/         diagnosis matching + rubric scoring
-  lib/services/           sessions, cases, users, training, quality, diagnostics, narrative
+  lib/services/           sessions, cases, users, training, quality, diagnostics, narrative, news (+ RSS import)
+  lib/news/               RSS parser, feed list, Gemini news translator
   lib/db/                 Drizzle schema + client (Postgres / PGlite)
 data/cases/               synthetic demo cases (canonical JSON)
 data/schema/              JSON Schema + topic list exported for Python

@@ -21,6 +21,7 @@ export default async function NewsPage() {
             <Card key={n.id} className="p-5">
               <div className="mb-2 flex flex-wrap items-center gap-2">
                 <Badge tone="brand">{NEWS_CATEGORY_LABELS[n.category] ?? n.category}</Badge>
+                {n.sourceName && <span className="text-xs text-slate-500">{n.sourceName}</span>}
                 {n.publishedAt && <span className="text-xs text-slate-500">{formatDateTime(n.publishedAt)}</span>}
               </div>
               <h2 className="text-lg font-semibold leading-snug">

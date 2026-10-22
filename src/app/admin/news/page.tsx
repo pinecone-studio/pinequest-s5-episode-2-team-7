@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { NewsImportButton } from "@/components/admin/news-import-button";
 import { NewsStatusSelect } from "@/components/admin/news-status-select";
 import { Badge, buttonClass, Card, EmptyState, PageHeader } from "@/components/ui";
 import { requirePageAdmin } from "@/lib/auth/server";
@@ -15,11 +16,14 @@ export default async function AdminNewsPage() {
     <main>
       <PageHeader
         title="Эрүүл мэндийн мэдээ"
-        subtitle="Зөвхөн нийтлэгдсэн (published) мэдээ оюутанд харагдана."
+        subtitle="Зөвхөн нийтлэгдсэн (published) мэдээ оюутанд харагдана. RSS-ээс татсан мэдээ машин орчуулгатай ноорог болж орно — шалгаад нийтэлнэ үү."
         actions={
-          <Link href="/admin/news/new" className={buttonClass("primary", "sm")}>
-            Шинэ мэдээ
-          </Link>
+          <div className="flex items-start gap-2">
+            <NewsImportButton />
+            <Link href="/admin/news/new" className={buttonClass("primary", "sm")}>
+              Шинэ мэдээ
+            </Link>
+          </div>
         }
       />
       {news.length === 0 ? (
@@ -40,10 +44,14 @@ export default async function AdminNewsPage() {
                 <tr key={n.id} className="align-top">
                   <td className="px-4 py-3">
                     <p className="font-medium">{n.title}</p>
+                    {n.originalTitle && <p className="mt-0.5 text-xs text-slate-500">{n.originalTitle}</p>}
                     <p className="mt-1 text-xs text-slate-400">{formatDateTime(n.updatedAt)}</p>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge>{NEWS_CATEGORY_LABELS[n.category] ?? n.category}</Badge>
+                    <div className="flex flex-wrap gap-1">
+                      <Badge>{NEWS_CATEGORY_LABELS[n.category] ?? n.category}</Badge>
+                      {n.origin === "rss" && <Badge tone="sky">Автомат</Badge>}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <NewsStatusSelect articleId={n.id} status={n.status} />
