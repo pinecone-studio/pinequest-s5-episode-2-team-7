@@ -7,7 +7,8 @@ import { getDb } from "@/lib/db/client";
 import { messages } from "@/lib/db/schema";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { getConfig } from "@/lib/config";
-import { isSpeechWav, MAX_STT_BYTES, splitSentences, transcribe } from "@/lib/speech/chimege";
+import { isSpeechWav, MAX_STT_BYTES, splitSentences } from "@/lib/speech/chimege";
+import { transcribeSpeech } from "@/lib/speech/stt";
 import type { EmotionId } from "@/lib/patient/emotions";
 import { createAvatarToken, getVoiceFeatures, speak, speakStreaming, voiceFor, voiceUsesEmotion } from "@/lib/speech/features";
 import { askQuestion, loadOwnedSession, type QuestionResult } from "./sessions";
@@ -21,7 +22,7 @@ export async function transcribeQuestion(auth: SessionData, wav: Uint8Array<Arra
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
   if (wav.length > MAX_STT_BYTES) throw Errors.badRequest("Бичлэг 15 секундээс урт байна.");
   if (!isSpeechWav(wav)) throw Errors.badRequest("Дууны формат буруу байна (16 кГц WAV хүлээж байна).");
-  return transcribe(wav);
+  return transcribeSpeech(wav);
 }
 
 function remember(key: string, wav: Uint8Array<ArrayBuffer>) {

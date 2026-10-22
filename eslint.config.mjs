@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "ml/**",
     "inference/**",
     ".data/**",
+    // Prebuilt third-party 3D anatomy viewer (minified bundle).
+    "public/anatomy/**",
   ]),
 ]);
 

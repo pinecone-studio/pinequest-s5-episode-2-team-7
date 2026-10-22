@@ -11,6 +11,7 @@ interface InferenceHealth {
 }
 
 const VERIFY_TTL_MS = 5 * 60_000;
+const WARM_UP_TIMEOUT_MS = 150_000;
 
 /**
  * Our fine-tuned patient model served by `inference/` (OpenAI-compatible
@@ -42,11 +43,11 @@ export class FineTunedPatientProvider extends OpenAICompatibleProvider {
     return `${this.baseUrl.replace(/\/v1$/, "")}/health`;
   }
 
-  override async health(): Promise<ProviderHealth> {
+  override async health(options?: { signal?: AbortSignal }): Promise<ProviderHealth> {
     const started = Date.now();
     let info: InferenceHealth;
     try {
-      const response = await this.fetchImpl(this.healthUrl(), { headers: this.headers() });
+      const response = await this.fetchImpl(this.healthUrl(), { headers: this.headers(), signal: options?.signal });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       info = (await response.json()) as InferenceHealth;
     } catch (error) {
@@ -68,9 +69,14 @@ export class FineTunedPatientProvider extends OpenAICompatibleProvider {
     return this.lastHealth;
   }
 
+  /** A cold start takes ~70 s, longer than a turn may wait — wake it when a session starts. */
+  async warmUp(): Promise<void> {
+    await this.health({ signal: AbortSignal.timeout(WARM_UP_TIMEOUT_MS) });
+  }
+
   override async complete(request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string> {
     if (Date.now() - this.verifiedAt > VERIFY_TTL_MS) {
-      const health = await this.health();
+      const health = await this.health({ signal: options?.signal });
       if (!health.ok) throw new ProviderError(health.detail, "finetuned", "unverified_model");
     }
     return super.complete(request, options);

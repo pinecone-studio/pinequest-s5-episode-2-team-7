@@ -6,6 +6,7 @@ import { EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
 import type { VoiceFeatures } from "@/lib/views";
 import { pcmFromWav, synthesize as synthesizeChimege } from "./chimege";
 import { synthesizeElevenLabs } from "./elevenlabs";
+import { speechInputConfigured } from "./stt";
 
 /**
  * Optional voice features. Each one is switched on only when its server-side
@@ -95,7 +96,7 @@ export function getVoiceFeatures(sex: Sex): VoiceFeatures {
   const c = getConfig();
   const speechOutput = ttsConfigured(sex);
   return {
-    speechInput: Boolean(c.CHIMEGE_STT_TOKEN),
+    speechInput: speechInputConfigured(),
     speechOutput,
     // The avatar lip-syncs to the patient's synthesized voice, so it needs TTS too.
     avatar: speechOutput && avatarConfigured(sex),

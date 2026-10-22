@@ -5,6 +5,7 @@ import { Loader2, Mic, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { t } from "@/i18n";
 import { describeError } from "@/lib/api";
+import { BrowserRecognizer } from "@/lib/audio/browser-stt";
 import { MAX_RECORD_SECONDS, MicRecorder, readLevel } from "@/lib/audio/recorder";
 import { useToast } from "../providers";
 import { cn } from "../ui";
@@ -18,14 +19,19 @@ interface VoiceInputProps {
   level: MotionValue<number>;
   onListeningChange: (listening: boolean) => void;
   disabled?: boolean;
+  /** Whether the server can transcribe; without it the browser's own recognition is used. */
+  serverTranscription?: boolean;
 }
 
 /** Big tap-to-talk mic with a live waveform and a 14 s countdown ring. */
-export function VoiceInput({ transcribe, onTranscript, level, onListeningChange, disabled }: VoiceInputProps) {
+export function VoiceInput({ transcribe, onTranscript, level, onListeningChange, disabled, serverTranscription = true }: VoiceInputProps) {
   const toast = useToast();
   const reduce = useReducedMotion();
   const [state, setState] = useState<State>("idle");
   const recorder = useRef<MicRecorder | null>(null);
+  const recognizer = useRef<BrowserRecognizer | null>(null);
+  // Set once the server reports it cannot transcribe, so later presses use the browser.
+  const [serverDown, setServerDown] = useState(false);
   const canvas = useRef<HTMLCanvasElement>(null);
   const progress = useRef<SVGCircleElement>(null);
   const frame = useRef(0);
@@ -35,6 +41,7 @@ export function VoiceInput({ transcribe, onTranscript, level, onListeningChange,
     () => () => {
       cancelAnimationFrame(frame.current);
       recorder.current?.cancel();
+      recognizer.current?.cancel();
     },
     [],
   );
@@ -100,6 +107,17 @@ export function VoiceInput({ transcribe, onTranscript, level, onListeningChange,
       toast({ message: denied ? t.errors.micDenied : t.errors.micUnsupported, tone: "error" });
       return;
     }
+    if ((!serverTranscription || serverDown) && BrowserRecognizer.supported()) {
+      const browser = new BrowserRecognizer();
+      try {
+        browser.start();
+      } catch {
+        rec.cancel();
+        toast({ message: t.errors.sttUnavailable, tone: "error" });
+        return;
+      }
+      recognizer.current = browser;
+    }
     recorder.current = rec;
     rec.onLimit = () => void stop();
     startedAt.current = performance.now();
@@ -114,6 +132,24 @@ export function VoiceInput({ transcribe, onTranscript, level, onListeningChange,
     cancelAnimationFrame(frame.current);
     level.set(0);
     onListeningChange(false);
+    const browser = recognizer.current;
+    if (browser) {
+      // The browser listened alongside the recorder; its text is the result.
+      recognizer.current = null;
+      rec.cancel();
+      setState("transcribing");
+      try {
+        const text = await browser.stop();
+        if (text) onTranscript(text);
+        else toast({ message: t.errors.sttEmpty, tone: "info" });
+      } catch (error) {
+        const denied = (error as Error).message === "not-allowed" || (error as Error).message === "service-not-allowed";
+        toast({ message: denied ? t.errors.micDenied : t.errors.sttUnavailable, tone: "error" });
+      } finally {
+        setState("idle");
+      }
+      return;
+    }
     const wav = await rec.stop();
     if (!wav) {
       setState("idle");
@@ -126,7 +162,13 @@ export function VoiceInput({ transcribe, onTranscript, level, onListeningChange,
       if (text) onTranscript(text);
       else toast({ message: t.errors.sttEmpty, tone: "info" });
     } catch (error) {
-      toast({ message: describeError(error).message, tone: "error" });
+      const code = (error as { code?: string }).code;
+      if ((code === "stt_unavailable" || code === "speech_unavailable") && BrowserRecognizer.supported()) {
+        setServerDown(true);
+        toast({ message: t.errors.sttRetryBrowser, tone: "info" });
+      } else {
+        toast({ message: describeError(error).message, tone: "error" });
+      }
     } finally {
       setState("idle");
     }

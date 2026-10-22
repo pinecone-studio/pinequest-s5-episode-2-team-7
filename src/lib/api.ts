@@ -91,7 +91,8 @@ export function sessionBackend(sessionId: string): ConsultBackend {
 /** A friendly Mongolian message for a failed call; `offline` suggests the offline demo. */
 export function describeError(error: unknown): { message: string; offline: boolean } {
   if (error instanceof ClientApiError) {
-    if (error.code === "stt_unavailable") return { message: error.message, offline: false };
+    // Speech errors carry their own message; they say nothing about the patient model.
+    if (error.code === "stt_unavailable" || error.code.startsWith("speech_")) return { message: error.message, offline: false };
     if (error.status === 0) return { message: t.errors.network, offline: true };
     if (error.status === 429) return { message: t.errors.rateLimited, offline: false };
     if (error.status >= 500) return { message: t.errors.modelOffline, offline: true };

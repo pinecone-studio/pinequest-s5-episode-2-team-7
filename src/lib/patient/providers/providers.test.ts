@@ -122,6 +122,27 @@ describe("fine-tuned provider", () => {
     expect(result.fallbackUsed).toBe(false);
     expect(calls.map((c) => c.url)).toEqual(["http://gpu:8000/health", "http://gpu:8000/v1/chat/completions"]);
   });
+
+  it("warms up through /health and never throws when the service is down", async () => {
+    const { impl, calls } = fakeFetch(() => {
+      throw new Error("connection refused");
+    });
+    const provider = new FineTunedPatientProvider("http://gpu:8000/v1", "pinequest-patient", "secret", "pq-lora-v2", impl);
+    await expect(provider.warmUp()).resolves.toBeUndefined();
+    expect(calls.map((c) => c.url)).toEqual(["http://gpu:8000/health"]);
+  });
+
+  it("gives up on a cold service when the turn times out instead of waiting for it", async () => {
+    const hang: typeof fetch = (_url, init) =>
+      new Promise((_resolve, reject) => init?.signal?.addEventListener("abort", () => reject(new Error("aborted")), { once: true }));
+    const provider = new FineTunedPatientProvider("http://gpu:8000/v1", "pinequest-patient", "secret", "pq-lora-v2", hang);
+    const result = await simulateTurn(
+      { patientCase: chest, question: "Тамхи татдаг уу?", disclosedFactIds: new Set(), history: [], turnIndex: 0 },
+      { provider, fallback: "mock", intentMode: "keyword", timeoutMs: 50 },
+    );
+    expect(result.fallbackUsed).toBe(true);
+    expect(result.provider).toBe("mock");
+  });
 });
 
 describe("hybrid intent classification", () => {
