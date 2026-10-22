@@ -84,6 +84,23 @@ describe("health news", () => {
     expect((await again.json()).article.publishedAt).toBe(publishedAt);
   });
 
+  it("filters published news by category and ignores unknown categories", async () => {
+    const publish = async (category: string) => {
+      const id: string = (await createDraft({ category })).body.article.id;
+      await adminPatch(req(`/api/admin/news/${id}`, { method: "PATCH", body: { status: "published" }, cookie: adminCookie }), ctx(id));
+      return id;
+    };
+    const research = await publish("research");
+    const clinical = await publish("clinical");
+    const ids = async (query: string) =>
+      ((await (await listNews(req(`/api/news${query}`, { cookie: studentCookie }), noCtx)).json()).news as { id: string; category: string }[]);
+
+    const filtered = await ids("?category=research");
+    expect(filtered.map((n) => n.id)).toContain(research);
+    expect(filtered.every((n) => n.category === "research")).toBe(true);
+    expect((await ids("?category=bogus")).map((n) => n.id)).toEqual(expect.arrayContaining([research, clinical]));
+  });
+
   it("validates input", async () => {
     expect((await createDraft({ title: "" })).status).toBe(400);
     expect((await createDraft({ sourceUrl: "javascript:alert(1)" })).status).toBe(400);

@@ -5,7 +5,7 @@ tier, Kaggle/Colab GPUs). Paid options are marked.
 
 ## 1. Local setup on macOS
 
-Requirements: Node.js ≥ 20.9 (tested with 24), npm. Python is only needed for `ml/`.
+Requirements: Node.js ≥ 20.19 (Vitest 5 needs `require(esm)`; tested with 24), npm. Python is only needed for `ml/`.
 
 ```bash
 git clone <your-repo-url> PineQuest-AI-Patient && cd PineQuest-AI-Patient

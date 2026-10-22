@@ -1,5 +1,5 @@
 import "server-only";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { Errors } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
@@ -61,10 +61,18 @@ function toArticle(row: NewsArticleRow): NewsArticle {
   };
 }
 
-/** Published articles, newest first. */
-export async function listPublishedNews(limit = 50): Promise<NewsArticle[]> {
+export const isNewsCategory = (value: unknown): value is NewsCategory => (NEWS_CATEGORIES as readonly unknown[]).includes(value);
+
+/** Published articles, newest first; an unknown category means "all". */
+export async function listPublishedNews(limit = 50, category?: string): Promise<NewsArticle[]> {
   const db = await getDb();
-  const rows = await db.select().from(newsArticles).where(eq(newsArticles.status, "published")).orderBy(desc(newsArticles.publishedAt)).limit(limit);
+  const published = eq(newsArticles.status, "published");
+  const rows = await db
+    .select()
+    .from(newsArticles)
+    .where(isNewsCategory(category) ? and(published, eq(newsArticles.category, category)) : published)
+    .orderBy(desc(newsArticles.publishedAt))
+    .limit(limit);
   return rows.map(toArticle);
 }
 

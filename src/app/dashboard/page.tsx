@@ -4,15 +4,16 @@ import { StartCaseButton } from "@/components/start-case-button";
 import { scoreTone } from "@/components/score-ring";
 import { Alert, Badge, buttonClass, Card, EmptyState, PageHeader } from "@/components/ui";
 import { requirePageUser } from "@/lib/auth/server";
-import { DIFFICULTY_LABELS, SEX_LABELS, formatDateTime } from "@/lib/i18n";
+import { DIFFICULTY_LABELS, NEWS_CATEGORY_LABELS, SEX_LABELS, formatDateTime } from "@/lib/i18n";
 import { listPublishedCases } from "@/lib/services/cases";
+import { listPublishedNews } from "@/lib/services/news";
 import { listSessions } from "@/lib/services/sessions";
 
 export const metadata: Metadata = { title: "Кейсүүд" };
 
 export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   const session = await requirePageUser("/dashboard");
-  const [cases, sessions, params] = await Promise.all([listPublishedCases(), listSessions(session, { limit: 50 }), searchParams]);
+  const [cases, sessions, news, params] = await Promise.all([listPublishedCases(), listSessions(session, { limit: 50 }), listPublishedNews(3), searchParams]);
   const active = sessions.filter((s) => s.status === "active");
   const completed = sessions.filter((s) => s.status === "completed");
   const avg = completed.length ? Math.round(completed.reduce((sum, s) => sum + (s.totalScore ?? 0), 0) / completed.length) : null;
@@ -115,6 +116,31 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
           </div>
         )}
       </section>
+
+      {news.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-3 flex items-baseline justify-between gap-4">
+            <h2 className="text-lg font-semibold">Сүүлийн мэдээ</h2>
+            <Link href="/news" className="text-sm font-medium text-brand-700 hover:underline">
+              Бүх мэдээ →
+            </Link>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {news.map((n) => (
+              <Card key={n.id} className="p-4">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <Badge tone="brand">{NEWS_CATEGORY_LABELS[n.category] ?? n.category}</Badge>
+                  {n.publishedAt && <span className="text-xs text-slate-500">{formatDateTime(n.publishedAt)}</span>}
+                </div>
+                <Link href={`/news/${n.id}`} className="font-medium leading-snug hover:text-brand-700 hover:underline">
+                  {n.title}
+                </Link>
+                <p className="mt-1 line-clamp-2 text-sm text-slate-600">{n.summary}</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {completed.length > 0 && (
         <p className="mt-8 text-sm">
