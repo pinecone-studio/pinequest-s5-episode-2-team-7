@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { scoreTone } from "@/components/score-ring";
+import { scoreTone } from "@/lib/score-tone";
 import { Badge, buttonClass, Card, EmptyState, PageHeader } from "@/components/ui";
 import { requirePageUser } from "@/lib/auth/server";
 import { SESSION_STATUS_LABELS, VERDICT_LABELS, formatDateTime } from "@/lib/i18n";

@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "id": "headache-dizziness-01",
+  "version": 1,
+  "internalTitle": "Carbon monoxide poisoning from a ger stove in a 37-year-old woman (children also affected)",
+  "public": {
+    "displayTitle": { "mn": "Өглөө толгой өвдөж, дотор муухайрсан 37 настай эмэгтэй", "en": "37-year-old woman with morning headache and nausea" },
+    "specialty": "Яаралтай тусламж",
+    "difficulty": "intermediate",
+    "tags": ["яаралтай тусламж", "өвөл"],
+    "setting": { "mn": "Яаралтай тусламжийн тасаг, 1-р сар, өглөө 07:40", "en": "Emergency department, January, 07:40" },
+    "patient": {
+      "name": "Оюунчимэг",
+      "age": 37,
+      "sex": "female",
+      "occupation": { "mn": "Хүнсний дэлгүүрийн худалдагч", "en": "Grocery shop assistant" }
+    },
+    "chiefComplaint": { "mn": "Толгой өвдөх, толгой эргэх", "en": "Headache and dizziness" },
+    "chiefComplaintTopics": ["headache", "dizziness"],
+    "openingLine": { "mn": "Эмч ээ, өглөө сэрэхэд толгой хагарах гэж байгаа юм шиг өвдөөд, эргээд байна.", "en": "Doctor, I woke up with a splitting headache and I'm dizzy." },
+    "initialVitals": { "bloodPressure": "128/82", "heartRate": 104, "respiratoryRate": 20, "temperatureC": 36.7, "spo2": 98 },
+    "estimatedMinutes": 12,
+    "timeCritical": true
+  },
+  "persona": {
+    "personality": { "mn": "Сэтгэл түгшсэн, хүүхдүүддээ их санаа тавьдаг ээж. Өөрийнхөө тухай биш хүүхдүүдийнхээ тухай ярих хандлагатай.", "en": "Anxious mother, more focused on her children than herself." },
+    "speakingStyle": { "mn": "Хурдан, тасалдсан өгүүлбэрээр ярина. Заримдаа асуултыг дахин асуулгана.", "en": "Speaks quickly in fragments; sometimes asks for questions to be repeated." },
+    "emotionalState": { "mn": "Айсан, толгой нь манантай.", "en": "Frightened and foggy-headed." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Угаарын хийн (CO) хордлого", "en": "Carbon monoxide poisoning" },
+      "icd10": "T58",
+      "acceptedAliases": [
+        "carbon monoxide poisoning", "co poisoning", "carbon monoxide toxicity", "carbon monoxide",
+        "угаарын хийн хордлого", "угаартсан", "угаартах", "угаарын хордлого", "угаар", "нүүрстөрөгчийн дутуу ислийн хордлого"
+      ],
+      "partialAliases": ["gas poisoning", "poisoning", "хордлого", "хийн хордлого"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Хоолны хордлого / ходоод гэдэсний вируст халдвар", "en": "Food poisoning / viral gastroenteritis" },
+        "aliases": ["food poisoning", "gastroenteritis", "хоолны хордлого"],
+        "rationale": { "mn": "Гэр бүлээрээ өвдсөн ч суулгалт байхгүй, гадаа гарахад сайжирдаг нь угаарыг илүү сэжиглүүлнэ.", "en": "Family cluster fits, but no diarrhoea and improvement outdoors favour CO." }
+      },
+      {
+        "label": { "mn": "Шигдээсийн толгой өвдөлт (мигрень)", "en": "Migraine" },
+        "aliases": ["migraine", "мигрень"],
+        "rationale": { "mn": "Хүүхдүүд нь ч мөн өвдсөн нь хувь хүний мигрень биш, орчны шалтгааныг заана.", "en": "Children affected too points to an environmental cause." }
+      },
+      {
+        "label": { "mn": "Артерийн даралт ихсэх хямрал", "en": "Hypertensive crisis" },
+        "aliases": ["hypertensive crisis", "даралт ихсэх", "гипертензийн хямрал"],
+        "rationale": { "mn": "Даралт хэвийн хэмжээнд байгаа тул магадлал бага.", "en": "Blood pressure is near normal." }
+      }
+    ],
+    "summary": {
+      "mn": "37 настай эмэгтэй гэр хороололд гэрт амьдардаг; шөнө зуухаа шахмал түлшээр дүүргэж, тагийг нь хаагаад унтжээ. Өглөө хүчтэй толгой өвдөх, толгой эргэх, дотор муухайрах, нэг удаа бөөлжих, сульдах шинж илэрсэн. Хоёр хүүхэд нь мөн толгой өвдөж, бөөлжсөн. Гадаа гарахад бага зэрэг сайжирсан. Шөнө хүчтэй салхитай байсан.",
+      "en": "37-year-old in a ger: filled the stove with briquettes and closed the damper overnight; strong wind that night. Woke with severe headache, dizziness, nausea, one vomit and weakness. Both children have headache and vomiting. Slightly better outdoors."
+    },
+    "facts": [
+      {
+        "id": "headache-onset",
+        "kind": "positive",
+        "topics": ["headache", "onset", "character", "severity", "location"],
+        "patientKnows": true,
+        "answer": { "mn": "Өнөө өглөө сэрэнгүүт л эхэлсэн. Толгой бүхэлдээ лугшиж, хагарах гэж байгаа юм шиг өвдөж байна. Арваас найм гэх үү дээ.", "en": "It started as soon as I woke this morning. My whole head is throbbing, like it'll split. Maybe eight out of ten." },
+        "leakTerms": ["сэрэнгүүт"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "nausea-vomit",
+        "kind": "positive",
+        "topics": ["nausea", "vomiting"],
+        "patientKnows": true,
+        "answer": { "mn": "Дотор муухайраад, нэг удаа бөөлжсөн.", "en": "I'm nauseous and vomited once." },
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "weak-confused",
+        "kind": "positive",
+        "topics": ["dizziness", "fatigue", "associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Бие сульдаад, хөл гар хүчгүй байна. Толгой манантай, юм бодоход хэцүү байна.", "en": "I'm weak, my arms and legs have no strength. My head is foggy, it's hard to think." },
+        "significance": { "mn": "Ухаан манарах нь хүнд хордлогын шинж байж болно.", "en": "Confusion can signal severe poisoning." },
+        "leakTerms": ["манантай"]
+      },
+      {
+        "id": "better-outside",
+        "kind": "positive",
+        "topics": ["relieving", "aggravating"],
+        "patientKnows": true,
+        "answer": { "mn": "Гадаа гараад хүйтэн агаар авахад жаахан гайгүй болсон. Гэртээ ороход дахиад л муудаад байсан.", "en": "Going outside into the cold air helped a bit. Back inside the house it got worse again." },
+        "significance": { "mn": "Тодорхой орчинд муудаж, гадаа сайжрах нь угаарын хийн хордлогын сонгодог шинж.", "en": "Worse indoors, better outdoors is classic for CO." },
+        "leakTerms": ["хүйтэн агаар"]
+      },
+      {
+        "id": "children-sick",
+        "kind": "history",
+        "topics": ["sick_contacts"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр хүүхэд маань ч бас толгой өвдөөд, бага нь хоёр удаа бөөлжсөн. Хөршийн эгч хүүхдүүдийг харж байгаа.", "en": "My two children also have headaches; the younger one vomited twice. The neighbour is watching them." },
+        "significance": { "mn": "Нэг орчинд байсан хэд хэдэн хүн зэрэг өвдсөн нь орчны хордлогыг заана.", "en": "Several people from one setting falling ill together suggests environmental poisoning." },
+        "leakTerms": ["бага нь"]
+      },
+      {
+        "id": "stove-home",
+        "kind": "history",
+        "topics": ["living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Баянзүрх дүүргийн гэр хороололд гэрт амьдардаг. Шөнө хүйтэн байсан болохоор зуухаа шахмал түлшээр дүүргээд, тагийг нь хаагаад унтсан. Шөнө салхи их байсан.", "en": "In a ger in the Bayanzürkh ger district. It was cold, so I filled the stove with briquettes, closed the damper and went to sleep. It was very windy overnight." },
+        "significance": { "mn": "Шахмал түлш, хаалттай таг, салхитай шөнө — угаарын хий хуримтлагдах эрсдэл.", "en": "Briquettes, closed damper and wind — risk of CO build-up." },
+        "leakTerms": ["шахмал түлш", "тагийг нь хаагаад", "зуух"]
+      },
+      {
+        "id": "no-fever-diarrhea",
+        "kind": "negative",
+        "topics": ["fever", "diarrhea", "abdominal_pain"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуураагүй. Гэдэс өвдөөгүй, суулгаагүй.", "en": "No fever. No stomach pain or diarrhoea." },
+        "significance": { "mn": "Халууралт, суулгалт байхгүй нь халдвар, хоолны хордлогын магадлалыг бууруулна.", "en": "Lowers likelihood of infection or food poisoning." }
+      },
+      {
+        "id": "no-chest-pain",
+        "kind": "negative",
+        "topics": ["chest_pain", "palpitations", "dyspnea"],
+        "patientKnows": true,
+        "answer": { "mn": "Цээж өвдөхгүй. Зүрх жаахан түргэн цохилоод байх шиг. Амьсгаа гайгүй.", "en": "No chest pain. My heart feels a bit fast. Breathing is okay." }
+      },
+      {
+        "id": "no-previous",
+        "kind": "negative",
+        "topics": ["previous_episodes"],
+        "patientKnows": true,
+        "answer": { "mn": "Ийм өвдөж байгаагүй. Хааяа ядрахаараа толгой өвддөг, гэхдээ ийм хүчтэй биш.", "en": "Never like this. I sometimes get tension headaches when tired, but nothing this bad." }
+      },
+      {
+        "id": "pregnancy",
+        "kind": "history",
+        "topics": ["lmp", "pregnancy"],
+        "patientKnows": true,
+        "answer": { "mn": "Сарын тэмдэг хоёр долоо хоногийн өмнө ирсэн. Жирэмсэн биш.", "en": "My period was two weeks ago. I'm not pregnant." },
+        "significance": { "mn": "Жирэмслэлт угаарын хийн хордлогын үед ургийн эрсдэлийг нэмж, эмчилгээний шийдвэрт нөлөөлнө.", "en": "Pregnancy raises fetal risk and changes management in CO poisoning." }
+      },
+      {
+        "id": "pmh",
+        "kind": "history",
+        "topics": ["pmh", "hypertension", "heart_disease", "diabetes"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралт, зүрх, чихрийн шижин байхгүй. Эрүүл л явдаг.", "en": "No blood pressure, heart problems or diabetes. I'm generally healthy." }
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications", "allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Өглөө парацетамол нэгийг уусан, нэмэр болсонгүй. Харшил байхгүй.", "en": "I took one paracetamol this morning — no help. No allergies." }
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "occupation"],
+        "patientKnows": true,
+        "answer": { "mn": "Тамхи татдаггүй, архи уудаггүй. Хүнсний дэлгүүрт худалдагч хийдэг.", "en": "I don't smoke or drink. I work as a shop assistant." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралт ихэссэн юм болов уу эсвэл орой идсэн хуушуур муу байсан юм болов уу гэж бодсон. Хүүхдүүд маань л гайгүй байгаасай.", "en": "I thought maybe my blood pressure went up, or last night's khuushuur was bad. I just want my children to be okay." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 36.7°C, зүрхний цохилт 104/мин, амьсгал 20/мин, АД 128/82 мм.муб, SpO₂ 98% (пульсоксиметрээр — угаарын хийн үед хуурамчаар хэвийн гарч болно).", "en": "T 36.7°C, HR 104, RR 20, BP 128/82, SpO₂ 98% on pulse oximetry (can be falsely normal in CO poisoning)." }
+      },
+      {
+        "id": "neuro-exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Ухаан саруул боловч бага зэрэг удаан хариулна. Хүзүү хөшөөгүй. Мэдрэлийн голомтот шинжгүй. Зүрх, уушгинд онцгой өөрчлөлтгүй.", "en": "Alert but slow to respond. No neck stiffness. No focal neurology. Heart and lungs unremarkable." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "environment", "category": "risk_factors", "topics": ["living_situation"], "weight": 2, "critical": true,
+        "label": { "mn": "Амьдрах орчин, халаалт (зуух)", "en": "Home and heating source" },
+        "rationale": { "mn": "Гэр, зуух, шахмал түлш — Монголд өвлийн угаарын хийн хордлогын гол шалтгаан.", "en": "Ger stoves and briquettes are the main winter CO source in Mongolia." },
+        "suggestedQuestion": { "mn": "Гэртээ юугаар галладаг вэ? Шөнө зуухаа хэрхэн түлсэн бэ?" }
+      },
+      {
+        "id": "others-affected", "category": "risk_factors", "topics": ["sick_contacts"], "weight": 2, "critical": true,
+        "label": { "mn": "Хамт байсан хүмүүс өвдсөн эсэх", "en": "Others affected" },
+        "rationale": { "mn": "Олон хүн зэрэг өвдвөл орчны хордлогыг сэжиглэж, бусдыг яаралтай үзүүлнэ.", "en": "Clusters suggest environmental poisoning; others need urgent assessment." },
+        "suggestedQuestion": { "mn": "Тантай хамт байсан хүмүүс бас өвдсөн үү?" }
+      },
+      {
+        "id": "pattern", "category": "hpi", "topics": ["relieving", "aggravating", "onset"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Хэзээ эхэлсэн, юунаас сайжирдаг", "en": "Timing and what helps" },
+        "rationale": { "mn": "Сэрэхэд эхэлж, гадаа сайжирдаг нь угаарын шинж.", "en": "Onset on waking and improvement outdoors suggest CO." },
+        "suggestedQuestion": { "mn": "Хэзээ эхэлсэн бэ? Юу хийхэд гайгүй болдог вэ?" }
+      },
+      {
+        "id": "neuro-severity", "category": "red_flags", "topics": ["associated_general", "fatigue"], "weight": 1.5,
+        "label": { "mn": "Ухаан, сульдал зэрэг хүндийн шинж", "en": "Severity features (confusion, weakness)" },
+        "rationale": { "mn": "Ухаан алдах, будилах нь хүнд хордлого, хүчилтөрөгчийн эмчилгээний заалт.", "en": "Confusion or syncope indicates severe poisoning." },
+        "suggestedQuestion": { "mn": "Ухаан алдсан, будилсан, сульдсан зүйл байна уу?" }
+      },
+      {
+        "id": "gi-negatives", "category": "pertinent_negatives", "topics": ["fever", "diarrhea", "nausea", "vomiting"], "weight": 1,
+        "label": { "mn": "Халууралт, суулгалт (ялган оношлогоо)", "en": "Fever and diarrhoea (differential)" },
+        "rationale": { "mn": "Халдвар, хоолны хордлогоос ялгана.", "en": "Separates from infection or food poisoning." },
+        "suggestedQuestion": { "mn": "Халуурсан уу? Суулгасан уу? Бөөлжсөн үү?" }
+      },
+      {
+        "id": "pregnancy", "category": "past_history", "topics": ["pregnancy", "lmp"], "weight": 1,
+        "label": { "mn": "Жирэмслэлт", "en": "Pregnancy" },
+        "rationale": { "mn": "Жирэмсэн бол ургийн эрсдэл өндөр, эмчилгээ өөрчлөгдөнө.", "en": "Pregnancy raises fetal risk and changes treatment." },
+        "suggestedQuestion": { "mn": "Сүүлийн сарын тэмдэг хэзээ ирсэн бэ? Жирэмсэн байх магадлал бий юу?" }
+      },
+      {
+        "id": "pmh-meds", "category": "past_history", "topics": ["pmh", "medications", "previous_episodes"], "weight": 1,
+        "label": { "mn": "Өмнөх өвчин, эм", "en": "Past history and medications" },
+        "rationale": { "mn": "Бусад шалтгаан (мигрень, даралт)-ыг хасна.", "en": "Excludes other causes." },
+        "suggestedQuestion": { "mn": "Өмнө нь ийм толгой өвдөж байсан уу? Архаг өвчин, уудаг эм бий юу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Өвлийн шөнө гэрт зуух түлж, тагийг нь хаагаад унтсаны дараа өглөө толгой өвдөх, толгой эргэх, дотор муухайрах, хамт байсан хүүхдүүд мөн адил шинжтэй, гадаа гарахад сайжирдаг нь угаарын хийн хордлогын сонгодог дүр зураг. Пульсоксиметр хэвийн гарч болох тул түүнд найдахгүй. Нэн даруй цэвэр агаарт гаргаж, 100% хүчилтөрөгч өгч, бусад гэр бүлийн гишүүдийг яаралтай үзүүлнэ.",
+      "en": "Morning headache, dizziness and nausea after sleeping with a closed ger stove, with children affected and improvement outdoors, is classic CO poisoning. Pulse oximetry may read normal. Remove from exposure, give 100% oxygen, and assess the whole household urgently."
+    },
+    "learningPoints": [
+      { "mn": "Өвлийн улиралд толгой өвдөлттэй хүнээс халаалтын эх үүсвэрийг асуух.", "en": "In winter headaches, ask about the heating source." },
+      { "mn": "Хамт байсан хүмүүс өвдсөн эсэхийг заавал асуух.", "en": "Always ask whether others are affected." },
+      { "mn": "Пульсоксиметр угаарын хийн хордлогыг илрүүлэхгүй.", "en": "Pulse oximetry does not detect CO poisoning." },
+      { "mn": "Жирэмсэн эмэгтэйд хордлогын эрсдэл өндөр.", "en": "Pregnant women are at higher risk." }
+    ],
+    "emergency": {
+      "escalation": { "mn": "Нэн даруй 100% хүчилтөрөгч маскаар өгч, карбоксигемоглобин шалгуулж, хүүхдүүдийг яаралтай авчруулж үзүүлнэ.", "en": "Give 100% oxygen by mask immediately, check carboxyhaemoglobin and bring the children in urgently." }
+    }
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

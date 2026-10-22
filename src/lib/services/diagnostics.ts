@@ -11,6 +11,8 @@ export interface ProviderDiagnostics {
   health: ProviderHealth | { ok: false; detail: string };
   /** Last 24h of patient answers grouped by the provider that actually answered. */
   recentAnswers: { provider: string | null; model: string | null; fallback: boolean; count: number }[];
+  /** Last 24h of fallbacks grouped by why the configured model was not used (rate limit, timeout, validation, ...). */
+  fallbackReasons: { reason: string | null; count: number }[];
   registeredModels: { provider: string; model: string; adapterId: string | null; baseModel: string | null; createdAt: string }[];
 }
 
@@ -28,6 +30,12 @@ export async function providerDiagnostics(): Promise<ProviderDiagnostics> {
     .from(messages)
     .where(sql`${messages.role} = 'patient' and ${messages.createdAt} > now() - interval '24 hours' and ${messages.seq} > 0`)
     .groupBy(messages.provider, messages.model, messages.fallbackUsed);
+  const reasons = await db
+    .select({ reason: messages.fallbackReason, count: sql<number>`count(*)::int` })
+    .from(messages)
+    .where(sql`${messages.role} = 'patient' and ${messages.fallbackUsed} and ${messages.createdAt} > now() - interval '24 hours' and ${messages.seq} > 0`)
+    .groupBy(messages.fallbackReason)
+    .orderBy(desc(sql`count(*)`));
   const registered = await db.select().from(modelRegistry).where(eq(modelRegistry.provider, "finetuned")).orderBy(desc(modelRegistry.createdAt)).limit(10);
   return {
     configured: {
@@ -39,6 +47,7 @@ export async function providerDiagnostics(): Promise<ProviderDiagnostics> {
     },
     health,
     recentAnswers: recent,
+    fallbackReasons: reasons,
     registeredModels: registered.map((r) => ({ provider: r.provider, model: r.model, adapterId: r.adapterId, baseModel: r.baseModel, createdAt: r.createdAt.toISOString() })),
   };
 }

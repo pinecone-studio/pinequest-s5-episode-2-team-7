@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "id": "headache-01",
+  "version": 1,
+  "internalTitle": "Aneurysmal subarachnoid haemorrhage (thunderclap headache) in a 49-year-old hypertensive smoker",
+  "public": {
+    "displayTitle": { "mn": "Гэнэт хүчтэй толгой өвдсөн 49 настай эмэгтэй", "en": "49-year-old woman with sudden severe headache" },
+    "specialty": "Мэдрэл / Яаралтай тусламж",
+    "difficulty": "advanced",
+    "tags": ["яаралтай тусламж", "толгой өвдөх"],
+    "setting": { "mn": "Яаралтай тусламжийн тасаг, үдээс хойш 15:10", "en": "Emergency department, 15:10" },
+    "patient": {
+      "name": "Нарантуяа",
+      "age": 49,
+      "sex": "female",
+      "occupation": { "mn": "Жижиг дэлгүүрийн эзэн", "en": "Small shop owner" }
+    },
+    "chiefComplaint": { "mn": "Толгой хүчтэй өвдөх", "en": "Severe headache" },
+    "chiefComplaintTopics": ["headache"],
+    "openingLine": { "mn": "Эмч ээ, толгой маань гэнэт алх цохисон юм шиг өвдөөд байна...", "en": "Doctor, my head suddenly hurts like it was hit with a hammer..." },
+    "initialVitals": { "bloodPressure": "184/102", "heartRate": 64, "respiratoryRate": 18, "temperatureC": 37.1, "spo2": 98 },
+    "estimatedMinutes": 12,
+    "timeCritical": true
+  },
+  "persona": {
+    "personality": { "mn": "Ердөө шулуун шударга, ажилсаг эмэгтэй. Одоо хүчтэй өвдөлтөөс болж нүдээ аньж, гэрлээс зайлсхийнэ.", "en": "Normally direct and hard-working; now keeps her eyes shut and avoids light." },
+    "speakingStyle": { "mn": "Нам, удаан, товч хариулна. Урт асуултад 'дахиад хэлээч' гэнэ.", "en": "Quiet, slow, brief; asks for long questions to be repeated." },
+    "emotionalState": { "mn": "Маш их өвдөлттэй, айсан.", "en": "In severe pain and frightened." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Аалзавчин бүрхүүлийн доорх цус харвалт", "en": "Subarachnoid haemorrhage" },
+      "icd10": "I60.9",
+      "acceptedAliases": [
+        "subarachnoid haemorrhage", "subarachnoid hemorrhage", "sah", "aneurysmal subarachnoid haemorrhage", "aneurysmal subarachnoid hemorrhage", "ruptured cerebral aneurysm", "ruptured aneurysm",
+        "аалзавчин бүрхүүлийн доорх цус харвалт", "аалзавчин доорх цус харвалт", "аалзавчин бүрхүүлийн доорх цус алдалт", "субарахноид цус харвалт", "тархины аневризм хагарах", "аневризм хагарсан"
+      ],
+      "partialAliases": ["stroke", "haemorrhagic stroke", "hemorrhagic stroke", "intracranial haemorrhage", "intracranial hemorrhage", "цус харвалт", "тархины цус харвалт", "тархины цус алдалт"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Шигдээсийн толгой өвдөлт (мигрень)", "en": "Migraine" },
+        "aliases": ["migraine", "мигрень"],
+        "rationale": { "mn": "Мигрень аажмаар нэмэгддэг; хэдхэн секундэд дээд цэгтээ хүрсэн 'амьдралын хамгийн хүчтэй' өвдөлт нь цус харвалтыг хасах шаардлагатай.", "en": "Migraine builds gradually; a thunderclap 'worst ever' headache must exclude SAH." }
+      },
+      {
+        "label": { "mn": "Менингит", "en": "Meningitis" },
+        "aliases": ["meningitis", "менингит", "тархины бүрхүүлийн үрэвсэл"],
+        "rationale": { "mn": "Хүзүү хөших, гэрэлд дургүй болох нь хоёуланд нь байна; гэнэт эхэлж, халууралтгүй нь цус харвалтыг заана.", "en": "Neck stiffness and photophobia occur in both; sudden onset without fever favours SAH." }
+      },
+      {
+        "label": { "mn": "Даралт ихсэлтийн хямрал", "en": "Hypertensive emergency" },
+        "aliases": ["hypertensive emergency", "hypertensive crisis", "даралтын хямрал"],
+        "rationale": { "mn": "Даралт өндөр боловч цус харвалтын хариу урвал байж болно; гэнэтийн эхлэл, хүзүү хөших нь SAH-ийг заана.", "en": "High BP may be reactive; sudden onset and meningism indicate SAH." }
+      },
+      {
+        "label": { "mn": "Тархины венийн синусын тромбоз", "en": "Cerebral venous sinus thrombosis" },
+        "aliases": ["cvst", "венийн синусын тромбоз"],
+        "rationale": { "mn": "Гэнэтийн толгой өвдөлтийн ховор шалтгаан; дааврын эм хэрэглэдэггүй.", "en": "Rare cause of sudden headache; no hormonal medication." }
+      }
+    ],
+    "summary": {
+      "mn": "49 настай, эмчлэгдээгүй даралт ихсэлттэй, тамхи татдаг эмэгтэй 2 цагийн өмнө хүнд хайрцаг өргөж байхдаа толгойн араар гэнэт 'алх цохисон' мэт хүчтэй өвдөлт гарч, хэдхэн секундэд дээд цэгтээ хүрсэн. Хоёр удаа бөөлжсөн, хүзүү хөшсөн, гэрэлд нүд гялбана, хэдэн секунд нүд бүрэлзсэн. Өмнө нь ийм өвдөж байгаагүй. Ээж нь 55 настайдаа гэнэт тархины цус харвалтаар нас барсан.",
+      "en": "49-year-old untreated hypertensive smoker: 2 hours ago, lifting a heavy box, sudden occipital 'hammer-blow' headache peaking within seconds; vomited twice, stiff neck, photophobia, brief visual blurring. Never had a headache like it. Mother died suddenly of a brain haemorrhage at 55."
+    },
+    "facts": [
+      {
+        "id": "thunderclap",
+        "kind": "positive",
+        "topics": ["headache", "onset", "severity", "character", "trigger"],
+        "patientKnows": true,
+        "answer": { "mn": "Хоёр цагийн өмнө дэлгүүртээ хүнд хайрцаг өргөж байтал гэнэт л толгой минь алх цохисон юм шиг өвдсөн. Тэр дороо, хэдхэн секундэд ийм хүчтэй болсон. Арваас арав, амьдралдаа ийм өвдөж байгаагүй.", "en": "Two hours ago, lifting a heavy box in my shop, my head suddenly hurt like a hammer blow. Within seconds it was this bad. Ten out of ten — never in my life." },
+        "significance": { "mn": "Хэдхэн секундэд дээд цэгтээ хүрэх 'аянга цохисон' мэт толгой өвдөлт нь аалзавчин доорх цус харвалтын сонгодог шинж.", "en": "A thunderclap headache peaking within seconds is classic for SAH." },
+        "leakTerms": ["алх цохисон", "хүнд хайрцаг", "хэдхэн секунд"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "location",
+        "kind": "positive",
+        "topics": ["location", "radiation", "progression"],
+        "patientKnows": true,
+        "answer": { "mn": "Толгойн ар талаас эхэлсэн, одоо бүх толгой, хүзүү рүү дамжиж өвдөж байна. Багасахгүй байна.", "en": "It started at the back of my head; now it's my whole head and goes into my neck. It isn't easing." },
+        "leakTerms": ["толгойн ар"]
+      },
+      {
+        "id": "vomiting",
+        "kind": "positive",
+        "topics": ["vomiting", "nausea"],
+        "patientKnows": true,
+        "answer": { "mn": "Тэгээд удалгүй хоёр удаа бөөлжсөн. Одоо ч дотор муухайрч байна.", "en": "Soon after I vomited twice. I'm still nauseous." }
+      },
+      {
+        "id": "neck-light",
+        "kind": "positive",
+        "topics": ["associated_general"],
+        "patientKnows": true,
+        "answer": { "mn": "Хүзүү хөшөөд, толгойгоо бөхийлгөж чадахгүй байна. Гэрэл нүдэнд их гялбаад, нүдээ аньж байгаа нь тэр.", "en": "My neck is stiff — I can't bend my head forward. Light really hurts my eyes; that's why I keep them shut." },
+        "significance": { "mn": "Хүзүү хөших, гэрэлд дургүй болох нь тархины бүрхүүл цочирсныг (менингизм) илтгэнэ.", "en": "Neck stiffness and photophobia indicate meningism." },
+        "leakTerms": ["хүзүү хөшөөд", "гялбаад"]
+      },
+      {
+        "id": "brief-visual",
+        "kind": "positive",
+        "topics": ["dizziness"],
+        "patientKnows": true,
+        "answer": { "mn": "Өвдөлт эхлэхэд хэдэн секунд нүд бүрэлзээд, хажуугийн тавиураас барьж зогссон. Ухаан алдаагүй.", "en": "When it started my vision blurred for a few seconds and I held onto the shelf. I didn't pass out." },
+        "leakTerms": ["тавиур"]
+      },
+      {
+        "id": "no-weakness-fever",
+        "kind": "negative",
+        "topics": ["fever", "chills", "trauma"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуураагүй. Толгойгоо хаана ч цохиогүй. Гар хөл минь хүчтэй, ярихад гайгүй.", "en": "No fever. I didn't hit my head anywhere. My arms and legs are strong; I can speak fine." },
+        "significance": { "mn": "Халууралтгүй, гэмтэлгүй нь менингит, гэмтлийн цус харвалтын магадлалыг бууруулна; голомтот шинжгүй.", "en": "No fever or trauma lowers likelihood of meningitis or traumatic bleed; no focal deficit." }
+      },
+      {
+        "id": "no-previous",
+        "kind": "negative",
+        "topics": ["previous_episodes"],
+        "patientKnows": true,
+        "answer": { "mn": "Ийм өвдөж огт байгаагүй. Хааяа даралт ихсэхэд толгой хүндэрдэг, гэхдээ энэ шиг биш.", "en": "Never like this. When my blood pressure is high my head feels heavy, but nothing like this." },
+        "significance": { "mn": "'Анхны, хамгийн хүчтэй' толгой өвдөлт нь аюултай шалтгааны сэрэмжлүүлэх шинж.", "en": "'First and worst' headache is a red flag." }
+      },
+      {
+        "id": "sentinel",
+        "kind": "history",
+        "topics": ["duration"],
+        "patientKnows": true,
+        "answer": { "mn": "Одоо бодоход, нэг долоо хоногийн өмнө гэнэт толгой хүчтэй өвдөөд, нэг өдрийн дотор арилсан. Тоогоогүй.", "en": "Now that I think of it, a week ago I had a sudden bad headache that went away within a day. I ignored it." },
+        "significance": { "mn": "Өмнөх 'сэрэмжлүүлэх' толгой өвдөлт нь аневризмаас бага зэрэг цус гоожсоныг илтгэж болно.", "en": "A prior sentinel headache may reflect a small warning leak." },
+        "leakTerms": ["нэг долоо хоногийн өмнө"]
+      },
+      {
+        "id": "hypertension",
+        "kind": "history",
+        "topics": ["hypertension", "pmh", "medications"],
+        "patientKnows": true,
+        "answer": { "mn": "Даралт ихсэлттэй гэж гурван жилийн өмнө хэлсэн. Эм бичиж өгсөн ч толгой өвдөхөөр л уудаг, тогтмол уудаггүй.", "en": "Told I had high blood pressure three years ago. They gave me tablets, but I only take them when I have a headache, not regularly." },
+        "significance": { "mn": "Эмчлэгдээгүй даралт ихсэлт аневризм хагарах эрсдэлийг нэмнэ.", "en": "Uncontrolled hypertension raises aneurysm rupture risk." },
+        "leakTerms": ["гурван жилийн өмнө"]
+      },
+      {
+        "id": "smoking-alcohol",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "substance_use"],
+        "patientKnows": true,
+        "answer": { "mn": "Хорь гаруй жил тамхи татаж байна, өдөрт хагас хайрцаг. Архи бараг уудаггүй.", "en": "Smoked for over twenty years, half a pack a day. I hardly drink." },
+        "significance": { "mn": "Тамхи аневризм үүсэх, хагарах эрсдэлийг нэмнэ.", "en": "Smoking increases aneurysm formation and rupture." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Ээж маань 55 настайдаа гэнэт толгой өвдөөд, тархиндаа цус харваж нас барсан.", "en": "My mother died suddenly at 55 — a sudden headache, then a brain haemorrhage." },
+        "significance": { "mn": "Нэгдүгээр зэргийн төрөлд аневризм, цус харвалт байх нь эрсдэл.", "en": "First-degree family history of aneurysm/SAH raises risk." },
+        "leakTerms": ["55 настайдаа"]
+      },
+      {
+        "id": "meds-allergies",
+        "kind": "history",
+        "topics": ["allergies", "pregnancy", "lmp"],
+        "patientKnows": true,
+        "answer": { "mn": "Аспирины харшилтай — амьсгаадаж байсан. Сарын тэмдэг хоёр жилийн өмнө зогссон. Дааврын эм уудаггүй.", "en": "Allergic to aspirin — it made me wheezy. My periods stopped two years ago. No hormone pills." },
+        "leakTerms": ["аспирин"]
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["occupation", "living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Хороондоо жижиг хүнсний дэлгүүртэй. Нөхөр, том хүүтэйгээ амьдардаг. Хүү маань намайг авчирсан.", "en": "I own a small grocery in my khoroo. I live with my husband and adult son — he brought me in." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Ээж шиг болчих вий гэж маш их айж байна.", "en": "I'm terrified it's what happened to my mother." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 37.1°C, зүрхний цохилт 64/мин, амьсгал 18/мин, АД 184/102 мм.муб, SpO₂ 98%. Глазгоугийн ухааны үнэлгээ 15.", "en": "T 37.1°C, HR 64, RR 18, BP 184/102, SpO₂ 98%. GCS 15." }
+      },
+      {
+        "id": "neuro-exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Хүзүү хөшсөн (Кернигийн шинж эерэг). Гэрэлд дургүй. Хүүхэн хараа тэгш, гэрлийн урвал хэвийн. Мэдрэлийн голомтот шинжгүй. Харааны мэдрэлийн дискэнд өөрчлөлтгүй.", "en": "Neck stiffness (positive Kernig's). Photophobia. Pupils equal and reactive. No focal neurology. Fundi normal." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "onset-speed", "category": "red_flags", "topics": ["onset", "severity"], "weight": 3, "critical": true,
+        "label": { "mn": "Өвдөлт хэр хурдан эхэлсэн, хүч", "en": "Speed of onset and severity" },
+        "rationale": { "mn": "Хэдхэн секундэд дээд цэгтээ хүрэх толгой өвдөлт бол цус харвалтыг хасах хүртэл SAH.", "en": "Thunderclap headache is SAH until proven otherwise." },
+        "suggestedQuestion": { "mn": "Өвдөлт яаж эхэлсэн бэ — гэнэт үү, аажмаар уу? Хэр хурдан хамгийн хүчтэй болсон бэ?" }
+      },
+      {
+        "id": "meningism", "category": "associated_symptoms", "topics": ["associated_general", "vomiting"], "weight": 2, "critical": true,
+        "label": { "mn": "Хүзүү хөших, гэрэлд дургүй, бөөлжих", "en": "Neck stiffness, photophobia, vomiting" },
+        "rationale": { "mn": "Менингизм ба бөөлжилт нь тархины бүрхүүлийн цочролыг илтгэнэ.", "en": "Meningism and vomiting indicate meningeal irritation." },
+        "suggestedQuestion": { "mn": "Хүзүү хөшсөн үү? Гэрэлд нүд гялбадаг уу? Бөөлжсөн үү?" }
+      },
+      {
+        "id": "previous-headaches", "category": "hpi", "topics": ["previous_episodes", "duration"], "weight": 1.5,
+        "label": { "mn": "Өмнөх толгой өвдөлт, сэрэмжлүүлэх өвдөлт", "en": "Previous and sentinel headaches" },
+        "rationale": { "mn": "'Анхны, хамгийн хүчтэй' эсэх, сэрэмжлүүлэх өвдөлт байсан эсэхийг тодруулна.", "en": "Establishes 'first and worst' and any sentinel bleed." },
+        "suggestedQuestion": { "mn": "Өмнө нь ийм толгой өвдөж байсан уу?" }
+      },
+      {
+        "id": "neuro-red-flags", "category": "red_flags", "topics": ["dizziness", "trauma", "fever"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Ухаан, хараа, гэмтэл, халууралт", "en": "Consciousness, vision, trauma, fever" },
+        "rationale": { "mn": "Ухаан алдах, хараа өөрчлөгдөх, гэмтэл, халууралт нь шалтгааныг ялгахад тусална.", "en": "Separates SAH from trauma and infection." },
+        "suggestedQuestion": { "mn": "Ухаан алдсан, хараа өөрчлөгдсөн үү? Толгойгоо цохисон уу? Халуурсан уу?" }
+      },
+      {
+        "id": "risk-factors", "category": "risk_factors", "topics": ["hypertension", "smoking", "medications"], "weight": 1.5,
+        "label": { "mn": "Даралт ихсэлт, тамхи, эм", "en": "Hypertension, smoking, medications" },
+        "rationale": { "mn": "Аневризм хагарах гол эрсдэлт хүчин зүйлс.", "en": "Key risk factors for rupture." },
+        "suggestedQuestion": { "mn": "Даралт ихсэлттэй юу? Эмээ тогтмол уудаг уу? Тамхи татдаг уу?" }
+      },
+      {
+        "id": "family-history", "category": "family_history", "topics": ["family_history"], "weight": 1,
+        "label": { "mn": "Гэр бүлийн цус харвалт, аневризм", "en": "Family stroke or aneurysm" },
+        "rationale": { "mn": "Удамшлын эрсдэл.", "en": "Hereditary risk." },
+        "suggestedQuestion": { "mn": "Гэр бүлд тархины цус харвалт, аневризмтай хүн байсан уу?" }
+      },
+      {
+        "id": "allergies", "category": "medications_allergies", "topics": ["allergies"], "weight": 1,
+        "label": { "mn": "Эмийн харшил", "en": "Drug allergies" },
+        "rationale": { "mn": "Яаралтай эмчилгээ, мэс заслын өмнө шаардлагатай.", "en": "Needed before urgent treatment." },
+        "suggestedQuestion": { "mn": "Ямар нэг эмэнд харшилтай юу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Ачаалал өгөх үед гэнэт, хэдхэн секундэд дээд цэгтээ хүрсэн 'амьдралын хамгийн хүчтэй' толгой өвдөлт, бөөлжих, хүзүү хөших, гэрэлд дургүй болох нь аалзавчин бүрхүүлийн доорх цус харвалтын сонгодог шинж. Эмчлэгдээгүй даралт ихсэлт, тамхи, гэр бүлийн түүх эрсдэлийг нэмнэ. 'Аянга цохисон мэт' толгой өвдөлттэй хүн бүрт нэн даруй толгойн КТ хийж, сөрөг бол нугасны хатгалт хийнэ.",
+      "en": "A sudden 'worst ever' headache peaking within seconds during exertion, with vomiting, neck stiffness and photophobia, is classic SAH. Untreated hypertension, smoking and family history raise risk. Every thunderclap headache needs an urgent CT head, followed by lumbar puncture if negative."
+    },
+    "learningPoints": [
+      { "mn": "Толгой өвдөлт хэр хурдан эхэлснийг заавал асуух.", "en": "Always ask how quickly a headache reached its peak." },
+      { "mn": "'Анхны, хамгийн хүчтэй' толгой өвдөлт бол сэрэмжлүүлэх шинж.", "en": "'First and worst' is a red flag." },
+      { "mn": "Хүзүү хөших, бөөлжих, гэрэлд дургүй болохыг асуух.", "en": "Ask about neck stiffness, vomiting and photophobia." },
+      { "mn": "Өмнөх сэрэмжлүүлэх толгой өвдөлтийг тодруулах.", "en": "Ask about a prior sentinel headache." }
+    ],
+    "emergency": {
+      "escalation": { "mn": "Нэн даруй толгойн КТ хийлгэж, мэдрэлийн мэс засалчид мэдэгдэж, даралтыг хянана.", "en": "Urgent CT head, notify neurosurgery, control blood pressure." }
+    }
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}

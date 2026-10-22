@@ -1,22 +1,118 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", "Noto Sans", sans-serif;
-  --color-brand-50: #effaf8;
-  --color-brand-100: #d7f2ee;
-  --color-brand-200: #afe4dc;
-  --color-brand-300: #7ecfc4;
-  --color-brand-400: #4bb3a7;
-  --color-brand-500: #2b978c;
-  --color-brand-600: #1f7a72;
-  --color-brand-700: #1c625c;
-  --color-brand-800: #1a4f4b;
-  --color-brand-900: #183f3c;
-  --color-ink: #0f1d2b;
+/* Dark mode: explicit html.dark, or the OS setting unless html.light is chosen. */
+@custom-variant dark {
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not(.light), :root:not(.light) *) {
+      @slot;
+    }
+  }
 }
 
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", "Noto Sans", sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* One vivid accent: clinical teal/cyan. */
+  --color-brand-50: #ecfdfb;
+  --color-brand-100: #cdf8f2;
+  --color-brand-200: #9cefe5;
+  --color-brand-300: #5fe0d3;
+  --color-brand-400: #26c6bb;
+  --color-brand-500: #0fb0a6;
+  --color-brand-600: #0a8f88;
+  --color-brand-700: #0d716d;
+  --color-brand-800: #105a58;
+  --color-brand-900: #114a49;
+
+  --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
+  --animate-alarm: alarm 1.1s ease-in-out infinite;
+  --animate-blob: blob 18s ease-in-out infinite;
+}
+
+/* Semantic tokens: components use these, so light/dark is one switch. */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-alert: var(--alert);
+  --color-alert-soft: var(--alert-soft);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+}
+
+/*
+ * Theme: tokens hold both values via light-dark(). The OS preference applies by
+ * default; the toggle stores a cookie and the server renders html.light/.dark,
+ * so there is no flash and no inline script.
+ */
 :root {
+  color-scheme: light dark;
+  --canvas: light-dark(#f4f7fa, #06101f);
+  --surface: light-dark(rgb(255 255 255 / 0.72), rgb(16 31 54 / 0.62));
+  --surface-solid: light-dark(#ffffff, #0c1a2e);
+  --sunken: light-dark(#eef2f6, #0a1627);
+  --ink: light-dark(#0b1b2b, #e7eef7);
+  --muted: light-dark(#526275, #9aabbf);
+  --subtle: light-dark(#8796a8, #66788e);
+  --line: light-dark(rgb(11 27 43 / 0.09), rgb(255 255 255 / 0.08));
+  --accent: light-dark(#0a9e96, #2dd4c4);
+  --accent-ink: light-dark(#ffffff, #04201e);
+  --accent-soft: light-dark(rgb(15 176 166 / 0.12), rgb(45 212 196 / 0.14));
+  --alert: light-dark(#e5484d, #ff5f63);
+  --alert-soft: light-dark(rgb(229 72 77 / 0.12), rgb(255 95 99 / 0.16));
+  --ok: light-dark(#12a150, #3ddc84);
+  --warn: light-dark(#d97706, #fbbf24);
+  --blob-a: light-dark(rgb(15 176 166 / 0.28), rgb(45 212 196 / 0.18));
+  --blob-b: light-dark(rgb(56 189 248 / 0.22), rgb(56 189 248 / 0.14));
+  --blob-c: light-dark(rgb(129 140 248 / 0.16), rgb(129 140 248 / 0.12));
+  --shadow-panel: 0 1px 2px rgb(11 27 43 / 0.04), 0 12px 32px -12px rgb(11 27 43 / 0.14);
+}
+:root.light {
   color-scheme: light;
+}
+:root.dark {
+  color-scheme: dark;
+}
+.dark {
+  --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.3), 0 18px 40px -16px rgb(0 0 0 / 0.6);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.3), 0 18px 40px -16px rgb(0 0 0 / 0.6);
+  }
+}
+
+/*
+ * Older screens (admin, auth, history) are written with slate/white
+ * utilities. Inverting the slate scale in dark mode keeps them readable
+ * without rewriting every page; new components use the semantic tokens.
+ */
+:root {
+  --color-slate-50: light-dark(oklch(98.4% 0.003 247.858), #0d1b2e);
+  --color-slate-100: light-dark(oklch(96.8% 0.007 247.896), #13243a);
+  --color-slate-200: light-dark(oklch(92.9% 0.013 255.508), #1d3049);
+  --color-slate-300: light-dark(oklch(86.9% 0.022 252.894), #2b415d);
+  --color-slate-400: light-dark(oklch(70.4% 0.04 256.788), #6b7f97);
+  --color-slate-500: light-dark(oklch(55.4% 0.046 257.417), #8a9cb2);
+  --color-slate-600: light-dark(oklch(44.6% 0.043 257.281), #a9b8ca);
+  --color-slate-700: light-dark(oklch(37.2% 0.044 257.287), #c6d2e0);
+  --color-slate-800: light-dark(oklch(27.9% 0.041 260.031), #dbe4ee);
+  --color-slate-900: light-dark(oklch(20.8% 0.042 265.755), #e9eff6);
+}
+:where(.bg-white) {
+  background-color: var(--surface-solid);
 }
 
 html {
@@ -24,11 +120,12 @@ html {
 }
 
 body {
-  background: #f6f8fa;
-  color: var(--color-ink);
+  background: var(--canvas);
+  color: var(--ink);
   font-family: var(--font-sans);
   font-feature-settings: "cv11", "ss01";
   text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease;
 }
 
 /* Comfortable reading for Mongolian Cyrillic (long agglutinative words). */
@@ -39,13 +136,26 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-brand-500);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
+@utility glass {
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
 @keyframes typing {
-  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-  40% { opacity: 1; transform: translateY(-2px); }
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-4px); }
 }
 .typing-dot {
   animation: typing 1.2s infinite ease-in-out;
@@ -53,6 +163,83 @@ body {
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
 .typing-dot:nth-child(3) { animation-delay: 0.3s; }
 
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(15 176 166 / 0.45), 0 10px 30px -10px rgb(15 176 166 / 0.6); }
+  50% { box-shadow: 0 0 0 14px rgb(15 176 166 / 0), 0 10px 40px -8px rgb(15 176 166 / 0.75); }
+}
+
+@keyframes alarm {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes blob {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(6%, -8%, 0) scale(1.08); }
+  66% { transform: translate3d(-5%, 6%, 0) scale(0.95); }
+}
+
+/* Patient avatar: breathing, blinking, sweat. Transform-only. */
+@keyframes breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1.5px) scale(1.012); }
+}
+.avatar-breathe {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: breathe 3.8s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.08); }
+}
+.avatar-blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 4.6s infinite;
+}
+@keyframes sweat {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(26px); opacity: 0; }
+}
+.avatar-sweat {
+  animation: sweat 2.6s ease-in infinite;
+}
+
+@keyframes ecg-scroll {
+  to { transform: translateX(-50%); }
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--sunken);
+  border-radius: 0.75rem;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: shimmer 1.4s infinite;
+}
+.skeleton::after {
+  background: linear-gradient(90deg, transparent, light-dark(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.06)), transparent);
+}
+
+/* Calm fallback: no looping motion, no transforms; state is still shown by colour. */
 @media (prefers-reduced-motion: reduce) {
-  .typing-dot { animation: none; opacity: 0.6; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .typing-dot { opacity: 0.6; }
+  .skeleton::after { display: none; }
 }

@@ -143,6 +143,25 @@ python -m pinequest_ml evaluate --endpoint http://localhost:11434/v1 --model qwe
 
 Pick the model with the best Mongolian rate / chrF and zero leakage, then fine-tune.
 
+**Baseline set.** Every baseline (and later the fine-tuned adapter) is scored on
+the same fixed sample: `--split data/processed/validation.jsonl,data/processed/test.jsonl --sample 120`
+(spread evenly over the held-out cases and turn modes; `build` is deterministic,
+so a rebuild on Kaggle gives the same 120 examples). Hosted APIs read the key
+from an environment variable and pace themselves for free tiers:
+
+```bash
+S=data/processed/validation.jsonl,data/processed/test.jsonl
+# Gemini (what the app uses with PATIENT_PROVIDER=gemini)
+python -m pinequest_ml evaluate --endpoint https://generativelanguage.googleapis.com/v1beta/openai \
+  --model gemini-3.8-flash --api-key-env GEMINI_API_KEY --extra-body '{"reasoning_effort":"none"}' \
+  --delay 6 --split $S --sample 120 --out outputs/eval/baseline
+# Groq (PATIENT_PROVIDER=openai_compatible)
+python -m pinequest_ml evaluate --endpoint https://api.groq.com/openai/v1 --model qwen/qwen3.8-27b \
+  --api-key-env OPENAI_COMPAT_API_KEY --delay 3 --split $S --sample 120 --out outputs/eval/baseline
+# Base Qwen3-4B, zero-shot (needs a GPU — run on Kaggle before training)
+python -m pinequest_ml evaluate --base-model Qwen/Qwen3-4B-Instruct-2507 --split $S --sample 120 --out outputs/eval/baseline
+```
+
 ## 4. Fine-tune (LoRA / QLoRA)
 
 **Hardware.** QLoRA needs an NVIDIA GPU (CUDA + bitsandbytes). A MacBook Pro
@@ -162,8 +181,8 @@ python -m pinequest_ml build
 python -m pinequest_ml train --config configs/train_qwen3_4b_qlora.yaml --dry-run
 python -m pinequest_ml train --config configs/train_qwen3_4b_qlora.yaml
 python -m pinequest_ml evaluate --base-model Qwen/Qwen3-4B-Instruct-2507 \
-       --adapter outputs/qwen3-4b-lora-v1/adapter --split data/processed/test.jsonl
-# Download outputs/qwen3-4b-lora-v1/adapter (≈ 100-200 MB) — do NOT commit it to git.
+       --adapter outputs/qwen3-4b-lora-v2/adapter --split data/processed/test.jsonl
+# Download outputs/qwen3-4b-lora-v2/adapter (≈ 100-200 MB) — do NOT commit it to git.
 ```
 
 Outputs: `outputs/<run>/adapter/` (LoRA weights, tokenizer, `pinequest_adapter.json`
@@ -191,7 +210,7 @@ See [`../inference/README.md`](../inference/README.md). In the app's environment
 PATIENT_PROVIDER=finetuned
 FINETUNED_BASE_URL=https://<your-gpu-host>/v1
 FINETUNED_API_KEY=<same as API_KEY on the server>
-FINETUNED_EXPECTED_ADAPTER=pq-qwen3-4b-lora-v1
+FINETUNED_EXPECTED_ADAPTER=pq-qwen3-4b-lora-v2
 PATIENT_FALLBACK_PROVIDER=mock    # or none to show an error instead
 ```
 

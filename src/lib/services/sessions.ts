@@ -6,13 +6,14 @@ import type { SessionData } from "@/lib/auth/session";
 import { toPublicCase } from "@/lib/cases/public";
 import { getConfig } from "@/lib/config";
 import { getDb } from "@/lib/db/client";
-import { cases, diagnosisSubmissions, disclosedFacts, evaluations, interviewSessions, messages, type MessageRow, type SessionRow } from "@/lib/db/schema";
+import { cases, diagnosisSubmissions, disclosedFacts, evaluations, interviewSessions, messages, users, type MessageRow, type SessionRow } from "@/lib/db/schema";
 import { evaluateInterview } from "@/lib/evaluation/evaluator";
 import type { TranscriptTurn } from "@/lib/patient/context";
 import { getPatientProvider } from "@/lib/patient/providers";
 import type { ProviderId } from "@/lib/patient/providers/types";
 import { openingMessage, simulateTurn, SimulatorError } from "@/lib/patient/simulator";
 import type { TopicId } from "@/lib/patient/topics";
+import { EMOTION_IDS, EMOTIONS, type EmotionId } from "@/lib/patient/emotions";
 import { checkRateLimit } from "@/lib/rate-limit";
 import type { EvaluationView, MessageView, ProviderBadge, SessionSummary, SessionView } from "@/lib/views";
 import { generateFeedbackNarrative } from "./narrative";
@@ -21,6 +22,7 @@ export const MAX_QUESTIONS_PER_SESSION = 60;
 export const MAX_QUESTION_LENGTH = 500;
 
 export const QuestionInput = z.object({
+  emotion: z.enum(EMOTION_IDS).optional(),
   content: z.string().trim().min(1, "Асуултаа бичнэ үү").max(MAX_QUESTION_LENGTH, `Асуулт ${MAX_QUESTION_LENGTH} тэмдэгтээс хэтрэхгүй`),
 });
 
@@ -57,13 +59,21 @@ function messageView(row: MessageRow): MessageView {
   return { id: row.id, role: row.role, content: row.content, createdAt: row.createdAt.toISOString() };
 }
 
-async function loadOwnedSession(auth: SessionData, sessionId: string, opts: { allowAdmin?: boolean } = {}): Promise<SessionRow> {
+/** Admin access to other users' data re-reads the role (the cookie may be up to 7 days old). */
+async function isCurrentAdmin(auth: SessionData): Promise<boolean> {
+  if (auth.role !== "admin") return false;
+  const db = await getDb();
+  const [row] = await db.select({ role: users.role }).from(users).where(eq(users.id, auth.userId));
+  return row?.role === "admin";
+}
+
+export async function loadOwnedSession(auth: SessionData, sessionId: string, opts: { allowAdmin?: boolean } = {}): Promise<SessionRow> {
   if (!z.string().uuid().safeParse(sessionId).success) throw Errors.notFound("Ярилцлага");
   const db = await getDb();
   const [row] = await db.select().from(interviewSessions).where(eq(interviewSessions.id, sessionId));
   if (!row) throw Errors.notFound("Ярилцлага");
   const isOwner = row.userId === auth.userId;
-  if (!isOwner && !(opts.allowAdmin && auth.role === "admin")) throw Errors.notFound("Ярилцлага");
+  if (!isOwner && !(opts.allowAdmin && (await isCurrentAdmin(auth)))) throw Errors.notFound("Ярилцлага");
   return row;
 }
 
@@ -98,7 +108,17 @@ export interface QuestionResult {
   provider: ProviderBadge;
 }
 
-export async function askQuestion(auth: SessionData, sessionId: string, content: string): Promise<QuestionResult> {
+/**
+ * `onSentence` (optional) receives each validated sentence of the model's
+ * reply while it is still being written, so it can be voiced right away.
+ */
+export async function askQuestion(
+  auth: SessionData,
+  sessionId: string,
+  content: string,
+  emotion?: EmotionId,
+  onSentence?: (sentence: string) => void,
+): Promise<QuestionResult> {
   const config = getConfig();
   const limit = checkRateLimit(`question:${auth.userId}`, config.RATE_LIMIT_MESSAGES_PER_MINUTE);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
@@ -120,8 +140,15 @@ export async function askQuestion(auth: SessionData, sessionId: string, content:
   let turn;
   try {
     turn = await simulateTurn(
-      { patientCase: session.caseSnapshot, question: content, disclosedFactIds: disclosed, history, turnIndex: session.questionCount },
-      { provider: getPatientProvider(), fallback: config.PATIENT_FALLBACK_PROVIDER, intentMode: config.INTENT_CLASSIFIER, timeoutMs: config.PROVIDER_TIMEOUT_MS },
+      {
+        patientCase: session.caseSnapshot,
+        question: content,
+        disclosedFactIds: disclosed,
+        history,
+        turnIndex: session.questionCount,
+        emotionalState: emotion ? EMOTIONS[emotion].persona : undefined,
+      },
+      { provider: getPatientProvider(), fallback: config.PATIENT_FALLBACK_PROVIDER, intentMode: config.INTENT_CLASSIFIER, timeoutMs: config.PROVIDER_TIMEOUT_MS, onSentence },
     );
   } catch (error) {
     if (error instanceof SimulatorError) {
@@ -301,7 +328,8 @@ export async function listSessions(auth: SessionData, opts: { all?: boolean; lim
     })
     .from(interviewSessions)
     .leftJoin(evaluations, eq(evaluations.sessionId, interviewSessions.id));
-  const rows = await (opts.all && auth.role === "admin" ? base : base.where(eq(interviewSessions.userId, auth.userId)))
+  const all = opts.all && (await isCurrentAdmin(auth));
+  const rows = await (all ? base : base.where(eq(interviewSessions.userId, auth.userId)))
     .orderBy(desc(interviewSessions.startedAt))
     .limit(opts.limit ?? 100);
   return rows.map((r) => ({

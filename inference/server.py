@@ -3,7 +3,8 @@
 Environment:
   BASE_MODEL       Hugging Face id or path of the base model (required)
   ADAPTER_PATH     directory with the LoRA adapter + pinequest_adapter.json (required)
-  API_KEY          bearer token required from clients (recommended)
+  API_KEY          bearer token required from clients (required; set
+                   ALLOW_UNAUTHENTICATED=1 only for a local smoke test)
   LOAD_IN_4BIT     "1" to load the base model in 4-bit (CUDA only)
   MAX_NEW_TOKENS   default 200
 
@@ -39,6 +40,9 @@ from pinequest_ml.chat_format import format_prompt
 BASE_MODEL = os.environ["BASE_MODEL"]
 ADAPTER_PATH = Path(os.environ["ADAPTER_PATH"])
 API_KEY = os.environ.get("API_KEY", "")
+if not API_KEY and os.environ.get("ALLOW_UNAUTHENTICATED") != "1":
+    raise SystemExit("API_KEY is not set. Refusing to serve the model without authentication "
+                     "(set ALLOW_UNAUTHENTICATED=1 for a local smoke test only).")
 MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "200"))
 
 metadata = json.loads((ADAPTER_PATH / "pinequest_adapter.json").read_text(encoding="utf-8"))

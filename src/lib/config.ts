@@ -22,6 +22,8 @@ const EnvSchema = z.object({
   GEMINI_MODEL: z.string().default("gemini-3.8-flash"),
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default("claude-opus-5-5"),
+  /** Fast model for hybrid topic classification (keyword misses). */
+  ANTHROPIC_CLASSIFIER_MODEL: z.string().default("claude-haiku-5-5"),
   OPENAI_COMPAT_BASE_URL: z.string().optional(),
   OPENAI_COMPAT_API_KEY: z.string().optional(),
   OPENAI_COMPAT_MODEL: z.string().optional(),
@@ -34,6 +36,33 @@ const EnvSchema = z.object({
 
   /** Bearer token Vercel Cron sends to /api/cron/news-import (unset = endpoint disabled). */
   CRON_SECRET: z.string().optional(),
+
+  // Optional voice features (all off when unset).
+  CHIMEGE_STT_TOKEN: z.string().optional(),
+  CHIMEGE_TTS_TOKEN: z.string().optional(),
+  CHIMEGE_VOICE_MALE: z.string().default("MALE1v2"),
+  CHIMEGE_VOICE_FEMALE: z.string().default("FEMALE3v2"),
+  // Which service voices the patient: Chimege (Mongolian-only) or ElevenLabs (Eleven v4 models speak Mongolian).
+  TTS_PROVIDER: z.enum(["chimege", "elevenlabs"]).default("chimege"),
+  ELEVENLABS_API_KEY: z.string().optional(),
+  ELEVENLABS_MODEL: z.string().default("eleven_v4_turbo"),
+  ELEVENLABS_VOICE_MALE: z.string().optional(),
+  ELEVENLABS_VOICE_FEMALE: z.string().optional(),
+  /** Parallel ElevenLabs requests allowed by the plan (Free 2, Starter 3, ...). */
+  ELEVENLABS_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  /** Prefix replies with an emotion audio tag ("[scared] ...") — v3/v4 models. */
+  ELEVENLABS_EMOTION_TAGS: z.enum(["on", "off"]).default("off"),
+  // Which service renders the talking face: Simli or Anam (both lip-sync to our own TTS audio).
+  AVATAR_PROVIDER: z.enum(["simli", "anam"]).default("simli"),
+  ANAM_API_KEY: z.string().optional(),
+  /** One id, or several separated by commas (each case then gets one of them). */
+  ANAM_AVATAR_ID_MALE: z.string().optional(),
+  ANAM_AVATAR_ID_FEMALE: z.string().optional(),
+  /** Optional Anam avatar model, e.g. "cara-4"; empty = the avatar's default. */
+  ANAM_AVATAR_MODEL: z.string().optional(),
+  SIMLI_API_KEY: z.string().optional(),
+  SIMLI_FACE_ID_MALE: z.string().optional(),
+  SIMLI_FACE_ID_FEMALE: z.string().optional(),
 });
 
 export type AppConfig = z.infer<typeof EnvSchema> & { sessionSecret: string };

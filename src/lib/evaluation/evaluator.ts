@@ -1,4 +1,5 @@
 import { DEFAULT_SCORE_WEIGHTS, type PatientCase, type RubricCategory, type ScoreWeights } from "@/lib/cases/schema";
+import { planTurn } from "@/lib/patient/engine";
 import type { TopicId } from "@/lib/patient/topics";
 import { matchDiagnosis, type DiagnosisMatch } from "./diagnosis";
 
@@ -7,8 +8,12 @@ import { matchDiagnosis, type DiagnosisMatch } from "./diagnosis";
  * the patient-response generator: it only uses the private case, the
  * student's questions (with the topics recorded when they were asked) and
  * the submitted diagnosis.
+ *
+ * eval-v2: a rubric topic counts only if the patient actually answered it
+ * (replayed through the disclosure engine), not merely because a keyword
+ * appeared in the question.
  */
-export const EVALUATOR_VERSION = "eval-v1";
+export const EVALUATOR_VERSION = "eval-v2";
 
 export interface StudentQuestion {
   messageId: string;
@@ -56,7 +61,8 @@ export interface Finding {
 }
 
 export interface EvaluationResult {
-  version: typeof EVALUATOR_VERSION;
+  /** Evaluator that produced this result (older stored results keep theirs). */
+  version: string;
   caseId: string;
   caseVersion: number;
   weights: ScoreWeights;
@@ -102,14 +108,29 @@ const VERDICT_TEXT: Record<DiagnosisMatch["verdict"], string> = {
   empty: "оруулаагүй",
 };
 
+/**
+ * Replays the questions through the deterministic disclosure engine (same
+ * order, same disclosure state as the live session) and returns, per
+ * question, the topics the patient actually answered.
+ */
+export function answeredTopicsByQuestion(patientCase: PatientCase, questions: StudentQuestion[]): Set<TopicId>[] {
+  const disclosed = new Set<string>();
+  return questions.map((q, turnIndex) => {
+    const plan = planTurn(patientCase, { topics: q.topics, normalized: "", source: "keyword" }, { disclosedFactIds: disclosed, turnIndex });
+    plan.newlyDisclosedIds.forEach((id) => disclosed.add(id));
+    return new Set(plan.answeredTopics);
+  });
+}
+
 export function evaluateInterview(input: EvaluationInput): EvaluationResult {
   const c = input.patientCase;
   const weights = input.weights ?? c.rubric.weights ?? DEFAULT_SCORE_WEIGHTS;
+  const answered = answeredTopicsByQuestion(c, input.questions);
 
-  // Rubric coverage: an item is covered by the first question that asked
-  // about any of its topics.
+  // Rubric coverage: an item is covered by the first question whose answer
+  // addressed any of its topics.
   const items: RubricResult[] = c.rubric.items.map((item) => {
-    const evidence = input.questions.find((q) => q.mode !== "injection" && q.topics.some((t) => item.topics.includes(t)));
+    const evidence = input.questions.find((q, i) => q.mode !== "injection" && [...answered[i]].some((t) => item.topics.includes(t)));
     return {
       id: item.id,
       label: item.label.mn,

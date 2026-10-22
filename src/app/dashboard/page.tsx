@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { ArrowRight, CheckCircle2, PlayCircle, Target } from "lucide-react";
 import Link from "next/link";
-import { StartCaseButton } from "@/components/start-case-button";
-import { scoreTone } from "@/components/score-ring";
-import { Alert, Badge, buttonClass, Card, EmptyState, PageHeader } from "@/components/ui";
+import { CaseGrid, type CaseProgress } from "@/components/cases/case-grid";
+import { CountUp } from "@/components/motion/count-up";
+import { Blobs } from "@/components/motion/reveal";
+import { Alert, Badge, Card, EmptyState, PageHeader } from "@/components/ui";
+import { t } from "@/i18n";
 import { requirePageUser } from "@/lib/auth/server";
-import { DIFFICULTY_LABELS, NEWS_CATEGORY_LABELS, SEX_LABELS, formatDateTime } from "@/lib/i18n";
+import { NEWS_CATEGORY_LABELS, formatDateTime } from "@/lib/i18n";
 import { listPublishedCases } from "@/lib/services/cases";
 import { listPublishedNews } from "@/lib/services/news";
 import { listSessions } from "@/lib/services/sessions";
@@ -18,103 +21,57 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   const completed = sessions.filter((s) => s.status === "completed");
   const avg = completed.length ? Math.round(completed.reduce((sum, s) => sum + (s.totalScore ?? 0), 0) / completed.length) : null;
 
+  const progress: Record<string, CaseProgress> = {};
+  for (const c of cases) {
+    const attempts = completed.filter((s) => s.caseId === c.id);
+    progress[c.id] = {
+      best: attempts.length ? Math.max(...attempts.map((s) => s.totalScore ?? 0)) : null,
+      attempts: attempts.length,
+      openSessionId: active.find((s) => s.caseId === c.id)?.id ?? null,
+    };
+  }
+
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8">
-      <PageHeader
-        title={`Сайн байна уу, ${session.name}`}
-        subtitle="Өвчтөнөө сонгоод асуумжаа эхлүүлээрэй. Онош болон далд мэдээлэл ярилцлагын төгсгөлд л харагдана."
-      />
+    <main className="relative isolate mx-auto w-full max-w-6xl px-4 py-8">
+      <Blobs fixed />
+      <PageHeader title={t.cases.greeting(session.name)} subtitle={t.cases.subtitle} />
       {params.denied && (
         <div className="mb-6">
           <Alert tone="amber">Админ хуудсанд нэвтрэх эрх танд байхгүй.</Alert>
         </div>
       )}
 
-      <div className="mb-8 grid grid-cols-3 gap-3 sm:max-w-lg">
-        <Stat label="Дууссан ярилцлага" value={String(completed.length)} />
-        <Stat label="Дундаж оноо" value={avg === null ? "—" : String(avg)} />
-        <Stat label="Үргэлжилж буй" value={String(active.length)} />
+      <div className="mb-8 grid grid-cols-3 gap-3 sm:max-w-xl">
+        <Stat icon={<CheckCircle2 size={16} />} label={t.cases.statDone} value={completed.length} />
+        <Stat icon={<Target size={16} />} label={t.cases.statAvg} value={avg} />
+        <Stat icon={<PlayCircle size={16} />} label={t.cases.statActive} value={active.length} />
       </div>
 
       {active.length > 0 && (
         <section className="mb-10">
-          <h2 className="mb-3 text-lg font-semibold">Үргэлжлүүлэх</h2>
+          <h2 className="mb-3 font-display text-lg font-bold">{t.cases.continueTitle}</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {active.slice(0, 4).map((s) => (
-              <Card key={s.id} className="flex items-center justify-between gap-4 p-4">
+              <Link key={s.id} href={`/interview/${s.id}`} className="glass group flex items-center justify-between gap-4 rounded-2xl p-4 transition-transform hover:-translate-y-0.5">
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{s.caseTitle}</p>
-                  <p className="text-xs text-slate-500">
-                    {formatDateTime(s.startedAt)} · {s.questionCount} асуулт
+                  <p className="truncate font-semibold">{s.caseTitle}</p>
+                  <p className="text-xs text-muted">
+                    {formatDateTime(s.startedAt)} · {t.cases.questions(s.questionCount)}
                   </p>
                 </div>
-                <Link href={`/interview/${s.id}`} className={buttonClass("secondary", "sm")}>
-                  Үргэлжлүүлэх
-                </Link>
-              </Card>
+                <span className="flex items-center gap-1 text-sm font-semibold text-accent">
+                  {t.cases.continue}
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" aria-hidden />
+                </span>
+              </Link>
             ))}
           </div>
         </section>
       )}
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Кейсүүд</h2>
-        {cases.length === 0 ? (
-          <EmptyState title="Нийтлэгдсэн кейс алга">Админ кейс нийтэлсний дараа энд харагдана.</EmptyState>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {cases.map((c) => {
-              const attempts = completed.filter((s) => s.caseId === c.id);
-              const best = attempts.length ? Math.max(...attempts.map((s) => s.totalScore ?? 0)) : null;
-              // Continue an open interview instead of starting a parallel one.
-              const open = active.find((s) => s.caseId === c.id);
-              return (
-                <Card key={c.id} className="flex flex-col p-5">
-                  <div className="mb-3 flex flex-wrap gap-1.5">
-                    <Badge tone="brand">{c.specialty}</Badge>
-                    <Badge>{DIFFICULTY_LABELS[c.difficulty] ?? c.difficulty}</Badge>
-                    {c.synthetic && <Badge tone="sky">Зохиомол</Badge>}
-                  </div>
-                  <h3 className="font-semibold leading-snug">{c.displayTitle.mn}</h3>
-                  <dl className="mt-3 space-y-1 text-sm text-slate-600">
-                    <div className="flex gap-2">
-                      <dt className="text-slate-400">Өвчтөн:</dt>
-                      <dd>
-                        {c.patient.name}, {c.patient.age} нас, {SEX_LABELS[c.patient.sex]}
-                      </dd>
-                    </div>
-                    <div className="flex gap-2">
-                      <dt className="text-slate-400">Зовиур:</dt>
-                      <dd>{c.chiefComplaint.mn}</dd>
-                    </div>
-                    <div className="flex gap-2">
-                      <dt className="text-slate-400">Орчин:</dt>
-                      <dd>{c.setting.mn}</dd>
-                    </div>
-                  </dl>
-                  <div className="mt-auto pt-5">
-                    <p className="mb-3 text-xs text-slate-500">
-                      ~{c.estimatedMinutes} минут
-                      {best !== null && (
-                        <>
-                          {" "}
-                          · Шилдэг оноо <span className={`font-semibold ${scoreTone(best).text}`}>{Math.round(best)}</span> ({attempts.length} оролдлого)
-                        </>
-                      )}
-                    </p>
-                    {open ? (
-                      <Link href={`/interview/${open.id}`} className={buttonClass("primary", "md", "w-full")}>
-                        Үргэлжлүүлэх
-                      </Link>
-                    ) : (
-                      <StartCaseButton caseId={c.id} label={attempts.length ? "Дахин оролдох" : "Ярилцлага эхлэх"} />
-                    )}
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+        <h2 className="mb-4 font-display text-xl font-bold">{t.cases.title}</h2>
+        {cases.length === 0 ? <EmptyState title={t.cases.noCases} /> : <CaseGrid cases={cases} progress={progress} />}
       </section>
 
       {news.length > 0 && (
@@ -143,9 +100,9 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
       )}
 
       {completed.length > 0 && (
-        <p className="mt-8 text-sm">
-          <Link href="/sessions" className="font-medium text-brand-700 hover:underline">
-            Бүх ярилцлагын түүхийг харах →
+        <p className="mt-10 text-sm">
+          <Link href="/sessions" className="font-semibold text-accent hover:underline">
+            {t.cases.historyLink}
           </Link>
         </p>
       )}
@@ -153,11 +110,16 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number | null }) {
   return (
     <Card className="px-4 py-3">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="mt-0.5 text-xl font-semibold">{value}</p>
+      <p className="flex items-center gap-1.5 text-xs text-muted">
+        <span className="text-accent" aria-hidden>
+          {icon}
+        </span>
+        {label}
+      </p>
+      <p className="mt-1 font-display text-2xl font-extrabold tabular-nums">{value === null ? "—" : <CountUp value={value} duration={1} />}</p>
     </Card>
   );
 }

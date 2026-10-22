@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "id": "fever-back-pain-01",
+  "version": 1,
+  "internalTitle": "Acute right pyelonephritis in a 23-year-old woman following untreated cystitis",
+  "public": {
+    "displayTitle": { "mn": "Халуурч, нуруу өвдсөн 23 настай эмэгтэй", "en": "23-year-old woman with fever and back pain" },
+    "specialty": "Дотор / Бөөр",
+    "difficulty": "beginner",
+    "tags": ["халуурал", "шээсний зам"],
+    "setting": { "mn": "Өрхийн эрүүл мэндийн төв, өглөө", "en": "Family health centre, morning" },
+    "patient": {
+      "name": "Номин",
+      "age": 23,
+      "sex": "female",
+      "occupation": { "mn": "Их сургуулийн оюутан", "en": "University student" }
+    },
+    "chiefComplaint": { "mn": "Халуурах, нуруу өвдөх", "en": "Fever and back pain" },
+    "chiefComplaintTopics": ["fever", "back_pain"],
+    "openingLine": { "mn": "Сайн байна уу, эмч ээ. Өчигдрөөс халуураад, нуруу өвдөөд байна.", "en": "Hello doctor. Since yesterday I've had a fever and back pain." },
+    "estimatedMinutes": 12,
+    "timeCritical": false
+  },
+  "persona": {
+    "personality": { "mn": "Нээлттэй, яриасаг оюутан. Интернэтээс уншсан зүйлээ ярих дуртай.", "en": "Open, chatty student who likes to mention things she read online." },
+    "speakingStyle": { "mn": "Залуучуудын энгийн ярианы хэлээр, бага зэрэг хурдан ярина.", "en": "Casual young speech, a bit fast." },
+    "emotionalState": { "mn": "Ядарсан, шалгалтаа өгч чадахгүй вий гэж санаа зовсон.", "en": "Tired, worried about missing exams." }
+  },
+  "hidden": {
+    "diagnosis": {
+      "label": { "mn": "Цочмог пиелонефрит", "en": "Acute pyelonephritis" },
+      "icd10": "N10",
+      "acceptedAliases": [
+        "acute pyelonephritis", "pyelonephritis", "kidney infection", "upper urinary tract infection", "upper uti",
+        "цочмог пиелонефрит", "пиелонефрит", "бөөрний халдвар", "бөөрний аарцагны үрэвсэл", "бөөрний үрэвсэл"
+      ],
+      "partialAliases": ["urinary tract infection", "uti", "cystitis", "шээсний замын халдвар", "давсагны үрэвсэл", "цистит"]
+    },
+    "differentials": [
+      {
+        "label": { "mn": "Бөөрний чулуу (халдвартай)", "en": "Infected obstructing kidney stone" },
+        "aliases": ["kidney stone", "renal colic", "бөөрний чулуу"],
+        "rationale": { "mn": "Хажуу нурууны өвдөлт өгнө; огцом таталт маягийн өвдөлт, цустай шээс байхгүй.", "en": "Causes flank pain, but no colicky pain or haematuria here." }
+      },
+      {
+        "label": { "mn": "Аарцгийн хөндийн үрэвсэлт өвчин", "en": "Pelvic inflammatory disease" },
+        "aliases": ["pid", "аарцгийн үрэвсэл"],
+        "rationale": { "mn": "Шинэ бэлгийн хамтрагчтай тул бодно; үтрээний ялгадас, доод хэвлийн өвдөлт байхгүй.", "en": "New partner, but no discharge or pelvic pain." }
+      },
+      {
+        "label": { "mn": "Мухар олгойн цочмог үрэвсэл", "en": "Acute appendicitis" },
+        "aliases": ["appendicitis", "мухар олгой"],
+        "rationale": { "mn": "Баруун талын өвдөлт, бөөлжилт өгч болох ч шээсний шинж түрүүлж эхэлсэн.", "en": "Right-sided pain and vomiting fit, but urinary symptoms came first." }
+      }
+    ],
+    "summary": {
+      "mn": "23 настай эмэгтэйд 4 хоногийн өмнөөс шээхэд хорсох, ойр ойрхон шээх шинж илэрсэн, эмчлүүлээгүй. Өчигдрөөс 39.2°C хүртэл халуурч, чичрүүдэс хүрч, баруун хажуу нуруугаар өвдөх, дотор муухайрах, нэг удаа бөөлжих болсон. Сүүлийн сарын тэмдэг 2 долоо хоногийн өмнө; шинэ бэлгийн хамтрагчтай.",
+      "en": "23-year-old: 4 days of dysuria and frequency, untreated; since yesterday fever to 39.2°C with rigors, right flank pain, nausea and one vomit. LMP 2 weeks ago; new sexual partner."
+    },
+    "facts": [
+      {
+        "id": "urinary",
+        "kind": "positive",
+        "topics": ["urinary", "onset"],
+        "patientKnows": true,
+        "answer": { "mn": "Дөрөв хоногийн өмнөөс шээхэд хорсоод, байн байн шээмээр болсон. Бага багаар л гардаг. Ус их уучих юм бол арилна гэж бодоод тоогоогүй.", "en": "Four days ago it started burning when I pee and I need to go all the time, just a little each time. I thought drinking lots of water would fix it." },
+        "significance": { "mn": "Давсагны үрэвслийн шинж түрүүлж, дараа нь дээш дамжсан.", "en": "Cystitis preceded ascending infection." },
+        "leakTerms": ["хорсоод", "дөрөв хоног"],
+        "volunteerOnBroad": true
+      },
+      {
+        "id": "fever-chills",
+        "kind": "positive",
+        "topics": ["fever", "chills", "sweating"],
+        "patientKnows": true,
+        "answer": { "mn": "Өчигдөр оройноос халуурч эхэлсэн, шөнө 39.2 хүрсэн. Чичрээд хөнжлөө нөмөрсөн ч дулаацаагүй.", "en": "The fever started last evening and hit 39.2 overnight. I was shaking — even under the blanket I couldn't warm up." },
+        "leakTerms": ["39.2"]
+      },
+      {
+        "id": "flank-pain",
+        "kind": "positive",
+        "topics": ["back_pain", "location", "character", "severity", "radiation"],
+        "patientKnows": true,
+        "answer": { "mn": "Баруун талын нуруу, хавирганы доор өвддөг. Байнга шаналгаатай өвдөөд байдаг, арваас зургаа. Хаашаа ч дамжихгүй.", "en": "On the right side of my back under the ribs. A constant aching pain, six out of ten. It doesn't spread anywhere." },
+        "significance": { "mn": "Нэг талын хажуу нурууны өвдөлт бөөрний оролцоог заана.", "en": "Unilateral flank pain indicates renal involvement." },
+        "leakTerms": ["хавирганы доор"]
+      },
+      {
+        "id": "nausea-vomit",
+        "kind": "positive",
+        "topics": ["nausea", "vomiting", "appetite"],
+        "patientKnows": true,
+        "answer": { "mn": "Дотор муухайраад, өглөө нэг удаа бөөлжсөн. Хоол идмээргүй байна.", "en": "Nauseous, vomited once this morning. I don't want to eat." },
+        "significance": { "mn": "Бөөлжилт нь ууж эмчлэх боломжийг хязгаарлаж, эмнэлэгт хэвтүүлэх шалтгаан болж болно.", "en": "Vomiting may prevent oral treatment and warrant admission." }
+      },
+      {
+        "id": "urine-appearance",
+        "kind": "positive",
+        "topics": ["character"],
+        "patientKnows": true,
+        "answer": { "mn": "Шээс булингартай, муухай үнэртэй болсон. Цус харагдаагүй.", "en": "My urine is cloudy and smells bad. No blood that I saw." },
+        "leakTerms": ["булингартай"]
+      },
+      {
+        "id": "no-vaginal",
+        "kind": "negative",
+        "topics": ["vaginal_symptoms", "abdominal_pain"],
+        "patientKnows": true,
+        "answer": { "mn": "Үтрээнээс ялгадас гараагүй, загатнахгүй. Доод хэвлий бага зэрэг дарагддаг, шээхээр гайгүй.", "en": "No vaginal discharge or itching. Some pressure low in the belly that eases after peeing." },
+        "significance": { "mn": "Үтрээний шинж байхгүй нь аарцгийн үрэвсэл, бэлгийн замын халдварын магадлалыг бууруулна.", "en": "Absence makes PID or STI less likely." }
+      },
+      {
+        "id": "lmp-pregnancy",
+        "kind": "history",
+        "topics": ["lmp", "pregnancy"],
+        "patientKnows": true,
+        "answer": { "mn": "Сарын тэмдэг хоёр долоо хоногийн өмнө хэвийн ирсэн. Жирэмсэн биш гэж бодож байна.", "en": "My period came normally two weeks ago. I don't think I'm pregnant." },
+        "significance": { "mn": "Жирэмслэлт антибиотик сонголт, эмнэлэгт хэвтүүлэх шийдвэрт нөлөөлнө.", "en": "Pregnancy changes antibiotic choice and admission decisions." }
+      },
+      {
+        "id": "sexual",
+        "kind": "history",
+        "topics": ["sexual_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Нэг сарын өмнөөс шинэ найз залуутай болсон. Бэлгэвч хэрэглэдэг.", "en": "I got a new boyfriend a month ago. We use condoms." },
+        "significance": { "mn": "Бэлгийн идэвхжил шээсний замын халдварын эрсдэлийг нэмнэ.", "en": "Sexual activity increases UTI risk." }
+      },
+      {
+        "id": "previous-uti",
+        "kind": "history",
+        "topics": ["previous_episodes", "pmh"],
+        "patientKnows": true,
+        "answer": { "mn": "Нэг жилийн өмнө давсаг үрэвсээд эм уусан. Өөр өвчин байхгүй.", "en": "A year ago I had a bladder infection and took tablets. No other illnesses." }
+      },
+      {
+        "id": "no-stones-diabetes",
+        "kind": "negative",
+        "topics": ["diabetes", "surgeries", "hospitalizations"],
+        "patientKnows": true,
+        "answer": { "mn": "Чихрийн шижин, бөөрний чулуу байхгүй. Мэс засал хийлгэж байгаагүй.", "en": "No diabetes or kidney stones. No surgery." }
+      },
+      {
+        "id": "medications",
+        "kind": "history",
+        "topics": ["medications", "allergies"],
+        "patientKnows": true,
+        "answer": { "mn": "Халуунд ибупрофен уусан. Жирэмслэлтээс хамгаалах эм уудаггүй. Ко-тримоксазолд тууралт гарч байсан.", "en": "I took ibuprofen for the fever. Not on the pill. I got a rash from co-trimoxazole once." },
+        "significance": { "mn": "Сульфаниламидын харшил антибиотик сонголтод нөлөөлнө.", "en": "Sulfonamide allergy affects antibiotic choice." },
+        "leakTerms": ["ко-тримоксазол"]
+      },
+      {
+        "id": "social",
+        "kind": "history",
+        "topics": ["smoking", "alcohol", "occupation", "living_situation"],
+        "patientKnows": true,
+        "answer": { "mn": "Оюутны байранд хоёр найзтайгаа амьдардаг. Тамхи татдаггүй, үдэшлэг дээр л бага зэрэг уудаг.", "en": "I live in the dorm with two friends. I don't smoke, I drink a little at parties." }
+      },
+      {
+        "id": "family",
+        "kind": "history",
+        "topics": ["family_history"],
+        "patientKnows": true,
+        "answer": { "mn": "Ээж маань даралттай. Өөр юм байхгүй.", "en": "My mum has high blood pressure. Nothing else." }
+      },
+      {
+        "id": "concerns",
+        "kind": "history",
+        "topics": ["concerns"],
+        "patientKnows": true,
+        "answer": { "mn": "Дараа долоо хоногт шалгалттай. Бөөр маань гэмтчих вий гэж интернэтээс уншаад айсан.", "en": "I have exams next week. I read online that my kidneys could get damaged and got scared." }
+      },
+      {
+        "id": "vitals",
+        "kind": "vital",
+        "topics": ["vitals", "physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Биеийн халуун 38.9°C, зүрхний цохилт 106/мин, амьсгал 18/мин, АД 112/70 мм.муб, SpO₂ 99%.", "en": "T 38.9°C, HR 106, RR 18, BP 112/70, SpO₂ 99%." }
+      },
+      {
+        "id": "exam",
+        "kind": "exam",
+        "topics": ["physical_exam"],
+        "patientKnows": false,
+        "answer": { "mn": "Баруун хавирга-нурууны өнцөгт тогшиход өвдөлттэй (Пастернацкийн шинж эерэг). Умдаг дээгүүр бага зэрэг эмзэглэлтэй. Хэвлийн цочролын шинжгүй.", "en": "Right costovertebral angle tenderness. Mild suprapubic tenderness. No peritonism." }
+      }
+    ],
+    "investigationsAvailable": false
+  },
+  "rubric": {
+    "weights": { "diagnosis": 0.4, "history": 0.4, "critical": 0.2 },
+    "items": [
+      {
+        "id": "urinary-symptoms", "category": "associated_symptoms", "topics": ["urinary"], "weight": 2, "critical": true,
+        "label": { "mn": "Шээсний замын шинж", "en": "Urinary symptoms" },
+        "rationale": { "mn": "Хорсох, ойр ойрхон шээх нь шээсний замын халдварыг заана.", "en": "Dysuria and frequency indicate UTI." },
+        "suggestedQuestion": { "mn": "Шээхэд хорсож өвддөг үү? Ойр ойрхон шээдэг үү?" }
+      },
+      {
+        "id": "fever", "category": "hpi", "topics": ["fever", "chills"], "weight": 1.5, "critical": true,
+        "label": { "mn": "Халууралт, чичрэлт", "en": "Fever and rigors" },
+        "rationale": { "mn": "Халууралт нь дээд шээсний замын халдварыг давсагны үрэвслээс ялгана.", "en": "Fever distinguishes upper from lower UTI." },
+        "suggestedQuestion": { "mn": "Хэр их халуурсан бэ? Чичэрсэн үү?" }
+      },
+      {
+        "id": "pregnancy", "category": "red_flags", "topics": ["lmp", "pregnancy"], "weight": 2, "critical": true,
+        "label": { "mn": "Жирэмслэлт", "en": "Pregnancy" },
+        "rationale": { "mn": "Жирэмсэн үеийн пиелонефрит хүнд, эмчилгээ өөр.", "en": "Pyelonephritis in pregnancy is serious and treated differently." },
+        "suggestedQuestion": { "mn": "Сүүлийн сарын тэмдэг хэзээ ирсэн бэ? Жирэмсэн байх магадлал бий юу?" }
+      },
+      {
+        "id": "pain", "category": "hpi", "topics": ["location", "character", "radiation"], "weight": 1,
+        "label": { "mn": "Өвдөлтийн байршил, шинж", "en": "Pain site and character" },
+        "rationale": { "mn": "Тогтмол шаналгаат хажуу нурууны өвдөлт ба таталт маягийн чулууны өвдөлтийг ялгана.", "en": "Constant flank ache vs colicky stone pain." },
+        "suggestedQuestion": { "mn": "Хаана өвддөг вэ? Ямар өвдөлт вэ, хаашаа дамждаг вэ?" }
+      },
+      {
+        "id": "vomiting", "category": "associated_symptoms", "topics": ["vomiting", "nausea"], "weight": 1,
+        "label": { "mn": "Бөөлжих", "en": "Vomiting" },
+        "rationale": { "mn": "Ууж эм хэрэглэх боломжийг үнэлнэ.", "en": "Determines whether oral treatment is possible." },
+        "suggestedQuestion": { "mn": "Бөөлжсөн үү? Ус, эм ууж чадаж байна уу?" }
+      },
+      {
+        "id": "gyn-negatives", "category": "pertinent_negatives", "topics": ["vaginal_symptoms", "sexual_history"], "weight": 1,
+        "label": { "mn": "Эмэгтэйчүүдийн шинж, бэлгийн амьдрал", "en": "Gynaecological symptoms and sexual history" },
+        "rationale": { "mn": "Аарцгийн үрэвсэл, БЗДХ-аас ялгана.", "en": "Excludes PID and STIs." },
+        "suggestedQuestion": { "mn": "Үтрээнээс ялгадас гарсан уу? Бэлгийн хамтрагч шинэ үү?" }
+      },
+      {
+        "id": "allergies", "category": "medications_allergies", "topics": ["allergies", "medications"], "weight": 1.5,
+        "label": { "mn": "Эмийн харшил", "en": "Drug allergies" },
+        "rationale": { "mn": "Антибиотикийн харшил эмчилгээг өөрчилнө.", "en": "Antibiotic allergy changes treatment." },
+        "suggestedQuestion": { "mn": "Ямар нэг эмэнд харшилтай юу?" }
+      },
+      {
+        "id": "previous", "category": "past_history", "topics": ["previous_episodes", "pmh", "diabetes"], "weight": 1,
+        "label": { "mn": "Өмнөх халдвар, архаг өвчин", "en": "Previous UTIs and comorbidities" },
+        "rationale": { "mn": "Давтамжтай халдвар, чихрийн шижин, чулуу нь хүндрэлийн эрсдэл.", "en": "Recurrence, diabetes or stones raise complication risk." },
+        "suggestedQuestion": { "mn": "Өмнө нь шээсний замын халдвар, бөөрний өвчин байсан уу?" }
+      }
+    ]
+  },
+  "education": {
+    "explanation": {
+      "mn": "Давсагны үрэвслийн шинж (хорсох, ойр шээх)-ийн дараа өндөр халууралт, чичрэлт, нэг талын хажуу нурууны өвдөлт, бөөлжилт илэрсэн нь цочмог пиелонефрит. Нөхөн үржихүйн насны эмэгтэйд жирэмслэлт, эмийн харшлыг заавал асууж, бөөлжилт, сепсисийн шинжтэй бол эмнэлэгт хэвтүүлэхийг шийднэ.",
+      "en": "Cystitis symptoms followed by high fever, rigors, unilateral flank pain and vomiting indicate acute pyelonephritis. Ask about pregnancy and allergies; vomiting or sepsis features warrant admission."
+    },
+    "learningPoints": [
+      { "mn": "Халууралт ба хажуу нурууны өвдөлт нь дээд шээсний замын халдварыг заана.", "en": "Fever plus flank pain means upper UTI." },
+      { "mn": "Нөхөн үржихүйн насны эмэгтэйгээс жирэмслэлтийг асуух.", "en": "Ask women of reproductive age about pregnancy." },
+      { "mn": "Антибиотик сонгохын өмнө харшлыг тодруулах.", "en": "Clarify allergies before antibiotics." },
+      { "mn": "Бөөлжилт, сепсисийн шинжтэй бол хэвтүүлэх.", "en": "Admit if vomiting or septic." }
+    ]
+  },
+  "provenance": {
+    "source": "synthetic",
+    "synthetic": true,
+    "authors": ["PineQuest team (AI-assisted draft)"],
+    "createdAt": "2026-10-21",
+    "license": "Project-owned synthetic content",
+    "attribution": "Synthetic demonstration case written for PineQuest AI Patient.",
+    "redistributable": true,
+    "trainingUseAllowed": true,
+    "clinicalReview": { "status": "unreviewed", "notes": "Requires review by a licensed clinician before educational use." },
+    "translation": { "sourceLanguage": "mn", "status": "ai_drafted", "translator": "AI-assisted draft", "reviewer": "" }
+  }
+}
