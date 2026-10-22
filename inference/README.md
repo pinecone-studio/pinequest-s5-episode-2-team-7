@@ -32,7 +32,8 @@ then `docker run --gpus all -e BASE_MODEL=... -e API_KEY=... -v /adapters/v1:/mo
 |---|---|---|
 | Your own machine + tunnel (e.g. `cloudflared tunnel --url http://localhost:8000`) | free | Fine for a competition demo; a 4B model is slow on CPU/Apple Silicon. |
 | Kaggle / Colab notebook + tunnel | free | Session time limits; good for live demos. |
-| Hugging Face Inference Endpoints, RunPod, Modal, etc. | paid per hour | Always-on; choose a 16-24 GB GPU. |
+| Modal (`modal_app.py`, setup steps in its docstring) | free monthly credits, then per second | Sleeps when idle; first answer after a pause takes ~1 min, so the app falls back to templates for that turn. |
+| Hugging Face Inference Endpoints, RunPod, etc. | paid per hour | Always-on; choose a 16-24 GB GPU. |
 | vLLM with `--enable-lora` | depends on GPU | Faster; but vLLM's `/health` has no adapter metadata, so put this server's `/health` contract in front or use `PATIENT_PROVIDER=openai_compatible` (then the app labels it as a generic model, not "fine-tuned"). |
 | Merge adapter → GGUF → Ollama | free (local) | Same caveat as vLLM: use `openai_compatible`. |
 
