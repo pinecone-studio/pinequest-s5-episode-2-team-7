@@ -174,7 +174,35 @@ export const modelRegistry = pgTable("model_registry", {
   createdAt: createdAt(),
 });
 
+/**
+ * Health news written by admins or imported (machine-translated) from RSS
+ * feeds; students only see published articles. Imports start as drafts.
+ */
+export const newsArticles = pgTable(
+  "news_articles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    summary: text("summary").notNull(),
+    body: text("body").notNull(),
+    category: text("category").notNull().default("general"),
+    sourceName: text("source_name"),
+    sourceUrl: text("source_url"),
+    origin: text("origin", { enum: ["manual", "rss"] }).notNull().default("manual"),
+    /** Untranslated headline of an imported article, for the reviewing admin. */
+    originalTitle: text("original_title"),
+    status: text("status", { enum: ["draft", "published", "archived"] }).notNull().default("draft"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  // One row per source link, so repeated imports never duplicate an article.
+  (t) => [index("news_status_idx").on(t.status, t.publishedAt), uniqueIndex("news_source_url_idx").on(t.sourceUrl)],
+);
+
 export type User = typeof users.$inferSelect;
 export type CaseRow = typeof cases.$inferSelect;
 export type SessionRow = typeof interviewSessions.$inferSelect;
 export type MessageRow = typeof messages.$inferSelect;
+export type NewsArticleRow = typeof newsArticles.$inferSelect;

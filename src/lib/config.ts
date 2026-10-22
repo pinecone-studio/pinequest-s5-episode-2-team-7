@@ -34,6 +34,9 @@ const EnvSchema = z.object({
 
   RATE_LIMIT_MESSAGES_PER_MINUTE: z.coerce.number().int().positive().default(20),
 
+  /** Bearer token Vercel Cron sends to /api/cron/news-import (unset = endpoint disabled). */
+  CRON_SECRET: z.string().optional(),
+
   // Optional voice features (all off when unset).
   CHIMEGE_STT_TOKEN: z.string().optional(),
   CHIMEGE_TTS_TOKEN: z.string().optional(),

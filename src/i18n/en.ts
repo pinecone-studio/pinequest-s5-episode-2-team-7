@@ -14,6 +14,7 @@ export const en: Strings = {
   nav: {
     cases: "Cases",
     history: "History",
+    news: "News",
     admin: "Admin",
     login: "Log in",
     register: "Sign up",
