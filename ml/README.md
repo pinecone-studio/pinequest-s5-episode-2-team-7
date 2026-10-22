@@ -181,8 +181,8 @@ python -m pinequest_ml build
 python -m pinequest_ml train --config configs/train_qwen3_4b_qlora.yaml --dry-run
 python -m pinequest_ml train --config configs/train_qwen3_4b_qlora.yaml
 python -m pinequest_ml evaluate --base-model Qwen/Qwen3-4B-Instruct-2507 \
-       --adapter outputs/qwen3-4b-lora-v1/adapter --split data/processed/test.jsonl
-# Download outputs/qwen3-4b-lora-v1/adapter (≈ 100-200 MB) — do NOT commit it to git.
+       --adapter outputs/qwen3-4b-lora-v2/adapter --split data/processed/test.jsonl
+# Download outputs/qwen3-4b-lora-v2/adapter (≈ 100-200 MB) — do NOT commit it to git.
 ```
 
 Outputs: `outputs/<run>/adapter/` (LoRA weights, tokenizer, `pinequest_adapter.json`
@@ -210,7 +210,7 @@ See [`../inference/README.md`](../inference/README.md). In the app's environment
 PATIENT_PROVIDER=finetuned
 FINETUNED_BASE_URL=https://<your-gpu-host>/v1
 FINETUNED_API_KEY=<same as API_KEY on the server>
-FINETUNED_EXPECTED_ADAPTER=pq-qwen3-4b-lora-v1
+FINETUNED_EXPECTED_ADAPTER=pq-qwen3-4b-lora-v2
 PATIENT_FALLBACK_PROVIDER=mock    # or none to show an error instead
 ```
 

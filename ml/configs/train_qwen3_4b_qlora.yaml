@@ -6,8 +6,8 @@
 # 20 steps of 16), so train a fixed 80 steps of 8 sequences (~640 examples,
 # ~4.5 h) and save every 20 steps so a cut-off run still leaves an adapter.
 base_model: Qwen/Qwen3-4B-Instruct-2507
-adapter_id: pq-qwen3-4b-lora-v1          # must match FINETUNED_EXPECTED_ADAPTER in the app
-output_dir: outputs/qwen3-4b-lora-v1
+adapter_id: pq-qwen3-4b-lora-v2          # must match FINETUNED_EXPECTED_ADAPTER in the app
+output_dir: outputs/qwen3-4b-lora-v2
 purpose: "Pipeline demonstration on synthetic, unreviewed cases — NOT for students."
 quantization: 4bit                        # QLoRA (NF4); requires CUDA + bitsandbytes
 max_seq_length: 2048
