@@ -23,6 +23,7 @@
     "@anam-ai/js-sdk": "4.27.1",
     "@anthropic-ai/sdk": "^0.135.0",
     "@electric-sql/pglite": "^0.5.10",
+    "@mediapipe/tasks-vision": "1.0.1",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.4",
     "iron-session": "^9.0.1",

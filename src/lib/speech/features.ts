@@ -109,37 +109,49 @@ export function getVoiceFeatures(sex: Sex): VoiceFeatures {
  * minutes bounded.
  */
 export async function createAvatarToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal, caseId?: string): Promise<string> {
-  return getConfig().AVATAR_PROVIDER === "anam" ? createAnamToken(sex, emotion, signal, caseId) : createSimliToken(sex, signal);
+  return getConfig().AVATAR_PROVIDER === "anam" ? createAnamToken(anamAvatarFor(sex, caseId), emotion, signal) : createSimliToken(sex, signal);
+}
+
+/** Anam token for the «Шүүлэг» examiner (Anam only; lip-syncs to the male TTS voice). */
+export async function createExaminerAvatarToken(): Promise<string> {
+  const c = getConfig();
+  if (c.AVATAR_PROVIDER !== "anam" || !ttsConfigured("male")) throw new ApiError(503, "avatar_unavailable", "Аватар тохируулагдаагүй байна.");
+  return createAnamToken(c.ANAM_EXAMINER_AVATAR_ID);
 }
 
 /**
  * Anam session in audio-passthrough mode: Anam renders the face and lip-syncs
  * to the PCM we stream (our TTS voice); its own LLM and voice are not used.
  */
-async function createAnamToken(sex: Sex, emotion?: EmotionId, signal?: AbortSignal, caseId?: string): Promise<string> {
+async function createAnamToken(avatarId: string | undefined, emotion?: EmotionId, signal?: AbortSignal): Promise<string> {
   const c = getConfig();
-  const avatarId = anamAvatarFor(sex, caseId);
   if (!c.ANAM_API_KEY || !avatarId) throw new ApiError(503, "avatar_unavailable", "Аватар тохируулагдаагүй байна.");
-  let response: Response;
-  try {
-    response = await fetch("https://api.anam.ai/v1/auth/session-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${c.ANAM_API_KEY}` },
-      body: JSON.stringify({
-        personaConfig: {
-          avatarId,
-          ...(c.ANAM_AVATAR_MODEL ? { avatarModel: c.ANAM_AVATAR_MODEL } : {}),
-          enableAudioPassthrough: true,
-          maxSessionLengthSeconds: 900,
-          // Facial performance style (Cara 4 avatars; ignored by older models).
-          ...(emotion ? { directorNotes: { presetStyle: EMOTIONS[emotion].anamPreset, expressivity: 0.7 } } : {}),
-        },
-      }),
-      signal,
-    });
-  } catch {
-    throw new ApiError(503, "avatar_unavailable", "Аватарын үйлчилгээнд холбогдож чадсангүй.");
+  const request = JSON.stringify({
+    personaConfig: {
+      avatarId,
+      ...(c.ANAM_AVATAR_MODEL ? { avatarModel: c.ANAM_AVATAR_MODEL } : {}),
+      enableAudioPassthrough: true,
+      maxSessionLengthSeconds: 900,
+      // Facial performance style (Cara 4 avatars; ignored by older models).
+      ...(emotion ? { directorNotes: { presetStyle: EMOTIONS[emotion].anamPreset, expressivity: 0.7 } } : {}),
+    },
+  });
+  let response: Response | undefined;
+  // A token normally comes back in ~1 s; a stalled connection is cut at 6 s and tried once more.
+  for (let attempt = 1; attempt <= 2 && !response; attempt++) {
+    try {
+      response = await fetch("https://api.anam.ai/v1/auth/session-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${c.ANAM_API_KEY}` },
+        body: request,
+        signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(6_000)]) : AbortSignal.timeout(6_000),
+      });
+    } catch (error) {
+      console.warn(`[avatar] Anam token attempt ${attempt} failed:`, error instanceof Error ? (error.cause ?? error.message) : error);
+      if (signal?.aborted) break;
+    }
   }
+  if (!response) throw new ApiError(503, "avatar_unavailable", "Аватарын үйлчилгээнд холбогдож чадсангүй. Дахин оролдоно уу.");
   const body = (await response.json().catch(() => null)) as { sessionToken?: string } | null;
   if (!response.ok || !body?.sessionToken) {
     console.error(`[avatar] Anam HTTP ${response.status}: ${JSON.stringify(body).slice(0, 300)}`);
