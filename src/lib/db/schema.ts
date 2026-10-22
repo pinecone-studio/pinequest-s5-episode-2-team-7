@@ -174,7 +174,28 @@ export const modelRegistry = pgTable("model_registry", {
   createdAt: createdAt(),
 });
 
+/** Health news written by admins; students only see published articles. */
+export const newsArticles = pgTable(
+  "news_articles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    summary: text("summary").notNull(),
+    body: text("body").notNull(),
+    category: text("category").notNull().default("general"),
+    sourceName: text("source_name"),
+    sourceUrl: text("source_url"),
+    status: text("status", { enum: ["draft", "published", "archived"] }).notNull().default("draft"),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: createdAt(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("news_status_idx").on(t.status, t.publishedAt)],
+);
+
 export type User = typeof users.$inferSelect;
 export type CaseRow = typeof cases.$inferSelect;
 export type SessionRow = typeof interviewSessions.$inferSelect;
 export type MessageRow = typeof messages.$inferSelect;
+export type NewsArticleRow = typeof newsArticles.$inferSelect;

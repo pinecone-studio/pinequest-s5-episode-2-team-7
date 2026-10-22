@@ -4,6 +4,7 @@ import { requirePageAdmin } from "@/lib/auth/server";
 const NAV = [
   { href: "/admin", label: "Кейсүүд" },
   { href: "/admin/cases/new", label: "Шинэ кейс" },
+  { href: "/admin/news", label: "Эрүүл мэндийн мэдээ" },
   { href: "/admin/import", label: "Импорт / Экспорт" },
   { href: "/admin/sessions", label: "Ярилцлага ба сургалтын өгөгдөл" },
   { href: "/admin/quality", label: "Өгөгдлийн чанар" },

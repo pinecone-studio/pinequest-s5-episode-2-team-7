@@ -20,6 +20,9 @@ export async function SiteHeader() {
               <Link href="/dashboard" className="rounded-md px-3 py-1.5 text-slate-600 hover:bg-slate-100 hover:text-ink">
                 Кейсүүд
               </Link>
+              <Link href="/news" className="rounded-md px-3 py-1.5 text-slate-600 hover:bg-slate-100 hover:text-ink">
+                Мэдээ
+              </Link>
               <Link href="/sessions" className="hidden rounded-md px-3 py-1.5 text-slate-600 hover:bg-slate-100 hover:text-ink sm:inline">
                 Түүх
               </Link>

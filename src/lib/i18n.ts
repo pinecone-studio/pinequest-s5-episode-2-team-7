@@ -24,6 +24,14 @@ export const VERDICT_LABELS: Record<string, string> = {
   empty: "Оруулаагүй",
 };
 
+export const NEWS_CATEGORY_LABELS: Record<string, string> = {
+  general: "Ерөнхий",
+  research: "Судалгаа",
+  "public-health": "Нийгмийн эрүүл мэнд",
+  clinical: "Клиник",
+  education: "Боловсрол",
+};
+
 export function formatDateTime(iso: string): string {
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, "0");
