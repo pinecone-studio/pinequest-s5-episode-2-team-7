@@ -16,6 +16,7 @@ export const mn = {
   nav: {
     cases: "Кейсүүд",
     history: "Түүх",
+    news: "Мэдээ",
     admin: "Админ",
     login: "Нэвтрэх",
     register: "Бүртгүүлэх",

@@ -4,18 +4,19 @@ import Link from "next/link";
 import { CaseGrid, type CaseProgress } from "@/components/cases/case-grid";
 import { CountUp } from "@/components/motion/count-up";
 import { Blobs } from "@/components/motion/reveal";
-import { Alert, Card, EmptyState, PageHeader } from "@/components/ui";
+import { Alert, Badge, Card, EmptyState, PageHeader } from "@/components/ui";
 import { t } from "@/i18n";
 import { requirePageUser } from "@/lib/auth/server";
-import { formatDateTime } from "@/lib/i18n";
+import { NEWS_CATEGORY_LABELS, formatDateTime } from "@/lib/i18n";
 import { listPublishedCases } from "@/lib/services/cases";
+import { listPublishedNews } from "@/lib/services/news";
 import { listSessions } from "@/lib/services/sessions";
 
 export const metadata: Metadata = { title: "Кейсүүд" };
 
 export default async function DashboardPage({ searchParams }: PageProps<"/dashboard">) {
   const session = await requirePageUser("/dashboard");
-  const [cases, sessions, params] = await Promise.all([listPublishedCases(), listSessions(session, { limit: 50 }), searchParams]);
+  const [cases, sessions, news, params] = await Promise.all([listPublishedCases(), listSessions(session, { limit: 50 }), listPublishedNews(3), searchParams]);
   const active = sessions.filter((s) => s.status === "active");
   const completed = sessions.filter((s) => s.status === "completed");
   const avg = completed.length ? Math.round(completed.reduce((sum, s) => sum + (s.totalScore ?? 0), 0) / completed.length) : null;
@@ -72,6 +73,31 @@ export default async function DashboardPage({ searchParams }: PageProps<"/dashbo
         <h2 className="mb-4 font-display text-xl font-bold">{t.cases.title}</h2>
         {cases.length === 0 ? <EmptyState title={t.cases.noCases} /> : <CaseGrid cases={cases} progress={progress} />}
       </section>
+
+      {news.length > 0 && (
+        <section className="mt-10">
+          <div className="mb-3 flex items-baseline justify-between gap-4">
+            <h2 className="text-lg font-semibold">Сүүлийн мэдээ</h2>
+            <Link href="/news" className="text-sm font-medium text-brand-700 hover:underline">
+              Бүх мэдээ →
+            </Link>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {news.map((n) => (
+              <Card key={n.id} className="p-4">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <Badge tone="brand">{NEWS_CATEGORY_LABELS[n.category] ?? n.category}</Badge>
+                  {n.publishedAt && <span className="text-xs text-slate-500">{formatDateTime(n.publishedAt)}</span>}
+                </div>
+                <Link href={`/news/${n.id}`} className="font-medium leading-snug hover:text-brand-700 hover:underline">
+                  {n.title}
+                </Link>
+                <p className="mt-1 line-clamp-2 text-sm text-slate-600">{n.summary}</p>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {completed.length > 0 && (
         <p className="mt-10 text-sm">

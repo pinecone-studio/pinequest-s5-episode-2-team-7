@@ -25,6 +25,9 @@ export async function SiteHeader() {
               <Link href="/dashboard" className={navLink}>
                 {t.nav.cases}
               </Link>
+              <Link href="/news" className={navLink}>
+                {t.nav.news}
+              </Link>
               <Link href="/sessions" className={`${navLink} hidden sm:inline`}>
                 {t.nav.history}
               </Link>

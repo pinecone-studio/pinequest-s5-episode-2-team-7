@@ -5,7 +5,7 @@ tier, Kaggle/Colab GPUs). Paid options are marked.
 
 ## 1. Local setup on macOS
 
-Requirements: Node.js ≥ 20.9 (tested with 24), npm. Python is only needed for `ml/`.
+Requirements: Node.js ≥ 20.19 (Vitest 5 needs `require(esm)`; tested with 24), npm. Python is only needed for `ml/`.
 
 ```bash
 git clone <your-repo-url> PineQuest-AI-Patient && cd PineQuest-AI-Patient
@@ -42,6 +42,7 @@ To use Neon locally instead, put its connection string in `DATABASE_URL` and run
 | `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL`, `OPENAI_COMPAT_API_KEY` | Vercel | for `openai_compatible` | Ollama / vLLM / OpenRouter |
 | `FINETUNED_BASE_URL`, `FINETUNED_API_KEY`, `FINETUNED_MODEL`, `FINETUNED_EXPECTED_ADAPTER` | Vercel | for `finetuned` | must match the inference service |
 | `RATE_LIMIT_MESSAGES_PER_MINUTE` | Vercel | no (20) | per user |
+| `CRON_SECRET` | Vercel | for the daily news import | ≥ 16 chars; `openssl rand -hex 32`; news translation also needs `GEMINI_API_KEY` |
 | `BASE_MODEL`, `ADAPTER_PATH`, `API_KEY`, `LOAD_IN_4BIT` | **inference service only** | yes there | never in Vercel |
 | `GEMINI_API_KEY` | `ml/` machine translation (optional) | no | do not use for restricted data |
 
@@ -68,6 +69,15 @@ No variable is exposed to the browser (no `NEXT_PUBLIC_*`). Never commit `.env`.
 
 Vercel's free plan limits function duration (check your plan); patient replies
 are short and the provider timeout defaults to 20 s (`PROVIDER_TIMEOUT_MS`).
+
+**Health news import.** `vercel.json` schedules `GET /api/cron/news-import`
+once a day (00:00 UTC = 08:00 Улаанбаатар; Hobby allows daily crons). Set
+`CRON_SECRET` and `GEMINI_API_KEY` in Vercel; Vercel sends the secret as a
+Bearer token automatically. Each run reads the feeds in `src/lib/news/feeds.ts`,
+skips links already stored, translates at most 10 new headlines + short
+descriptions (never full articles) and saves them as **drafts** with a link to
+the source. An admin reviews the machine translation in *Админ → Мэдээ* and
+publishes it; the same import runs on demand with the *RSS-ээс татах* button.
 
 ## 5. Switching the patient AI
 
