@@ -26,6 +26,8 @@ export function CallView({
   onEmotion,
   scene,
   onScene,
+  ambienceMuted,
+  onToggleAmbience,
   caption,
   messageCount,
   onDiagnosis,
@@ -47,6 +49,9 @@ export function CallView({
   /** Background scene; the picker is hidden when `onScene` is not given. */
   scene?: SceneId;
   onScene?: (scene: SceneId) => void;
+  /** Background sound (siren, monitor beeps…); the button is hidden when `onToggleAmbience` is not given. */
+  ambienceMuted?: boolean;
+  onToggleAmbience?: () => void;
   caption: string | null;
   messageCount: number;
   onDiagnosis: () => void;
@@ -167,6 +172,11 @@ export function CallView({
                   </div>
                 )}
               </div>
+            )}
+            {onToggleAmbience && scene !== "original" && (
+              <RoundButton label={ambienceMuted ? "Орчны дууг нээх" : "Орчны дууг хаах"} active={!ambienceMuted} onClick={onToggleAmbience}>
+                {ambienceMuted ? "🔕" : "🔔"}
+              </RoundButton>
             )}
             <RoundButton label={captions ? "Хадмал нуух" : "Хадмал харуулах"} active={captions} onClick={() => setCaptions((v) => !v)}>
               CC
