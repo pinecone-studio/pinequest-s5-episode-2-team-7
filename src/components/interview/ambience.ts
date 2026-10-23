@@ -4,13 +4,14 @@ import type { SceneId } from "@/lib/scenes";
  * Quiet, synthesized background sound for a call scene (no audio files):
  * a distant siren, traffic rumble, monitor beeps, wind, a ticking clock.
  * Kept low so the patient's voice and the student's microphone stay clear;
- * `duck()` fades it out while the student is talking.
+ * `duck()` fades it out while the student is talking; `mute()` silences it.
  */
 export class Ambience {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private stops: (() => void)[] = [];
   private level = 1;
+  private muted = false;
 
   start(scene: SceneId) {
     this.stop();
@@ -18,7 +19,7 @@ export class Ambience {
     const ctx = new AudioContext();
     const master = ctx.createGain();
     master.gain.value = 0;
-    master.gain.linearRampToValueAtTime(this.level, ctx.currentTime + 1.5);
+    master.gain.linearRampToValueAtTime(this.gain(), ctx.currentTime + 1.5);
     master.connect(ctx.destination);
     this.ctx = ctx;
     this.master = master;
@@ -44,7 +45,21 @@ export class Ambience {
   /** Fade out while the student talks (`true`), back in afterwards. */
   duck(on: boolean) {
     this.level = on ? 0.15 : 1;
-    if (this.ctx && this.master) this.master.gain.setTargetAtTime(this.level, this.ctx.currentTime, 0.25);
+    this.apply();
+  }
+
+  /** Silence the background sound without forgetting the scene. */
+  mute(on: boolean) {
+    this.muted = on;
+    this.apply();
+  }
+
+  private gain() {
+    return this.muted ? 0 : this.level;
+  }
+
+  private apply() {
+    if (this.ctx && this.master) this.master.gain.setTargetAtTime(this.gain(), this.ctx.currentTime, 0.25);
   }
 
   stop() {

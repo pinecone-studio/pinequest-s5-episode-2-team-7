@@ -48,7 +48,7 @@ hf_cache = modal.Volume.from_name("pinequest-hf-cache", create_if_missing=True)
     gpu="L4",
     volumes={"/adapters": adapters, "/cache": hf_cache},
     secrets=[modal.Secret.from_name("pinequest-inference")],
-    scaledown_window=300,  # sleep after 5 idle minutes so credits are only used while in use
+    scaledown_window=900,  # sleep after 15 idle minutes so credits are only used while in use
     max_containers=1,  # one GPU at most; server.py answers one request at a time
     timeout=600,
 )

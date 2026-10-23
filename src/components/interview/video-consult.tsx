@@ -47,6 +47,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
   const [studentSpeaking, setStudentSpeaking] = useState(false);
   const [scene, setScene] = useState<SceneId>(() => defaultScene(initial.case.id));
   const ambienceRef = useRef<Ambience | null>(null);
+  const [ambienceMuted, setAmbienceMuted] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const [avatarSpeaking, setAvatarSpeaking] = useState(false);
   /** Reply sentences shown as captions while the reply is still streaming in. */
@@ -131,10 +132,19 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
     if (wav) p.enqueue(wav, generation);
   }
 
-  /** The student started talking: the patient stops mid-sentence, like a person would. */
+  const patientSpeakingRef = useRef(patientSpeaking);
+  patientSpeakingRef.current = patientSpeaking;
+  /** True from sending a question until its first reply sentence arrives. */
+  const awaitingReplyRef = useRef(false);
+
+  /**
+   * The student started talking: the patient stops mid-sentence, like a
+   * person would. Noise while the reply is still being written (a cough, the
+   * scene's siren) must not cancel it, so only actual speech is interrupted.
+   */
   const interruptPatient = useCallback(() => {
     setStudentSpeaking(true);
-    playerRef.current?.stop();
+    if (patientSpeakingRef.current && !awaitingReplyRef.current) playerRef.current?.stop();
     avatarRef.current?.wake?.();
   }, []);
 
@@ -225,6 +235,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
       playerRef.current?.stop(); // a new question replaces whatever the patient was saying
       void playFiller();
     }
+    awaitingReplyRef.current = true;
     const tempId = `pending-${Date.now()}`;
     setMessages((prev) => [...prev, { id: tempId, role: "student", content, createdAt: new Date().toISOString() }]);
     if (spoken === undefined) setDraft("");
@@ -238,6 +249,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
         let utterance: ReturnType<SpeechPlayer["stream"]> | null = null;
         result = await askSpoken(url, { content, emotion }, {
           onSentence(text) {
+            awaitingReplyRef.current = false;
             setLiveCaption((prev) => (prev ? `${prev} ${text}` : text));
             utterance = p.stream(generation);
           },
@@ -259,6 +271,7 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
       setDraft(content);
       setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
     } finally {
+      awaitingReplyRef.current = false;
       setPending(false);
       setLiveCaption(null);
       focusInput();
@@ -386,16 +399,20 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
   function changeScene(next: SceneId) {
     setScene(next);
     ambienceRef.current ??= new Ambience();
+    ambienceRef.current.mute(ambienceMutedRef.current);
     ambienceRef.current.start(next);
   }
 
   const sceneRef = useRef(scene);
   sceneRef.current = scene;
+  const ambienceMutedRef = useRef(ambienceMuted);
+  ambienceMutedRef.current = ambienceMuted;
   useEffect(() => {
     if (voice.avatarProvider !== "anam") return;
     const startOnTap = () => {
       if (ambienceRef.current) return;
       ambienceRef.current = new Ambience();
+      ambienceRef.current.mute(ambienceMutedRef.current);
       ambienceRef.current.start(sceneRef.current);
     };
     window.addEventListener("pointerdown", startOnTap, { once: true });
@@ -405,13 +422,16 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
     };
   }, [voice.avatarProvider]);
   useEffect(() => ambienceRef.current?.duck(studentSpeaking), [studentSpeaking]);
+  useEffect(() => ambienceRef.current?.mute(ambienceMuted), [ambienceMuted]);
 
   function changeEmotion(next: EmotionId) {
     setEmotion(next);
     avatarRef.current?.setEmotion(next);
   }
 
-  const callStatus = studentSpeaking
+  const callStatus = error
+    ? error
+    : studentSpeaking
     ? "Та ярьж байна…"
     : transcribing
       ? "Таны яриаг бичиж байна…"
@@ -455,6 +475,8 @@ export function VideoConsult({ initial, voice }: { initial: SessionView; voice: 
           onEmotion={changeEmotion}
           scene={voice.avatarProvider === "anam" ? scene : undefined}
           onScene={voice.avatarProvider === "anam" ? changeScene : undefined}
+          ambienceMuted={ambienceMuted}
+          onToggleAmbience={voice.avatarProvider === "anam" ? () => setAmbienceMuted((v) => !v) : undefined}
           caption={liveCaption ?? (pending ? null : (lastReply?.content ?? null))}
           messageCount={messages.length}
           onDiagnosis={() => setShowDiagnosis(true)}
