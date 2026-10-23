@@ -23,6 +23,22 @@ function fakeFetch(handler: Handler) {
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { "content-type": "application/json" } });
 const chest = loadDemoCase("chest-pain-01");
 
+/** An OpenAI-style SSE body, split mid-event to mimic network chunking. */
+function sse(pieces: string[]) {
+  const events = pieces.map((content) => `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`).join("") + "data: [DONE]\n\n";
+  const cut = Math.floor(events.length / 2);
+  return new Response(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(events.slice(0, cut)));
+        controller.enqueue(new TextEncoder().encode(events.slice(cut)));
+        controller.close();
+      },
+    }),
+    { headers: { "content-type": "text/event-stream" } },
+  );
+}
+
 describe("Gemini provider", () => {
   it("sends the restricted prompt and returns the text", async () => {
     const { impl, calls } = fakeFetch(() => json({ candidates: [{ content: { parts: [{ text: "Тийм ээ, гучаад жил татаж байна." }] } }] }));
@@ -63,6 +79,17 @@ describe("OpenAI-compatible provider", () => {
     const text = await provider.complete({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 });
     expect(text).toBe("Өнөө өглөө эхэлсэн.");
     expect(calls[0].url).toBe("http://localhost:11434/v1/chat/completions");
+  });
+
+  it("streams the reply as it grows and hides an unfinished <think> block", async () => {
+    const { impl, calls } = fakeFetch(() => sse(["<think>hm", "m</think>Өнөө ", "өглөө эхэлсэн.", " Маш хүчтэй."]));
+    const provider = new OpenAICompatibleProvider("http://llm/v1", "m", undefined, impl);
+    const seen: string[] = [];
+    const text = await provider.completeStream({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 }, { onText: (t) => seen.push(t) });
+    expect(text).toBe("Өнөө өглөө эхэлсэн. Маш хүчтэй.");
+    expect(seen.at(-1)).toBe(text);
+    expect(seen.every((t) => !t.includes("think"))).toBe(true);
+    expect((calls[0].body as { stream: boolean }).stream).toBe(true);
   });
 
   it("retries a brief rate limit, honouring Retry-After", async () => {
@@ -120,6 +147,18 @@ describe("fine-tuned provider", () => {
     );
     expect(result.provider).toBe("finetuned");
     expect(result.fallbackUsed).toBe(false);
+    expect(calls.map((c) => c.url)).toEqual(["http://gpu:8000/health", "http://gpu:8000/v1/chat/completions"]);
+  });
+
+  it("verifies the adapter before streaming a spoken reply", async () => {
+    const { impl, calls } = fakeFetch((url) =>
+      url.endsWith("/health") ? json({ adapter_id: "pq-lora-v2", base_model: "Qwen/Qwen3-4B", prompt_format: PROMPT_FORMAT_VERSION }) : sse(["Тийм, ", "татдаг."]),
+    );
+    const provider = new FineTunedPatientProvider("http://gpu:8000/v1", "pinequest-patient", "secret", "pq-lora-v2", impl);
+    const seen: string[] = [];
+    const text = await provider.completeStream({ system: "s", messages: [{ role: "user", content: "q" }], maxTokens: 10 }, { onText: (t) => seen.push(t) });
+    expect(text).toBe("Тийм, татдаг.");
+    expect(seen.length).toBeGreaterThan(0);
     expect(calls.map((c) => c.url)).toEqual(["http://gpu:8000/health", "http://gpu:8000/v1/chat/completions"]);
   });
 

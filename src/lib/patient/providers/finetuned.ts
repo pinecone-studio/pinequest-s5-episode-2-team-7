@@ -75,10 +75,18 @@ export class FineTunedPatientProvider extends OpenAICompatibleProvider {
   }
 
   override async complete(request: ChatRequest, options?: { signal?: AbortSignal }): Promise<string> {
-    if (Date.now() - this.verifiedAt > VERIFY_TTL_MS) {
-      const health = await this.health({ signal: options?.signal });
-      if (!health.ok) throw new ProviderError(health.detail, "finetuned", "unverified_model");
-    }
+    await this.verify(options?.signal);
     return super.complete(request, options);
+  }
+
+  override async completeStream(request: ChatRequest, options: { signal?: AbortSignal; onText: (soFar: string) => void }): Promise<string> {
+    await this.verify(options.signal);
+    return super.completeStream(request, options);
+  }
+
+  private async verify(signal?: AbortSignal): Promise<void> {
+    if (Date.now() - this.verifiedAt <= VERIFY_TTL_MS) return;
+    const health = await this.health({ signal });
+    if (!health.ok) throw new ProviderError(health.detail, "finetuned", "unverified_model");
   }
 }

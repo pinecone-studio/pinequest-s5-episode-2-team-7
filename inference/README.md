@@ -5,7 +5,7 @@ LoRA adapter produced by `ml/` and exposes:
 
 - `GET /health` → `{status, adapter_id, base_model, prompt_format}` (used by the app to verify the model)
 - `GET /v1/models`
-- `POST /v1/chat/completions` (non-streaming)
+- `POST /v1/chat/completions` (`stream: true` sends SSE chunks)
 
 A GPU model cannot run inside a Vercel serverless function, so this runs as a
 separate service. The web app reaches it over HTTPS with a bearer token.

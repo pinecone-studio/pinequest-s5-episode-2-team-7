@@ -6,12 +6,12 @@ Environment:
   API_KEY          bearer token required from clients (required; set
                    ALLOW_UNAUTHENTICATED=1 only for a local smoke test)
   LOAD_IN_4BIT     "1" to load the base model in 4-bit (CUDA only)
-  MAX_NEW_TOKENS   default 200
+  MAX_NEW_TOKENS   default 120 (patient replies are one or two sentences)
 
 Endpoints:
   GET  /health               → {status, adapter_id, base_model, prompt_format}
   GET  /v1/models
-  POST /v1/chat/completions  (non-streaming subset of the OpenAI API)
+  POST /v1/chat/completions  (subset of the OpenAI API; `stream: true` sends SSE chunks)
 
 The app's FineTunedPatientProvider calls /health and refuses to label answers
 as "fine-tuned" unless adapter_id and prompt_format match its configuration.
@@ -31,9 +31,10 @@ from typing import Literal
 
 import torch
 from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.responses import StreamingResponse
 from peft import PeftModel
 from pydantic import BaseModel, Field
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 
 from pinequest_ml.chat_format import format_prompt
 
@@ -43,7 +44,7 @@ API_KEY = os.environ.get("API_KEY", "")
 if not API_KEY and os.environ.get("ALLOW_UNAUTHENTICATED") != "1":
     raise SystemExit("API_KEY is not set. Refusing to serve the model without authentication "
                      "(set ALLOW_UNAUTHENTICATED=1 for a local smoke test only).")
-MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "200"))
+MAX_NEW_TOKENS = int(os.environ.get("MAX_NEW_TOKENS", "120"))
 
 metadata = json.loads((ADAPTER_PATH / "pinequest_adapter.json").read_text(encoding="utf-8"))
 if metadata["base_model"] != BASE_MODEL:
@@ -63,7 +64,12 @@ tokenizer = AutoTokenizer.from_pretrained(ADAPTER_PATH)
 base = AutoModelForCausalLM.from_pretrained(BASE_MODEL, **load_kwargs)
 if "device_map" not in load_kwargs:
     base = base.to(device)
-model = PeftModel.from_pretrained(base, ADAPTER_PATH).eval()
+model = PeftModel.from_pretrained(base, ADAPTER_PATH)
+if "quantization_config" not in load_kwargs:
+    # Fold the LoRA weights into the base model once, so generation skips the
+    # extra adapter matmuls on every token. Same outputs, noticeably faster.
+    model = model.merge_and_unload()
+model = model.eval()
 lock = threading.Lock()  # one generation at a time on a single GPU
 
 app = FastAPI(title="PineQuest patient model", version="1.0")
@@ -84,6 +90,31 @@ class ChatRequest(BaseModel):
     messages: list[Message] = Field(min_length=1, max_length=80)
     max_tokens: int | None = Field(default=None, ge=1, le=512)
     temperature: float | None = Field(default=0.5, ge=0, le=2)
+    stream: bool = False
+
+
+
+def stream_chat(generate_kwargs: dict, completion_id: str, model_name: str):
+    """Yields OpenAI-style SSE chunks as tokens are generated, so the app can voice the first sentence early."""
+    streamer = TextIteratorStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True)
+
+    def run() -> None:
+        with lock, torch.no_grad():
+            model.generate(**generate_kwargs, streamer=streamer)
+
+    threading.Thread(target=run, daemon=True).start()
+
+    def chunk(delta: dict, finish_reason: str | None = None) -> str:
+        body = {"id": completion_id, "object": "chat.completion.chunk", "created": int(time.time()), "model": model_name,
+                "choices": [{"index": 0, "delta": delta, "finish_reason": finish_reason}]}
+        return f"data: {json.dumps(body, ensure_ascii=False)}\n\n"
+
+    yield chunk({"role": "assistant"})
+    for piece in streamer:
+        if piece:
+            yield chunk({"content": piece})
+    yield chunk({}, "stop")
+    yield "data: [DONE]\n\n"
 
 
 @app.get("/health")
@@ -103,24 +134,28 @@ def models() -> dict:
 
 
 @app.post("/v1/chat/completions", dependencies=[Depends(check_auth)])
-def chat(request: ChatRequest) -> dict:
+def chat(request: ChatRequest):
     messages = [m.model_dump() for m in request.messages]
     text = format_prompt(tokenizer, messages, metadata.get("chat_template_kwargs"))
     inputs = tokenizer(text, return_tensors="pt", add_special_tokens=False).to(model.device)
     temperature = request.temperature or 0.0
+    generate_kwargs = dict(
+        **inputs,
+        max_new_tokens=min(request.max_tokens or MAX_NEW_TOKENS, MAX_NEW_TOKENS),
+        do_sample=temperature > 0,
+        temperature=temperature if temperature > 0 else None,
+        top_p=0.9 if temperature > 0 else None,
+        pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+    )
+    completion_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+    if request.stream:
+        return StreamingResponse(stream_chat(generate_kwargs, completion_id, request.model), media_type="text/event-stream")
     with lock, torch.no_grad():
-        output = model.generate(
-            **inputs,
-            max_new_tokens=min(request.max_tokens or MAX_NEW_TOKENS, MAX_NEW_TOKENS),
-            do_sample=temperature > 0,
-            temperature=temperature if temperature > 0 else None,
-            top_p=0.9 if temperature > 0 else None,
-            pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
-        )
+        output = model.generate(**generate_kwargs)
     new_tokens = output[0][inputs["input_ids"].shape[1] :]
     reply = tokenizer.decode(new_tokens, skip_special_tokens=True).strip()
     return {
-        "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
+        "id": completion_id,
         "object": "chat.completion",
         "created": int(time.time()),
         "model": request.model,
