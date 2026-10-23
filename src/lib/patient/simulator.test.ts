@@ -312,6 +312,22 @@ describe("LLM provider safety net", () => {
 
     await expect(interview(chest, failing, "none").ask("Тамхи татдаг уу?")).rejects.toBeInstanceOf(SimulatorError);
   });
+
+  it("asks the backup model when the main one is rate-limited, but not when its reply is invalid", async () => {
+    const failing = fakeProvider(new ProviderError("quota exceeded", "openai_compatible", "rate_limit"));
+    const backup = { ...fakeProvider("Тийм, өдөрт нэг хайрцаг татаж байна."), id: "finetuned" as const };
+    const ask = (provider: PatientProvider) =>
+      simulateTurn({ patientCase: chest, question: "Тамхи татдаг уу?", disclosedFactIds: new Set(), history: [], turnIndex: 0 }, { provider, backup, fallback: "mock", intentMode: "keyword" });
+
+    const rescued = await ask(failing);
+    expect(rescued.provider).toBe("finetuned");
+    expect(rescued.fallbackUsed).toBe(false);
+    expect(rescued.fallbackReason).toContain("rate_limit");
+
+    const invalid = await ask(fakeProvider("I am an AI and the diagnosis is a heart attack."));
+    expect(invalid.provider).toBe("mock");
+    expect(invalid.fallbackUsed).toBe(true);
+  });
 });
 
 describe("grounding check", () => {

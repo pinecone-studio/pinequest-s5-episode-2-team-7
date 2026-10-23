@@ -12,6 +12,8 @@ import { validatePatientReply, type ValidationIssue } from "./validator";
 
 export interface SimulatorOptions {
   provider: PatientProvider;
+  /** Tried when `provider` errors (rate limit, outage, timeout) — not when its reply fails validation. */
+  backup?: PatientProvider | null;
   /** `mock` → answer from templates when the provider fails; `none` → throw. */
   fallback: "mock" | "none";
   /** `hybrid` → ask the provider to classify when keywords find nothing. */
@@ -117,20 +119,41 @@ export async function simulateTurn(input: TurnInput, options: SimulatorOptions):
   const validate = (reply: string) => validatePatientReply({ reply, patientCase: input.patientCase, plan, ctx, disclosedFactIds: input.disclosedFactIds });
   const early = options.onSentence ? earlySentences(validate, options.onSentence) : null;
 
+  let used = provider;
   let reply: string | null = null;
   let failure: string | undefined;
   let issues: ValidationIssue[] = [];
-  try {
-    reply = (await withTimeout((signal) => provider.generate(ctx, { signal, onText: early?.push }), timeoutMs)).trim();
-    issues = validate(reply);
-    if (issues.length > 0) failure = `validation: ${issues.map((i) => i.code).join(",")}`;
-  } catch (error) {
-    failure = error instanceof ProviderError ? `${error.kind}: ${error.message}` : error instanceof Error && error.name === "AbortError" ? "timeout" : "provider_error";
-  }
+  const attempt = async (model: PatientProvider): Promise<boolean> => {
+    used = model;
+    reply = null;
+    issues = [];
+    failure = undefined;
+    try {
+      reply = (await withTimeout((signal) => model.generate(ctx, { signal, onText: early?.push }), timeoutMs)).trim();
+      issues = validate(reply);
+      if (issues.length > 0) failure = `validation: ${issues.map((i) => i.code).join(",")}`;
+      return false;
+    } catch (error) {
+      failure = error instanceof ProviderError ? `${error.kind}: ${error.message}` : error instanceof Error && error.name === "AbortError" ? "timeout" : "provider_error";
+      return true;
+    }
+  };
+  const primaryFailure = (await attempt(provider)) ? `${provider.id}: ${failure}; ` : "";
+  if (primaryFailure && options.backup && !(early && early.emitted.length > 0)) await attempt(options.backup);
 
   if (!failure && reply) {
     early?.finish(reply);
-    return { patientText: reply, narratorText, plan, classification, provider: provider.id, model: provider.model, fallbackUsed: false, validationIssues: [] };
+    return {
+      patientText: reply,
+      narratorText,
+      plan,
+      classification,
+      provider: used.id,
+      model: used.model,
+      fallbackUsed: false,
+      ...(primaryFailure ? { fallbackReason: `${primaryFailure}answered by ${used.id}` } : {}),
+      validationIssues: [],
+    };
   }
 
   // Sentences already voiced passed validation on their own: keep exactly
@@ -141,16 +164,16 @@ export async function simulateTurn(input: TurnInput, options: SimulatorOptions):
       narratorText,
       plan,
       classification,
-      provider: provider.id,
-      model: provider.model,
+      provider: used.id,
+      model: used.model,
       fallbackUsed: false,
-      fallbackReason: `${provider.id}: truncated after ${early.emitted.length} sentence(s) (${failure})`,
+      fallbackReason: `${primaryFailure}${used.id}: truncated after ${early.emitted.length} sentence(s) (${failure})`,
       validationIssues: issues,
     };
   }
 
   if (options.fallback === "none") {
-    throw new SimulatorError(`Patient provider "${provider.id}" failed (${failure})`);
+    throw new SimulatorError(`Patient provider "${used.id}" failed (${primaryFailure}${failure})`);
   }
   return {
     patientText: renderMockReply(ctx),
@@ -160,7 +183,7 @@ export async function simulateTurn(input: TurnInput, options: SimulatorOptions):
     provider: "mock",
     model: "templates-v1",
     fallbackUsed: true,
-    fallbackReason: `${provider.id}: ${failure}`,
+    fallbackReason: `${primaryFailure}${used.id}: ${failure}`,
     validationIssues: issues,
   };
 }

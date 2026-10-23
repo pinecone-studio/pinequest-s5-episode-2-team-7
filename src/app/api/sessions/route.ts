@@ -1,7 +1,7 @@
 import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import { parseJson, requireUser, route } from "@/lib/api/http";
-import { getPatientProvider } from "@/lib/patient/providers";
+import { getBackupProvider, getPatientProvider } from "@/lib/patient/providers";
 import { listSessions, startSession } from "@/lib/services/sessions";
 
 export const GET = route(async (request) => {
@@ -20,8 +20,9 @@ export const POST = route(async (request) => {
 /** Wake a sleeping model while the student reads the case; never delays or fails the request. */
 function warmUpModel() {
   try {
-    const provider = getPatientProvider();
-    if (provider.warmUp) after(() => provider.warmUp!().catch(() => {}));
+    for (const provider of [getPatientProvider(), getBackupProvider()]) {
+      if (provider?.warmUp) after(() => provider.warmUp!().catch(() => {}));
+    }
   } catch {
     // A failed warm-up only means the first turn may fall back.
   }

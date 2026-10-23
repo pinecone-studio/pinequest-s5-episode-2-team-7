@@ -50,7 +50,7 @@ export const TOPICS = [
     id: "duration",
     kind: "hpi",
     label: { mn: "Үргэлжилсэн хугацаа", en: "Duration" },
-    patterns: [/хэр удаа?н/, /хэдий (удаа?н|хугацаа)/, /үргэлж(лэ|ил)/, /тасралт/, /хэдэн минут/, /how long/, /duration/, /constant/],
+    patterns: [/хэр удаа?н/, /хэр удаж/, /хэдэн (өдөр|хоног|цаг|сар) (болж|боллоо|үргэлж)/, /хэдий (удаа?н|хугацаа)/, /үргэлж(лэ|ил)/, /тасралт/, /хэдэн минут/, /how long/, /duration/, /constant/],
     suppressedBy: HISTORY_TIME_TOPICS,
   }),
   t({
@@ -64,7 +64,7 @@ export const TOPICS = [
     id: "character",
     kind: "hpi",
     label: { mn: "Өвдөлтийн шинж", en: "Character" },
-    patterns: [/ямар (өвдөлт|мэдрэмж|байдлаар|маягаар|шинжтэй)/, /яаж өвд/, /хэрхэн өвд/, /өвдөлт(ий)?н шинж/, /хатгуул/, /базал/, /шахаж/, /дарж байгаа юм шиг/, /describe/, /what (does|is) the pain like/, /character/],
+    patterns: [/ямар (өвдөлт|мэдрэмж|байдлаар|маягаар|шинжтэй)/, /яаж өвд/, /хэрхэн өвд/, /өвдөлт(ий)?н шинж/, /хатгуул/, /базал/, /шахаж/, /дарж байгаа юм шиг/, /юутай (зүйрл|адил)/, /describe/, /what (does|is) the pain like/, /character/],
   }),
   t({
     id: "severity",
@@ -76,7 +76,7 @@ export const TOPICS = [
     id: "radiation",
     kind: "hpi",
     label: { mn: "Дамжилт", en: "Radiation" },
-    patterns: [/дамж/, /тарх/, /(гар|эрүү|мөр|нуруу|хүзүү) руу/, /өөр (газар|хэсэг|тийш) (руу)?/, /radiat/, /spread/, /move anywhere/],
+    patterns: [/дамж/, /тарх/, /(гар|эрүү|мөр|нуруу|хүзүү)[^.?]{0,12}\s(руу|рүү)/, /өөр (газар|хэсэг|тийш) (руу)?/, /radiat/, /spread/, /move anywhere/],
   }),
   t({
     id: "progression",
@@ -89,13 +89,13 @@ export const TOPICS = [
     id: "aggravating",
     kind: "hpi",
     label: { mn: "Ихэсгэдэг хүчин зүйл", en: "Aggravating factors" },
-    patterns: [/юу(наас)? .*(ихэс|дорд|хүндэр)/, /(хэзээ|ямар үед) .*(ихэс|дорд)/, /(хөдлө|алха|амьсгал|ханиал|хоол ид|идэх|ачаа).*(өвд|ихэс|дорд)/, /worse (when|with)/, /aggravat/, /makes it worse/],
+    patterns: [/юу(наас)? .*(ихэс|дорд|хүндэр)/, /(хэзээ|ямар үед) .*(ихэс|дорд)/, /(хөдлө|алха|амьсгал|ханиал|хоол ид|идэх|ачаа|хийхээр).*(өвд|ихэс|дорд|нэмэгд)/, /((юу|хэзээ|ямар үед).*|(х|г)(ад|эд|од|өд|аар|ээр|оор|өөр) |үед )улам (өвд|ихэс|хүнд|муу|дорд)/, /worse (when|with)/, /aggravat/, /makes it worse/],
   }),
   t({
     id: "relieving",
     kind: "hpi",
     label: { mn: "Намдаадаг хүчин зүйл", en: "Relieving factors" },
-    patterns: [/намд/, /багас(гадаг|даг|дог|ах|на)/, /гайгүй болдог/, /хөнгөр/, /юу(наас)? .*(дээрдэ|зүгээр бол)/, /relie/, /better (when|with)/, /makes it better/, /амрахаар/],
+    patterns: [/намд/, /багас(гадаг|даг|дог|ах|на)/, /гайгүй болдог/, /хөнгөр/, /юу(наас)? .*(дээрдэ|зүгээр бол)/, /дээрдд?(эг|ог)/, /гадаа гар(ахаар|ахад|аад|вал)/, /цэвэр агаар/, /relie/, /better (when|with)/, /makes it better/, /амрахаар/],
   }),
   t({
     id: "previous_episodes",
@@ -117,7 +117,7 @@ export const TOPICS = [
     kind: "symptom",
     label: { mn: "Цээжний өвдөлт", en: "Chest pain" },
     patterns: [/цээж/, /chest pain/, /chest/],
-    exclude: [/цээж.*(рентген|зураг)/],
+    exclude: [/цээж.*(рентген|зураг|чагна|сонсо|үзье)/],
     defaultNegative: "Үгүй, цээж өвдөхгүй байна.",
   }),
   t({
@@ -125,7 +125,7 @@ export const TOPICS = [
     kind: "symptom",
     label: { mn: "Хэвлийн өвдөлт", en: "Abdominal pain" },
     patterns: [/гэдэс/, /хэвлий/, /ходоод/, /abdom/, /stomach/, /belly/],
-    exclude: [/гэдэс (сайн )?(хөөх|дүүр)/],
+    exclude: [/гэдэс (сайн )?(хөөх|дүүр)/, /(гэдэс|хэвлий).*(тэмт|дарж үз|үзье)/],
     defaultNegative: "Үгүй, гэдэс өвдөхгүй байна.",
   }),
   t({
@@ -192,7 +192,7 @@ export const TOPICS = [
     id: "fever",
     kind: "symptom",
     label: { mn: "Халуурах", en: "Fever" },
-    patterns: [/халуу?р/, /халуун (бай|гар|хэмж)/, /температур/, /fever/, /temperature/],
+    patterns: [/халуу?р/, /халуун (бай|гар|хэмж|хэд)/, /биеийн халуун/, /температур/, /fever/, /temperature/],
     exclude: [/температур(ыг)? (хэмжье|хэмжих|үзье)/],
     defaultNegative: "Үгүй, халуураагүй.",
   }),
@@ -380,7 +380,7 @@ export const TOPICS = [
     id: "allergies",
     kind: "history",
     label: { mn: "Харшил", en: "Allergies" },
-    patterns: [/харшил/, /allerg/],
+    patterns: [/харшил/, /харш(даг|дог|сан|ах)/, /allerg/],
   }),
   t({
     id: "family_history",
@@ -418,7 +418,8 @@ export const TOPICS = [
     id: "living_situation",
     kind: "history",
     label: { mn: "Амьдрах орчин", en: "Living situation" },
-    patterns: [/хэнтэй (амьдар|хамт)/, /хаана амьдар/, /гэр(т)?ээ ганцаар/, /орон сууц/, /(^|\s)гэрт(\s|$)/, /live with/, /live alone/, /where do you live/],
+    patterns: [/хэнтэй (амьдар|хамт)/, /хаана амьдар/, /гэр(т)?ээ ганцаар/, /орон сууц/, /(^|\s)гэрт(\s|$)/, /юугаар (халаа|галла)/, /галлад(аг|ог)/, /халаалт/, /зуух/, /түлш/, /нүүрс/, /(^|\s)гэр үү/, /байр уу/, /live with/, /live alone/, /where do you live/, /heat(ing)? (your|the) (home|house)/],
+    suppressedBy: ["sick_contacts"],
   }),
   t({
     id: "exercise",
@@ -460,7 +461,7 @@ export const TOPICS = [
     id: "sick_contacts",
     kind: "history",
     label: { mn: "Өвчтэй хүнтэй харьцсан", en: "Sick contacts" },
-    patterns: [/(ойр|хажуу|хамт|орчин).*(өвчтэй|ханиад|ханиалга|томуу)/, /гэр.*(ханиад|ханиалга|томуу)/, /хэн нэг.*(өвчтэй|ханиад)/, /халдвар/, /хавьтал/, /sick contact/, /anyone (else )?(sick|ill)/, /exposure/],
+    patterns: [/(ойр|хажуу|хамт|орчин).*(өвчтэй|ханиад|ханиалга|томуу|зовиур)/, /(өөр хүн|гэрийн хүмүүс|гэр бүлийн (гишүүд|хүмүүс)|хүүхдүүд|хамт амьдардаг).*(өвд|өвчтэй|зовиур|ханиа|бөөлж)/, /гэр.*(ханиад|ханиалга|томуу)/, /хэн нэг.*(өвчтэй|ханиад)/, /халдвар/, /хавьтал/, /sick contact/, /anyone (else )?(sick|ill)/, /exposure/],
   }),
   t({
     id: "vaccination",
@@ -480,7 +481,7 @@ export const TOPICS = [
     id: "physical_exam",
     kind: "exam",
     label: { mn: "Бодит үзлэг", en: "Physical examination" },
-    patterns: [/үзлэг/, /үзэж (болох|үзье)/, /сонсож үз/, /чагнуур/, /тэмтрэ/, /дарж үз/, /examin/, /listen to your/, /palpat/],
+    patterns: [/үзлэг/, /үзэж (болох|үзье)/, /сонсож үз/, /чагнуур/, /чагна/, /тэмт(рэ|эр)/, /дарж үз/, /examin/, /listen to your/, /palpat/],
   }),
   t({
     id: "investigations",
@@ -500,7 +501,7 @@ export const TOPICS = [
     id: "identity",
     kind: "meta",
     label: { mn: "Нэр, нас", en: "Name / age" },
-    patterns: [/нэр(ийг)? (хэн|чинь|тань)/, /таны нэр/, /хэдэн настай/, /нас(аа|ыг|тай)/, /your name/, /how old/],
+    patterns: [/нэр(ийг)? (хэн|чинь|тань)/, /таны нэр/, /хэн гэдэг/, /хэдэн настай/, /нас(аа|ыг|тай)/, /your name/, /how old/],
   }),
   t({
     id: "concerns",
@@ -519,11 +520,11 @@ export const TOPICS = [
     id: "broad",
     kind: "meta",
     label: { mn: "Ерөнхий асуулт", en: "Broad question" },
-    patterns: [/бүгдийг/, /бүх (зүйл|юм|мэдээлэл)/, /дэлгэрэнгүй (ярь|хэл)/, /(ярьж|хэлж) өгөөч/, /юу болсныг (ярь|хэл)/, /юу болсон (юм )?(бэ|вэ)/, /юугаар (зов|өвд)/, /яагаад ирсэн/, /юу (зовоож|санаа зовоож) байна/, /ямар зовиур(тай|аар)/, /тайлбарлаад/, /tell me (everything|more|about)/, /what (brings|brought) you/, /what happened/,
+    patterns: [/бүгдийг/, /бүх (зүйл|юм|мэдээлэл)/, /дэлгэрэнгүй (ярь|хэл)/, /(ярьж|хэлж) өгөөч/, /юу болсныг (ярь|хэл)/, /юу болсон (юм )?(бэ|вэ)/, /юугаар (зов|өвд)/, /юу болоод .*ирс/, /яагаад ирсэн/, /юу (зовоож|санаа зовоож) байна/, /ямар зовиур(тай|аар)/, /тайлбарлаад/, /tell me (everything|more|about)/, /what (brings|brought) you/, /what happened/,
       // How the patient feels overall: "Бие нь яаж байна?", "Та яаж байна?", "Яасан бэ?"
       /би(е|еийн байдал)( (нь|чинь|тань|таны))? (яаж|ямар|ямархуу) байна/, /^(та )?(яаж|ямар) байна( (даа|вэ|уу))?$/,
       /яасан (бэ|вэ|юм)/, /юу болоо (вэ|бэ)/, /ямар (асуудлаар|зовиураар|шалтгаанаар) ирс/, /юугаар ирс/, /how (are|do) you( feel(ing)?)?\b/],
-    suppressedBy: ["associated_general"],
+    suppressedBy: ["associated_general", "relieving", "aggravating"],
   }),
   t({
     id: "diagnosis_request",

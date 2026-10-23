@@ -12,8 +12,8 @@ import { ProviderError, type PatientProvider } from "./types";
  * configuration change (PATIENT_PROVIDER); the chat UI and session logic
  * are unaffected.
  */
-export function createPatientProvider(config: AppConfig = getConfig()): PatientProvider {
-  switch (config.PATIENT_PROVIDER) {
+export function createPatientProvider(config: AppConfig = getConfig(), id: AppConfig["PATIENT_PROVIDER"] = config.PATIENT_PROVIDER): PatientProvider {
+  switch (id) {
     case "mock":
       return new MockPatientProvider();
     case "gemini":
@@ -28,6 +28,7 @@ export function createPatientProvider(config: AppConfig = getConfig()): PatientP
 }
 
 let cached: PatientProvider | null = null;
+let cachedBackup: PatientProvider | null | undefined;
 
 /**
  * A misconfigured provider (e.g. missing API key) falls back to the mock
@@ -47,6 +48,23 @@ export function getPatientProvider(): PatientProvider {
   return cached;
 }
 
-export function setPatientProviderForTests(provider: PatientProvider | null) {
+/** The PATIENT_BACKUP_PROVIDER model, or null when none is configured (or it is misconfigured). */
+export function getBackupProvider(): PatientProvider | null {
+  if (cachedBackup !== undefined) return cachedBackup;
+  const config = getConfig();
+  const id = config.PATIENT_BACKUP_PROVIDER;
+  cachedBackup = null;
+  if (id !== "none" && id !== config.PATIENT_PROVIDER) {
+    try {
+      cachedBackup = createPatientProvider(config, id);
+    } catch (error) {
+      console.warn(`[provider] backup "${id}" unavailable: ${(error as Error).message}`);
+    }
+  }
+  return cachedBackup;
+}
+
+export function setPatientProviderForTests(provider: PatientProvider | null, backup: PatientProvider | null = null) {
   cached = provider;
+  cachedBackup = backup;
 }

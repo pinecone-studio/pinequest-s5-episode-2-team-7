@@ -18,7 +18,8 @@ export type ValidationIssueCode =
   | "undisclosed_fact"
   | "out_of_character"
   | "contradiction"
-  | "ungrounded";
+  | "ungrounded"
+  | "repetitive";
 
 export interface ValidationIssue {
   code: ValidationIssueCode;
@@ -74,6 +75,8 @@ export function validatePatientReply(args: {
   const text = reply.trim();
   if (!text) return [{ code: "empty", detail: "Хоосон хариулт" }];
   if (text.length > MAX_REPLY_CHARS) issues.push({ code: "too_long", detail: `${text.length} тэмдэгт` });
+  const loop = repeatedPhrase(text);
+  if (loop) issues.push({ code: "repetitive", detail: `"${loop}" давтагдсан` });
 
   const letters = text.match(/\p{L}/gu) ?? [];
   const cyrillic = text.match(/\p{Script=Cyrillic}/gu) ?? [];
@@ -142,4 +145,27 @@ export function validatePatientReply(args: {
     issues.push({ code: "contradiction", detail: "Байхгүй шинж тэмдгийг үгүйсгээгүй" });
   }
   return issues;
+}
+
+/**
+ * Small models sometimes get stuck ("сайн мэдэхгүй нь, сайн мэдэхгүй нь…").
+ * Returns the looping phrase when a sentence repeats or any three-word phrase
+ * occurs three times; null for normal speech ("Сайн, сайн байна уу").
+ */
+export function repeatedPhrase(text: string): string | null {
+  const sentences = text.split(/(?<=[.!?…])\s+/).map((x) => normalizeQuestion(x)).filter((x) => x.split(" ").length >= 3);
+  const seen = new Set<string>();
+  for (const sentence of sentences) {
+    if (seen.has(sentence)) return sentence;
+    seen.add(sentence);
+  }
+  const words = normalizeQuestion(text).split(" ").filter(Boolean);
+  const counts = new Map<string, number>();
+  for (let i = 0; i + 3 <= words.length; i++) {
+    const phrase = words.slice(i, i + 3).join(" ");
+    const n = (counts.get(phrase) ?? 0) + 1;
+    if (n >= 3) return phrase;
+    counts.set(phrase, n);
+  }
+  return null;
 }

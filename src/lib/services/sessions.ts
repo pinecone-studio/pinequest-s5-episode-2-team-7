@@ -9,7 +9,7 @@ import { getDb } from "@/lib/db/client";
 import { cases, diagnosisSubmissions, disclosedFacts, evaluations, interviewSessions, messages, users, type MessageRow, type SessionRow } from "@/lib/db/schema";
 import { evaluateInterview } from "@/lib/evaluation/evaluator";
 import type { TranscriptTurn } from "@/lib/patient/context";
-import { getPatientProvider } from "@/lib/patient/providers";
+import { getBackupProvider, getPatientProvider } from "@/lib/patient/providers";
 import type { ProviderId } from "@/lib/patient/providers/types";
 import { openingMessage, simulateTurn, SimulatorError } from "@/lib/patient/simulator";
 import type { TopicId } from "@/lib/patient/topics";
@@ -148,7 +148,7 @@ export async function askQuestion(
         turnIndex: session.questionCount,
         emotionalState: emotion ? EMOTIONS[emotion].persona : undefined,
       },
-      { provider: getPatientProvider(), fallback: config.PATIENT_FALLBACK_PROVIDER, intentMode: config.INTENT_CLASSIFIER, timeoutMs: config.PROVIDER_TIMEOUT_MS, onSentence },
+      { provider: getPatientProvider(), backup: getBackupProvider(), fallback: config.PATIENT_FALLBACK_PROVIDER, intentMode: config.INTENT_CLASSIFIER, timeoutMs: config.PROVIDER_TIMEOUT_MS, onSentence },
     );
   } catch (error) {
     if (error instanceof SimulatorError) {

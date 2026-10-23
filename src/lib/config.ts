@@ -14,6 +14,8 @@ const EnvSchema = z.object({
 
   PATIENT_PROVIDER: z.enum(["mock", "gemini", "anthropic", "openai_compatible", "finetuned"]).default("mock"),
   PATIENT_FALLBACK_PROVIDER: z.enum(["mock", "none"]).default("mock"),
+  /** Second model to try when the main one is rate-limited, down or times out (before templates). */
+  PATIENT_BACKUP_PROVIDER: z.enum(["none", "gemini", "anthropic", "openai_compatible", "finetuned"]).default("none"),
   INTENT_CLASSIFIER: z.enum(["keyword", "hybrid"]).default("keyword"),
   FEEDBACK_NARRATIVE: z.enum(["off", "llm"]).default("off"),
   PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
