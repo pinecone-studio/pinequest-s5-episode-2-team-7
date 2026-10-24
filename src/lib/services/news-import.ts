@@ -18,6 +18,8 @@ export interface ImportOptions {
   /** Older (or undated) items are ignored. */
   maxAgeDays?: number;
   now?: Date;
+  /** Publish imported items at once instead of keeping them as drafts (NEWS_AUTO_PUBLISH). */
+  publish?: boolean;
 }
 
 export interface FeedResult {
@@ -60,7 +62,7 @@ const bodyFor = (sourceName: string) =>
 export async function importNewsFromFeeds(options: ImportOptions = {}): Promise<ImportResult> {
   const translate = options.translate === undefined ? getNewsTranslator() : options.translate;
   if (!translate) throw new ApiError(503, "not_configured", "Мэдээ орчуулахын тулд GEMINI_API_KEY тохируулна уу.");
-  const { feeds = NEWS_FEEDS, fetchImpl = fetch, limitPerFeed = 5, maxTotal = 10, maxAgeDays = 30, now = new Date() } = options;
+  const { feeds = NEWS_FEEDS, fetchImpl = fetch, limitPerFeed = 5, maxTotal = 10, maxAgeDays = 30, now = new Date(), publish = false } = options;
   const oldest = now.getTime() - maxAgeDays * DAY_MS;
 
   const result: ImportResult = { created: 0, skipped: 0, failed: 0, feeds: [] };
@@ -114,9 +116,11 @@ export async function importNewsFromFeeds(options: ImportOptions = {}): Promise<
         category: translation.category ?? feed.category,
         sourceName: feed.name,
         sourceUrl: item.link,
+        imageUrl: item.image,
         origin: "rss",
         originalTitle: item.title.slice(0, 500),
-        status: "draft",
+        status: publish ? "published" : "draft",
+        publishedAt: publish ? (item.publishedAt ?? now) : null,
       })
       // A concurrent run may have stored the same link meanwhile.
       .onConflictDoNothing({ target: newsArticles.sourceUrl })
@@ -125,4 +129,22 @@ export async function importNewsFromFeeds(options: ImportOptions = {}): Promise<
     else result.skipped++;
   }
   return result;
+}
+
+let refreshing: Promise<unknown> | null = null;
+
+/**
+ * With NEWS_AUTO_PUBLISH=true, import again when nothing was published in the
+ * last 12 hours (or ever). Runs at most once at a time per server instance.
+ */
+export async function refreshNewsIfStale(newest: Date | null, now = new Date()): Promise<void> {
+  if (refreshing) return;
+  if (newest && now.getTime() - newest.getTime() < 12 * 60 * 60 * 1000) return;
+  refreshing = importNewsFromFeeds({ publish: true })
+    .then((r) => console.info(`[news] auto import: ${r.created} created, ${r.skipped} skipped, ${r.failed} failed`))
+    .catch((error) => console.warn(`[news] auto import failed: ${error instanceof Error ? error.message : error}`))
+    .finally(() => {
+      refreshing = null;
+    });
+  await refreshing;
 }

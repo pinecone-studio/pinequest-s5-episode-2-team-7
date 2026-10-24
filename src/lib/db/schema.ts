@@ -188,6 +188,8 @@ export const newsArticles = pgTable(
     category: text("category").notNull().default("general"),
     sourceName: text("source_name"),
     sourceUrl: text("source_url"),
+    /** Picture the feed itself publishes for the item (media:content / thumbnail / enclosure). */
+    imageUrl: text("image_url"),
     origin: text("origin", { enum: ["manual", "rss"] }).notNull().default("manual"),
     /** Untranslated headline of an imported article, for the reviewing admin. */
     originalTitle: text("original_title"),

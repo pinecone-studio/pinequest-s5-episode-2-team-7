@@ -36,6 +36,8 @@ const EnvSchema = z.object({
 
   /** Bearer token Vercel Cron sends to /api/cron/news-import (unset = endpoint disabled). */
   CRON_SECRET: z.string().optional(),
+  /** "true": imported RSS news is published at once (no admin review), and an empty feed triggers an import. */
+  NEWS_AUTO_PUBLISH: z.enum(["true", "false"]).default("false"),
 
   // Optional voice features (all off when unset).
   CHIMEGE_STT_TOKEN: z.string().optional(),
