@@ -48,8 +48,10 @@ async function createDraft(overrides: Record<string, unknown> = {}) {
 }
 
 describe("health news", () => {
-  it("requires login to read news", async () => {
-    expect((await listNews(req("/api/news"), noCtx)).status).toBe(401);
+  it("lets anyone read published news (the iOS app reads it before sign-in)", async () => {
+    const response = await listNews(req("/api/news"), noCtx);
+    expect(response.status).toBe(200);
+    expect(Array.isArray((await response.json()).news)).toBe(true);
   });
 
   it("keeps admin endpoints away from students", async () => {
