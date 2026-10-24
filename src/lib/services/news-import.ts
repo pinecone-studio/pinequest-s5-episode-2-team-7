@@ -132,14 +132,19 @@ export async function importNewsFromFeeds(options: ImportOptions = {}): Promise<
 }
 
 let refreshing: Promise<unknown> | null = null;
+let lastAttempt = 0;
 
 /**
  * With NEWS_AUTO_PUBLISH=true, import again when nothing was published in the
- * last 12 hours (or ever). Runs at most once at a time per server instance.
+ * last 12 hours, or when fewer than 5 articles are published (retried at most
+ * every 5 minutes, e.g. after a translator outage). One run at a time per instance.
  */
-export async function refreshNewsIfStale(newest: Date | null, now = new Date()): Promise<void> {
+export async function refreshNewsIfStale(newest: Date | null, count: number, now = new Date()): Promise<void> {
   if (refreshing) return;
-  if (newest && now.getTime() - newest.getTime() < 12 * 60 * 60 * 1000) return;
+  const stale = !newest || now.getTime() - newest.getTime() >= 12 * 60 * 60 * 1000;
+  const thin = count < 5 && now.getTime() - lastAttempt >= 5 * 60 * 1000;
+  if (!stale && !thin) return;
+  lastAttempt = now.getTime();
   refreshing = importNewsFromFeeds({ publish: true })
     .then((r) => console.info(`[news] auto import: ${r.created} created, ${r.skipped} skipped, ${r.failed} failed`))
     .catch((error) => console.warn(`[news] auto import failed: ${error instanceof Error ? error.message : error}`))

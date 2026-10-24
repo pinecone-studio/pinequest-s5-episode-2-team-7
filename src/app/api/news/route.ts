@@ -15,7 +15,7 @@ export const GET = route(async (request) => {
   const news = await listPublishedNews(50, category);
   if (getConfig().NEWS_AUTO_PUBLISH === "true" && !category) {
     const newest = news[0]?.publishedAt ? new Date(news[0].publishedAt) : null;
-    after(() => refreshNewsIfStale(newest));
+    after(() => refreshNewsIfStale(newest, news.length));
   }
-  return NextResponse.json({ news, refreshing: news.length === 0 && getConfig().NEWS_AUTO_PUBLISH === "true" });
+  return NextResponse.json({ news, refreshing: news.length < 5 && getConfig().NEWS_AUTO_PUBLISH === "true" });
 });
