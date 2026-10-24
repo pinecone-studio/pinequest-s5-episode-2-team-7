@@ -18,7 +18,7 @@ import { EXAM_ANSWERS_KEY } from "@/lib/quiz-client";
 
 interface ExamQuestion {
   id: string;
-  kind: "open" | "choice";
+  kind: "open" | "choice" | "case";
   prompt: string;
   options: string[];
 }
