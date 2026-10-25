@@ -12,6 +12,7 @@ export const en: Strings = {
     themeDark: "Dark mode",
   },
   nav: {
+    practice: "Practice",
     cases: "Cases",
     history: "History",
     news: "News",

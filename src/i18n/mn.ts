@@ -14,6 +14,7 @@ export const mn = {
     themeDark: "Харанхуй горим",
   },
   nav: {
+    practice: "Дадлага",
     cases: "Кейсүүд",
     history: "Түүх",
     news: "Мэдээ",

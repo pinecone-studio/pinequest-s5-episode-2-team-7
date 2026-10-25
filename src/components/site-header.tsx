@@ -7,9 +7,18 @@ import { buttonClass } from "./ui";
 
 const navLink = "shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-muted transition-colors hover:bg-sunken hover:text-ink";
 
+/** Sections open without an account (the practice flow signs in as a guest). */
+const publicLinks = [
+  { href: "/", label: t.nav.practice },
+  { href: "/demo", label: t.nav.demo },
+  { href: "/atlas", label: t.nav.anatomy },
+  { href: "/vr", label: t.nav.vr },
+];
+
 /** Signed-in sections; on phones they scroll in a row under the header. */
 function sectionLinks(admin: boolean) {
   return [
+    { href: "/", label: t.nav.practice },
     { href: "/dashboard", label: t.nav.cases },
     { href: "/shuulleg", label: t.nav.shuulleg },
     { href: "/atlas", label: t.nav.anatomy },
@@ -26,7 +35,7 @@ export async function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-canvas/75 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4">
-        <Link href={session ? "/dashboard" : "/"} className="flex shrink-0 items-center gap-2 whitespace-nowrap font-display font-bold text-ink">
+        <Link href="/" className="flex shrink-0 items-center gap-2 whitespace-nowrap font-display font-bold text-ink">
           <Logo />
           <span>
             {t.app.name} <span className="hidden text-accent min-[420px]:inline">{t.app.nameAccent}</span>
@@ -49,9 +58,13 @@ export async function SiteHeader() {
             </>
           ) : (
             <>
-              <Link href="/demo" className={`${navLink} hidden sm:inline`}>
-                {t.nav.demo}
-              </Link>
+              <span className="hidden items-center gap-1 lg:flex">
+                {publicLinks.map((l) => (
+                  <Link key={l.href} href={l.href} className={navLink}>
+                    {l.label}
+                  </Link>
+                ))}
+              </span>
               <Link href="/login" className={navLink}>
                 {t.nav.login}
               </Link>
@@ -63,15 +76,13 @@ export async function SiteHeader() {
           <ThemeToggle />
         </nav>
       </div>
-      {session && (
-        <nav aria-label={t.nav.mainMenu} className="flex gap-1 overflow-x-auto border-t border-line px-3 py-1.5 text-sm font-medium [scrollbar-width:none] lg:hidden">
-          {sectionLinks(session.role === "admin").map((l) => (
-            <Link key={l.href} href={l.href} className={navLink}>
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-      )}
+      <nav aria-label={t.nav.mainMenu} className="flex gap-1 overflow-x-auto border-t border-line px-3 py-1.5 text-sm font-medium [scrollbar-width:none] lg:hidden">
+        {(session ? sectionLinks(session.role === "admin") : publicLinks).map((l) => (
+          <Link key={l.href} href={l.href} className={navLink}>
+            {l.label}
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }
