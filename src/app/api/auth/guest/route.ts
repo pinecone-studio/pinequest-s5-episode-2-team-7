@@ -14,7 +14,8 @@ export const POST = route(async (request) => {
   const existing = auth ? await getUser(auth.userId) : null;
   if (existing) return NextResponse.json({ user: existing, guest: false });
 
-  const limit = checkRateLimit(`guest:${clientKey(request)}`, 10);
+  // Generous: a whole classroom or judging room may share one IP.
+  const limit = checkRateLimit(`guest:${clientKey(request)}`, 30);
   if (!limit.ok) throw Errors.rateLimited(limit.retryAfterSeconds);
   const user = await createGuestUser();
   const response = NextResponse.json({ user, guest: true }, { status: 201 });

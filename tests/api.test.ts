@@ -137,6 +137,12 @@ describe("guest access (practice flow)", () => {
     expect((await again.json()).user.id).toBe((await first.json()).user.id);
   });
 
+  it("lets a whole room behind one IP start as guests", async () => {
+    for (let i = 0; i < 25; i++) {
+      expect((await guest(req("/api/auth/guest", { method: "POST" }), noCtx)).status).toBe(201);
+    }
+  });
+
   it("keeps a logged-in student's own account", async () => {
     const response = await guest(req("/api/auth/guest", { method: "POST", cookie: studentCookie }), noCtx);
     expect((await response.json()).user.email).toBe("student@test.mn");
@@ -570,6 +576,15 @@ describe("Шүүлэгч debrief", () => {
     expect(debrief.source).toBe("model");
     expect(debrief.followUps).toEqual(reply.followUps);
     expect(debrief.verdict).toBe("correct");
+  });
+
+  it("never asks the fine-tuned patient model to judge (it is a patient role-play LoRA)", async () => {
+    const { id, auth } = await finishedSession();
+    const model = new ScriptedModel(() => "{}");
+    Object.defineProperty(model, "id", { value: "finetuned" });
+    const debrief = await generateDebrief(auth, id, model);
+    expect(model.calls).toBe(0);
+    expect(debrief.source).toBe("rubric");
   });
 
   it("rejects an English reply", async () => {

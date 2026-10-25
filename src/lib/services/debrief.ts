@@ -54,7 +54,8 @@ export async function generateDebrief(auth: SessionData, sessionId: string, prov
   if (!view.evaluation) throw Errors.notFound("Үнэлгээ");
   const base = fallbackDebrief(view.evaluation.result);
   if (view.evaluation.narrative) base.summary = view.evaluation.narrative;
-  if (!(provider instanceof ChatModelProvider)) return base;
+  // The fine-tuned model is a patient role-play LoRA, not a judge: slow, and its answer would be discarded.
+  if (!(provider instanceof ChatModelProvider) || provider.id === "finetuned") return base;
 
   const { result } = view.evaluation;
   const facts = {
