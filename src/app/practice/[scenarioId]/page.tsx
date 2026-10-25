@@ -12,7 +12,7 @@ export default async function PracticePage({ params, searchParams }: PageProps<"
   const scenario = getScenario(scenarioId);
   if (!scenario) notFound();
   const c = loadDemoCase(scenario.caseId).public;
-  const { offline } = await searchParams;
+  const { offline, debug } = await searchParams;
 
   return (
     <PracticeScenario
@@ -20,12 +20,13 @@ export default async function PracticePage({ params, searchParams }: PageProps<"
       info={{
         title: scenario.title,
         intro: scenario.intro,
-        setting: c.setting.mn,
+        setting: scenario.setting ?? c.setting.mn,
         difficulty: c.difficulty,
         timeCritical: c.timeCritical,
         patient: { name: c.patient.name, age: c.patient.age, sex: c.patient.sex },
       }}
       forceOffline={offline === "1"}
+      debug={debug === "1"}
     />
   );
 }

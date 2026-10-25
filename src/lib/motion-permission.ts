@@ -8,9 +8,10 @@ type OrientationWithPermission = typeof DeviceOrientationEvent & { requestPermis
  * this first, before any other await. Android and desktop need no prompt.
  */
 export async function requestMotionAccess(): Promise<MotionAccess> {
-  if (typeof window === "undefined" || typeof DeviceOrientationEvent === "undefined") return "unsupported";
+  // Desktop Chrome also exposes requestPermission (and grants it) without a gyroscope: phones/tablets only.
+  if (typeof window === "undefined" || typeof DeviceOrientationEvent === "undefined" || !("ontouchstart" in window)) return "unsupported";
   const request = (DeviceOrientationEvent as OrientationWithPermission).requestPermission;
-  if (typeof request !== "function") return "ontouchstart" in window ? "granted" : "unsupported";
+  if (typeof request !== "function") return "granted";
   try {
     return (await request()) === "granted" ? "granted" : "denied";
   } catch {

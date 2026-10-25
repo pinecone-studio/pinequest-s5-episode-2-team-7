@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Play, WifiOff } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { t } from "@/i18n";
@@ -9,6 +9,7 @@ import { requestMotionAccess, type MotionAccess } from "@/lib/motion-permission"
 import type { Scenario } from "@/lib/scenarios";
 import { Alert, Button, Spinner, buttonClass } from "../ui";
 import { IntroCard, type IntroInfo } from "./intro-card";
+import { SceneView } from "./scene-view";
 import { VitalsStrip } from "./vitals-strip";
 
 /** Where the patient conversation runs: the real API session, or the scripted offline demo. */
@@ -22,7 +23,7 @@ async function startOnline(caseId: string): Promise<string> {
   return withRetry(() => api.startSession(caseId));
 }
 
-export function PracticeScenario({ scenario, info, forceOffline = false }: { scenario: Scenario; info: IntroInfo; forceOffline?: boolean }) {
+export function PracticeScenario({ scenario, info, forceOffline = false, debug = false }: { scenario: Scenario; info: IntroInfo; forceOffline?: boolean; debug?: boolean }) {
   const [stage, setStage] = useState<Stage>({ name: "intro" });
   const busy = useRef(false);
 
@@ -47,7 +48,7 @@ export function PracticeScenario({ scenario, info, forceOffline = false }: { sce
   }
 
   if (stage.name === "scene") {
-    return <ScenePlaceholder scenario={scenario} mode={stage.mode} onBack={() => setStage({ name: "intro" })} />;
+    return <SceneView scenario={scenario} mode={stage.mode} motion={stage.motion} debug={debug} onBack={() => setStage({ name: "intro" })} />;
   }
 
   return (
@@ -80,29 +81,6 @@ export function PracticeScenario({ scenario, info, forceOffline = false }: { sce
           )}
         </Button>
       </IntroCard>
-    </main>
-  );
-}
-
-/** Stand-in until the 360° viewer lands (group E): proves the session and the patient link work. */
-function ScenePlaceholder({ scenario, mode, onBack }: { scenario: Scenario; mode: PracticeMode; onBack: () => void }) {
-  const patientHref = mode.kind === "online" ? `/interview/${mode.sessionId}` : `/demo/${mode.offlineCaseId}`;
-  return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
-      {mode.kind === "offline" && (
-        <p className="mb-4 flex items-center gap-2 text-sm text-muted">
-          <WifiOff size={16} aria-hidden /> {t.practice.offlineNote}
-        </p>
-      )}
-      <p className="mb-4 text-muted">{scenario.panorama}</p>
-      <div className="flex flex-wrap gap-3">
-        <Link href={patientHref} className={buttonClass("primary", "lg")}>
-          {t.practice.hotspots.patient}
-        </Link>
-        <Button variant="ghost" onClick={onBack}>
-          {t.practice.back}
-        </Button>
-      </div>
     </main>
   );
 }
