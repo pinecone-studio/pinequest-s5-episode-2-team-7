@@ -50,3 +50,14 @@ export async function getUser(id: string): Promise<PublicUser | null> {
   const [row] = await db.select().from(users).where(eq(users.id, id));
   return row ? { id: row.id, name: row.name, email: row.email, role: row.role } : null;
 }
+
+/** Guest account for the no-login practice flow: a student with an unusable password. */
+export async function createGuestUser(): Promise<PublicUser> {
+  const db = await getDb();
+  const id = crypto.randomUUID();
+  const [row] = await db
+    .insert(users)
+    .values({ name: "Зочин", email: `guest-${id}@guest.local`, passwordHash: await hashPassword(crypto.randomUUID() + crypto.randomUUID()), role: "student" })
+    .returning();
+  return { id: row.id, name: row.name, email: row.email, role: row.role };
+}

@@ -2,6 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import caseAvatars from "../data/avatars.json";
 import { POST as login } from "@/app/api/auth/login/route";
 import { POST as register } from "@/app/api/auth/register/route";
+import { POST as guest } from "@/app/api/auth/guest/route";
 import { GET as adminCases, POST as adminCreateCase } from "@/app/api/admin/cases/route";
 import { POST as adminImport } from "@/app/api/admin/cases/import/route";
 import { GET as adminTrainingExport } from "@/app/api/admin/training/export/route";
@@ -115,6 +116,31 @@ describe("authentication", () => {
     const cookie = `pq_session=${await sealSession({ userId: "99444504-f1da-4066-95e0-067c7dde09da", role: "student", name: "Оюутан" })}`;
     const response = await startSession(req("/api/sessions", { body: { caseId: "chest-pain-01" }, cookie }), noCtx);
     expect(response.status).toBe(401);
+  });
+});
+
+describe("guest access (practice flow)", () => {
+  it("signs in a guest student who can start a session, and reuses it", async () => {
+    const first = await guest(req("/api/auth/guest", { method: "POST" }), noCtx);
+    expect(first.status).toBe(201);
+    const cookie = cookieFrom(first);
+    expect((await listSessions(req("/api/sessions", { cookie }), noCtx)).status).toBe(200);
+    expect((await startSession(req("/api/sessions", { body: { caseId: "chest-pain-01" }, cookie }), noCtx)).status).toBe(201);
+
+    const again = await guest(req("/api/auth/guest", { method: "POST", cookie }), noCtx);
+    expect(again.status).toBe(200);
+    expect(again.headers.get("set-cookie")).toBeNull();
+    expect((await again.json()).user.id).toBe((await first.json()).user.id);
+  });
+
+  it("keeps a logged-in student's own account", async () => {
+    const response = await guest(req("/api/auth/guest", { method: "POST", cookie: studentCookie }), noCtx);
+    expect((await response.json()).user.email).toBe("student@test.mn");
+  });
+
+  it("replaces a cookie whose user no longer exists", async () => {
+    const cookie = `pq_session=${await sealSession({ userId: "99444504-f1da-4066-95e0-067c7dde09da", role: "student", name: "Оюутан" })}`;
+    expect((await guest(req("/api/auth/guest", { method: "POST", cookie }), noCtx)).status).toBe(201);
   });
 });
 
