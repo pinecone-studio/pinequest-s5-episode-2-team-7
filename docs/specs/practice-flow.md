@@ -63,7 +63,7 @@ It holds **only public, presentational data** — never the diagnosis.
         "family":  { "yaw": -70, "pitch": 0 }
       },
       "family": { "who": "Эхнэр", "lines": ["…", "…", "…"] },
-      "offline": true
+      "offlineCaseId": "offline-chest-pain"
     }
   ]
 }
@@ -79,8 +79,8 @@ It holds **only public, presentational data** — never the diagnosis.
 - `family.lines`: 3–5 short collateral-history lines. They may hint at
   history (e.g. "last month he got chest tightness on the stairs") but must
   **never name the diagnosis or a differential**.
-- `offline`: only `true` for scenarios that have a script in
-  `src/lib/demo/offline-cases.ts` (today only chest pain).
+- `offlineCaseId` (optional): the id of a script in
+  `src/lib/demo/offline-cases.ts` (today only `offline-chest-pain`).
 
 Loader + zod schema in `src/lib/scenarios.ts` (`listScenarios(role)`,
 `getScenario(id)`), reading the JSON at build time (static import).
@@ -155,7 +155,7 @@ toggle button. Hotspot markers are labelled pills with a pulse:
 
 | Hotspot | Action |
 |---|---|
-| **Өвчтөн** | Navigate to the normal interview page for the session created in step 2 (`/interview/[id]`). Offline: `/demo/[caseId]`. |
+| **Өвчтөн** | Navigate to the normal interview page for the session created in step 2 (`/interview/[id]`). Offline: `/demo/[offlineCaseId]`. |
 | **Монитор** | Bottom sheet with the existing `vitals-monitor` fed from `scenario.vitals` + a ГКО tile. |
 | **Гэр бүлийн гишүүн** | Bottom sheet card: `family.who` + `family.lines`. |
 
@@ -195,9 +195,9 @@ New on top of it:
 - **Offline fallback (P0 scenario only):** if `navigator.onLine` is false, or
   guest/session creation still fails after retries, the scenario switches to
   offline mode silently except for the existing offline badge: Өвчтөн goes to
-  `/demo/chest-pain-01`-equivalent offline interview, and the debrief uses the
+  `/demo/offline-chest-pain`, and the debrief uses the
   fallback content. Panoramas and JSON are static, so the scene still loads.
-- Scenarios with `offline: false` show «Сервертэй холбогдож чадсангүй. Дахин
+- Scenarios without `offlineCaseId` show «Сервертэй холбогдож чадсангүй. Дахин
   оролдох» with a retry button instead.
 - **Rehearsal checklist** (day 4): airplane-mode run of `ambulance-chest`;
   iPhone Safari + Android Chrome gyroscope; cold model start (first reply ≤
@@ -206,8 +206,8 @@ New on top of it:
 ## 7. Testing (critical flow only)
 
 - `src/lib/scenarios.test.ts`: the JSON parses; every `caseId` exists in
-  `data/cases`; every `panorama` file exists in `public/`; `offline: true` only
-  where an offline script exists; `family.lines` contain none of the case's
+  `data/cases`; every `panorama` file exists in `public/`; `offlineCaseId` points at an
+  existing offline script; `family.lines` contain none of the case's
   diagnosis/differential aliases.
 - Guest endpoint: creates a user and the cookie authenticates `GET /api/sessions`.
 - Debrief: model failure → fallback has 2–3 follow-ups from the rubric.
