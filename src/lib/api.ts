@@ -5,6 +5,7 @@
  */
 import { t } from "@/i18n";
 import { ClientApiError, apiFetch } from "./fetcher";
+import type { Debrief } from "./evaluation/debrief";
 import type { EvaluationView, MessageView, ProviderBadge, PublicCase, SessionView } from "./views";
 
 export { ClientApiError };
@@ -59,6 +60,7 @@ export const api = {
   ask: (id: string, content: string) => apiFetch<AskResult>(`/api/sessions/${id}/messages`, { method: "POST", json: { content } }),
   submitDiagnosis: (id: string, input: DiagnosisPayload) =>
     apiFetch<{ evaluation: EvaluationView }>(`/api/sessions/${id}/diagnosis`, { method: "POST", json: input }).then((r) => r.evaluation),
+  debrief: (id: string) => apiFetch<{ debrief: Debrief }>(`/api/sessions/${id}/debrief`, { method: "POST" }).then((r) => r.debrief),
   endSession: (id: string) => apiFetch<{ ok: true }>(`/api/sessions/${id}/end`, { method: "POST" }),
 
   /**

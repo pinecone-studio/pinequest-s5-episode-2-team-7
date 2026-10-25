@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { TrainingReviewButtons } from "@/components/admin/training-review-buttons";
 import { EvaluationReport } from "@/components/feedback/evaluation-report";
+import { SessionDebrief } from "@/components/practice/debrief-card";
 import { Alert, buttonClass, Card, PageHeader } from "@/components/ui";
 import { t } from "@/i18n";
 import { ApiError } from "@/lib/api/http";
@@ -49,6 +50,7 @@ export default async function SessionResultPage({ params }: PageProps<"/sessions
         </Card>
       )}
 
+      {view.evaluation && <SessionDebrief sessionId={view.id} />}
       {view.evaluation ? (
         <EvaluationReport
           result={view.evaluation.result}
