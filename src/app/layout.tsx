@@ -21,8 +21,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: { default: "PineQuest AI Patient — Эмнэлзүйн асуумжийн дадлага", template: "%s · PineQuest AI Patient" },
-  description: "Анагаахын оюутнууд AI өвчтөнтэй монгол хэлээр ярилцаж, асуумж авах, онош тавих чадвараа хөгжүүлэх сургалтын симулятор.",
+  title: { default: "PineQuest AI Patient — Эрүүл мэндийн мэргэжилтнүүдийн AI дадлагын орчин", template: "%s · PineQuest AI Patient" },
+  description: "Эрүүл мэндийн мэргэжилтнүүдийн AI дадлагын орчин: 360° орчинд монгол хэлээр ярьдаг AI өвчтөнөөс асуумж авч, онош тавин, шууд үнэлгээ авна.",
 };
 
 export const viewport: Viewport = {
