@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { t } from "@/i18n";
 import { loadOfflineResult } from "@/lib/demo/offline";
+import { fallbackDebrief } from "@/lib/evaluation/debrief";
 import { EvaluationReport } from "../feedback/evaluation-report";
+import { DebriefCard } from "../practice/debrief-card";
 import { EmptyState, Skeleton, buttonClass } from "../ui";
 
 const noop = () => () => {};
@@ -31,14 +33,17 @@ export function OfflineResult({ caseId }: { caseId: string }) {
     );
   }
   return (
-    <EvaluationReport
-      result={data.result}
-      narrative={null}
-      submittedReasoning={data.reasoning || null}
-      confidenceKey={`offline-${caseId}`}
-      messages={data.messages}
-      patientName={data.patientName}
-      casesHref="/demo"
-    />
+    <>
+      <DebriefCard debrief={fallbackDebrief(data.result)} />
+      <EvaluationReport
+        result={data.result}
+        narrative={null}
+        submittedReasoning={data.reasoning || null}
+        confidenceKey={`offline-${caseId}`}
+        messages={data.messages}
+        patientName={data.patientName}
+        casesHref="/demo"
+      />
+    </>
   );
 }
