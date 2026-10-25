@@ -34,7 +34,25 @@ export interface ConsultBackend {
   casesHref: string;
 }
 
+/**
+ * Retries a call that failed for a passing reason (no network, server error,
+ * rate limit); a 4xx answer is final. Waits `delays` ms between attempts.
+ */
+export async function withRetry<T>(fn: () => Promise<T>, delays: number[] = [500, 1500]): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const passing = !(error instanceof ClientApiError) || error.status === 0 || error.status === 429 || error.status >= 500;
+      if (!passing || attempt >= delays.length) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
+    }
+  }
+}
+
 export const api = {
+  /** Signs in as a guest unless already signed in (practice flow, no account needed). */
+  ensureGuest: () => apiFetch<{ user: { id: string; name: string }; guest: boolean }>("/api/auth/guest", { method: "POST" }),
   listCases: () => apiFetch<{ cases: PublicCase[] }>("/api/cases").then((r) => r.cases),
   startSession: (caseId: string) => apiFetch<{ sessionId: string }>("/api/sessions", { method: "POST", json: { caseId } }).then((r) => r.sessionId),
   getSession: (id: string) => apiFetch<{ session: SessionView }>(`/api/sessions/${id}`).then((r) => r.session),
