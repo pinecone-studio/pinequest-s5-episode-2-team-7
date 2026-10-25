@@ -13,6 +13,7 @@ import { GET as listSessions, POST as startSession } from "@/app/api/sessions/ro
 import { GET as getSession } from "@/app/api/sessions/[id]/route";
 import { POST as sendMessage } from "@/app/api/sessions/[id]/messages/route";
 import { POST as submitDiagnosis } from "@/app/api/sessions/[id]/diagnosis/route";
+import { POST as debriefRoute } from "@/app/api/sessions/[id]/debrief/route";
 import { GET as getEvaluation } from "@/app/api/sessions/[id]/evaluation/route";
 import { POST as startAvatarRoute } from "@/app/api/sessions/[id]/avatar/route";
 import { GET as fillerRoute } from "@/app/api/sessions/[id]/filler/route";
@@ -20,7 +21,7 @@ import { GET as replyAudio } from "@/app/api/sessions/[id]/messages/[messageId]/
 import { POST as transcribeRoute } from "@/app/api/speech/transcribe/route";
 import { resetConfigForTests } from "@/lib/config";
 import { wavFromPcm } from "@/lib/speech/chimege";
-import { hashPassword, sealSession } from "@/lib/auth/session";
+import { hashPassword, sealSession, unsealSession } from "@/lib/auth/session";
 import { DEMO_CASE_SOURCES, loadDemoCase } from "@/lib/cases/demo";
 import { eq } from "drizzle-orm";
 import { createPgliteDb, getDb, setDbForTests } from "@/lib/db/client";
@@ -30,6 +31,9 @@ import { MockPatientProvider } from "@/lib/patient/providers/mock";
 import type { PatientProvider } from "@/lib/patient/providers/types";
 import { resetRateLimits } from "@/lib/rate-limit";
 import { seedDemoCases } from "@/lib/services/cases";
+import { generateDebrief } from "@/lib/services/debrief";
+import { ChatModelProvider, type ChatRequest } from "@/lib/patient/providers/base";
+import type { ProviderHealth, ProviderId } from "@/lib/patient/providers/types";
 
 const BASE = "http://localhost:3000";
 
@@ -514,5 +518,73 @@ describe("voice features (Chimege speech, Simli avatar)", () => {
     const simli = calls.find((c) => c.url.includes("simli"));
     expect(JSON.parse(String(simli?.init?.body)).faceId).toBe("face-m");
     expect((await startAvatarRoute(req(`/api/sessions/${id}/avatar`, { body: {}, cookie: otherStudentCookie }), ctx(id))).status).toBe(404);
+  });
+});
+
+describe("Шүүлэгч debrief", () => {
+  class ScriptedModel extends ChatModelProvider {
+    readonly id = "gemini" as ProviderId;
+    readonly model = "scripted";
+    readonly label = "Scripted";
+    calls = 0;
+    constructor(private readonly reply: () => string) {
+      super();
+    }
+    async complete(_request: ChatRequest): Promise<string> {
+      this.calls++;
+      return this.reply();
+    }
+    async health(): Promise<ProviderHealth> {
+      return { ok: true } as ProviderHealth;
+    }
+  }
+
+  async function finishedSession(): Promise<{ id: string; auth: Awaited<ReturnType<typeof unsealSession>> & object }> {
+    const id = await newSession();
+    const response = await submitDiagnosis(req(`/api/sessions/${id}/diagnosis`, { body: { diagnosis: "миокардын шигдээс" }, cookie: studentCookie }), ctx(id));
+    expect(response.status).toBe(201);
+    const auth = await unsealSession(studentCookie.slice("pq_session=".length));
+    return { id, auth: auth! };
+  }
+
+  it("falls back to the rubric when the model fails, after one retry", async () => {
+    const { id, auth } = await finishedSession();
+    const model = new ScriptedModel(() => {
+      throw new Error("rate limited");
+    });
+    const debrief = await generateDebrief(auth, id, model);
+    expect(model.calls).toBe(2);
+    expect(debrief.source).toBe("rubric");
+    expect(debrief.verdict).toBe("correct");
+    expect(debrief.followUps.length).toBeGreaterThanOrEqual(2);
+    expect(debrief.followUps.length).toBeLessThanOrEqual(3);
+  });
+
+  it("uses a valid Mongolian model reply but keeps the rubric score and verdict", async () => {
+    const { id, auth } = await finishedSession();
+    const reply = {
+      summary: "Та өвдөлтийн шинж чанар, дамжилтыг сайн асуусан. Эрсдэлт хүчин зүйлсийг илүү дэлгэрэнгүй асуух хэрэгтэй байсан.",
+      followUps: ["Энэ өвчтөнд яаралтай ямар шинжилгээ хийх вэ?", "Гол судасны ховхролоос хэрхэн ялгах вэ?"],
+    };
+    const debrief = await generateDebrief(auth, id, new ScriptedModel(() => "```json\n" + JSON.stringify(reply) + "\n```"));
+    expect(debrief.source).toBe("model");
+    expect(debrief.followUps).toEqual(reply.followUps);
+    expect(debrief.verdict).toBe("correct");
+  });
+
+  it("rejects an English reply", async () => {
+    const { id, auth } = await finishedSession();
+    const reply = { summary: "Good history taking overall, but the risk factors were not covered.", followUps: ["Which test first?", "How to exclude dissection?"] };
+    expect((await generateDebrief(auth, id, new ScriptedModel(() => JSON.stringify(reply)))).source).toBe("rubric");
+  });
+
+  it("route answers 404 before a diagnosis and 200 after", async () => {
+    const id = await newSession();
+    expect((await debriefRoute(req(`/api/sessions/${id}/debrief`, { method: "POST", cookie: studentCookie }), ctx(id))).status).toBe(404);
+    const done = await finishedSession();
+    const response = await debriefRoute(req(`/api/sessions/${done.id}/debrief`, { method: "POST", cookie: studentCookie }), ctx(done.id));
+    expect(response.status).toBe(200);
+    expect((await response.json()).debrief.verdict).toBe("correct");
+    expect((await debriefRoute(req(`/api/sessions/${done.id}/debrief`, { method: "POST", cookie: otherStudentCookie }), ctx(done.id))).status).toBe(404);
   });
 });
