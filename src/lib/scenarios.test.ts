@@ -10,10 +10,15 @@ const { scenarios } = ScenarioFile.parse(source);
 const cases = new Map(loadDemoCases().map((c) => [c.id, c]));
 const publicDir = fileURLToPath(new URL("../../public", import.meta.url));
 
-/** Whole-word match that also works for Cyrillic (\b is ASCII-only). */
+/**
+ * Word match that works for Cyrillic (\b is ASCII-only). Longer terms may take
+ * a suffix (Mongolian inflects: «шигдээсийн»); short ones ("mi", "бах") must
+ * stand alone so they don't match inside other words.
+ */
 function mentions(text: string, term: string): boolean {
   const escaped = term.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}($|[^\\p{L}\\p{N}])`, "u").test(text.toLowerCase());
+  const end = term.length >= 5 ? "" : "($|[^\\p{L}\\p{N}])";
+  return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}${end}`, "u").test(text.toLowerCase());
 }
 
 describe("data/scenarios.json", () => {
