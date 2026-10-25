@@ -139,8 +139,11 @@ Place hotspots with E5.
 Android Chrome, laptop. Role → intro → Эхлэх → scene → each hotspot → voice turn →
 diagnosis → debrief. Fix layout issues found.
 
-**G4 [M] 👤 Offline rehearsal**: airplane mode after the page loads + a forced
-server failure (`?offline=1` dev switch) → offline interview → offline debrief.
+**G4 [M] 👤 Offline rehearsal**: server/model unreachable (stop the server, or the
+`?offline=1` dev switch) → scene → offline interview → offline debrief. Airplane
+mode after the intro loads keeps the scene working (viewer code + panorama are
+preloaded), but opening the offline interview still needs the network until a
+service worker (PWA roadmap) caches `/demo/*`.
 
 **✅ P0 gate:** G3 and G4 pass. Only then start P1.
 

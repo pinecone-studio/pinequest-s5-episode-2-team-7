@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Play } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { t } from "@/i18n";
 import { api, withRetry } from "@/lib/api";
 import { requestMotionAccess, type MotionAccess } from "@/lib/motion-permission";
@@ -25,7 +25,28 @@ async function startOnline(caseId: string): Promise<string> {
 
 export function PracticeScenario({ scenario, info, forceOffline = false, debug = false }: { scenario: Scenario; info: IntroInfo; forceOffline?: boolean; debug?: boolean }) {
   const [stage, setStage] = useState<Stage>({ name: "intro" });
+  const [panorama, setPanorama] = useState<string | null>(null);
   const busy = useRef(false);
+
+  // While the intro is read: fetch the 360° viewer code and the panorama, so the
+  // scene opens at once — and still opens if the network drops after this page loaded.
+  useEffect(() => {
+    void import("./panorama").catch(() => {});
+    let url: string | null = null;
+    let live = true;
+    fetch(scenario.panorama)
+      .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))))
+      .then((blob) => {
+        if (!live) return;
+        url = URL.createObjectURL(blob);
+        setPanorama(url);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [scenario.panorama]);
 
   async function start() {
     if (busy.current) return;
@@ -48,7 +69,7 @@ export function PracticeScenario({ scenario, info, forceOffline = false, debug =
   }
 
   if (stage.name === "scene") {
-    return <SceneView scenario={scenario} mode={stage.mode} motion={stage.motion} debug={debug} onBack={() => setStage({ name: "intro" })} />;
+    return <SceneView scenario={scenario} panorama={panorama ?? scenario.panorama} mode={stage.mode} motion={stage.motion} debug={debug} onBack={() => setStage({ name: "intro" })} />;
   }
 
   return (

@@ -23,6 +23,8 @@ const Panorama = dynamic(() => import("./panorama"), {
 
 interface Props {
   scenario: Scenario;
+  /** Panorama URL: a preloaded blob: URL when available, else the file path. */
+  panorama: string;
   mode: PracticeMode;
   motion: MotionAccess;
   debug?: boolean;
@@ -30,8 +32,10 @@ interface Props {
 }
 
 /** The 360° scene: look around, then tap Өвчтөн (interview), Монитор (vitals) or Гэр бүлийн гишүүн (collateral history). */
-export function SceneView({ scenario, mode, motion: access, debug = false, onBack }: Props) {
+export function SceneView({ scenario, panorama, mode, motion: access, debug = false, onBack }: Props) {
   const router = useRouter();
+  // Fixed for this visit: a blob that arrives later must not rebuild the viewer.
+  const [src] = useState(panorama);
   const [sheet, setSheet] = useState<"monitor" | "family" | null>(null);
   const [gyro, setGyro] = useState(access === "granted");
   const [gyroAvailable, setGyroAvailable] = useState(access !== "unsupported");
@@ -49,7 +53,7 @@ export function SceneView({ scenario, mode, motion: access, debug = false, onBac
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black text-white">
       <Panorama
-        src={scenario.panorama}
+        src={src}
         startYaw={h.patient.yaw}
         hotspots={[
           { id: "patient", label: t.practice.hotspots.patient, ...h.patient },
