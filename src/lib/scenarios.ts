@@ -22,6 +22,8 @@ export const Scenario = z.object({
   roles: z.array(z.enum(ROLES)).min(1),
   title: z.string().min(1),
   intro: z.string().min(1),
+  /** Where the scene takes place; defaults to the case's setting. */
+  setting: z.string().min(1).optional(),
   vitals: Vitals.extend({ gcs: z.number().int().min(3).max(15).optional() }),
   panorama: z.string().startsWith("/"),
   hotspots: z.object({ patient: Angle, monitor: Angle, family: Angle }),

@@ -21,7 +21,7 @@ export function scenarioCards(): ScenarioCard[] {
       id: s.id,
       title: s.title,
       roles: s.roles,
-      setting: c.setting.mn,
+      setting: s.setting ?? c.setting.mn,
       difficulty: c.difficulty,
       timeCritical: c.timeCritical,
       patientName: c.patient.name,
