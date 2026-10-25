@@ -28,7 +28,7 @@ const jitter = (base: number | undefined, spread: number, min: number, max: numb
   base === undefined ? undefined : Math.max(min, Math.min(max, base + (Math.random() * 2 - 1) * spread));
 
 /** Adult reference ranges for highlighting (teaching aid, not clinical thresholds). */
-const abnormal = {
+export const abnormal = {
   hr: (v: number) => v < 50 || v > 100,
   sys: (v: number) => v < 90 || v >= 140,
   dia: (v: number) => v >= 90,
