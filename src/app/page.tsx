@@ -1,17 +1,18 @@
 import { Award, LockKeyhole, MessagesSquare, Stethoscope } from "lucide-react";
 import Link from "next/link";
 import { HeroCopy, HeroPreview } from "@/components/landing/hero";
+import { RolePicker } from "@/components/practice/role-picker";
 import { EcgHero } from "@/components/motion/ecg";
 import { Blobs, Reveal, RevealLi } from "@/components/motion/reveal";
 import { buttonClass } from "@/components/ui";
 import { t } from "@/i18n";
-import { getPageSession } from "@/lib/auth/server";
+import { scenarioCards } from "@/lib/scenario-cards";
 
 const STEP_ICONS = [MessagesSquare, Stethoscope, Award];
 
-export default async function LandingPage() {
-  const session = await getPageSession();
-  const startHref = session ? "/dashboard" : "/register";
+/** Landing: the framing, then «Та хэн бэ?» → role-filtered practice scenarios (no login needed). */
+export default function LandingPage() {
+  const startHref = "#roles";
 
   return (
     <main className="isolate">
@@ -24,6 +25,8 @@ export default async function LandingPage() {
         {/* Heartbeat drawn across the full width */}
         <EcgHero className="h-16 sm:h-24" />
       </section>
+
+      <RolePicker scenarios={scenarioCards()} />
 
       <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20">
         <Reveal className="text-center">
