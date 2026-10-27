@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { apiFetch } from "@/lib/fetcher";
 import { AnamAvatar } from "../interview/anam-avatar";
+import { CallControls } from "../call-controls";
 import { MAX_RECORD_SECONDS, Recorder } from "../interview/recorder";
 import type { AvatarHandle } from "../interview/simli-avatar";
 import { Spinner, cn } from "../ui";
@@ -90,6 +91,7 @@ export function Examiner() {
   const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [avatarOn, setAvatarOn] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const avatarRef = useRef<AvatarHandle>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recorderRef = useRef<Recorder | null>(null);
@@ -300,43 +302,67 @@ export function Examiner() {
                   ))}
                 </div>
               )}
-              <textarea
-                value={answers[index] ?? ""}
-                onChange={(e) => setAnswers((prev) => prev.map((a, j) => (j === index ? e.target.value : a)))}
-                disabled={phase !== "answering"}
-                placeholder={phase === "answering" ? "Микрофон дээр дарж хариултаа хэлнэ үү, эсвэл бичнэ үү…" : "Багш асууж байна…"}
-                rows={3}
-                className="mt-3 w-full resize-none rounded-xl border border-[#352e4a] bg-[#1e1734] p-3 text-sm text-[#ffffff] placeholder:text-[#6f6990]"
-              />
+              {showChat ? (
+                <>
+                  {index > 0 && (
+                    <div className="mt-3 grid max-h-40 gap-2 overflow-y-auto rounded-xl bg-[#110f18] p-3 text-xs">
+                      {quiz.questions.slice(0, index).map((pq, j) => (
+                        <div key={pq.id}>
+                          <p className="text-[#a7a2c3]">
+                            {j + 1}. {pq.prompt}
+                          </p>
+                          <p className="text-right text-[#b9a4ff]">{answers[j] || "—"}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <textarea
+                    value={answers[index] ?? ""}
+                    onChange={(e) => setAnswers((prev) => prev.map((a, j) => (j === index ? e.target.value : a)))}
+                    disabled={phase !== "answering"}
+                    aria-label="Хариулт"
+                    placeholder={phase === "answering" ? "Хариултаа энд бичнэ үү…" : "Багш асууж байна…"}
+                    rows={3}
+                    className="mt-3 w-full resize-none rounded-xl border border-[#352e4a] bg-[#1e1734] p-3 text-sm text-[#ffffff] placeholder:text-[#6f6990]"
+                  />
+                </>
+              ) : (
+                answers[index] && <p className="mt-3 rounded-xl bg-[#1e1734] p-3 text-sm text-[#e2def5]">{answers[index]}</p>
+              )}
               {error && <p className="mt-2 text-xs text-[#fda4af]">{error}</p>}
               <div className="mt-3 flex items-center gap-3">
                 <button
-                  onClick={toggleMic}
-                  disabled={phase !== "answering" || transcribing}
-                  aria-label={recording ? "Бичлэг зогсоох" : "Дуугаар хариулах"}
-                  className={cn(
-                    "flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl disabled:opacity-40",
-                    recording ? "animate-pulse bg-[#e11d48]" : "bg-[#8b5cf6] text-[#ffffff]",
-                  )}
-                >
-                  {transcribing ? <Spinner /> : recording ? "■" : "🎤"}
-                </button>
-                <button
                   onClick={() => void say(spokenQuestion(q, index, quiz.questions.length))}
                   disabled={busy || recording}
-                  className="rounded-full border border-[#352e4a] px-4 py-3 text-sm disabled:opacity-40"
+                  className="rounded-full border border-[#352e4a] px-4 py-2.5 text-sm disabled:opacity-40"
                 >
                   Дахин сонсох
                 </button>
                 <button
                   onClick={() => void next()}
                   disabled={busy}
-                  className="ml-auto rounded-full bg-[#ffffff] px-5 py-3 text-sm font-semibold text-[#110f18] disabled:opacity-40"
+                  className="ml-auto rounded-full bg-[#ffffff] px-5 py-2.5 text-sm font-semibold text-[#110f18] disabled:opacity-40"
                 >
                   {index === quiz.questions.length - 1 ? "Дуусгах" : "Дараах"}
                 </button>
               </div>
-              {recording && <p className="mt-2 text-xs text-[#c9c4e0]">Сонсож байна… дуусаад ■ дарна уу (урт хариултыг {MAX_RECORD_SECONDS} сек тутам хэсэглэн таньна).</p>}
+              <p className="mb-3 mt-2 min-h-4 text-center text-xs text-[#c9c4e0]">
+                {transcribing
+                  ? "Бичвэр болгож байна…"
+                  : recording
+                    ? `Сонсож байна… дуусаад микрофоноо унтраана уу (${MAX_RECORD_SECONDS} сек тутам хэсэглэн таньна).`
+                    : phase === "answering"
+                      ? "Микрофоноо асааж хариулна уу, эсвэл 💬 чатаар бичнэ үү."
+                      : ""}
+              </p>
+              <CallControls
+                micOn={recording}
+                micBusy={transcribing}
+                chatOpen={showChat}
+                disabled={phase !== "answering"}
+                onMic={() => void toggleMic()}
+                onChat={() => setShowChat((v) => !v)}
+              />
               {phase === "finished" && <p className="mt-2 text-xs text-[#c9c4e0]">Хариултыг шалгаж байна…</p>}
             </>
           )}

@@ -1,12 +1,13 @@
 "use client";
 
+import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/fetcher";
 import type { CoachDebrief, CoachDifficulty, CoachEmotion, CoachMode, PublicPack } from "@/lib/coach/types";
 import type { VoiceFeatures } from "@/lib/views";
+import { CallControls } from "../call-controls";
 import { AnamAvatar } from "../interview/anam-avatar";
-import { Recorder } from "../interview/recorder";
 import type { AvatarHandle } from "../interview/simli-avatar";
 import { ScoreRing } from "../score-ring";
 import { Spinner, cn } from "../ui";
@@ -71,13 +72,12 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
   const [listening, setListening] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [typed, setTyped] = useState("");
-  const [recording, setRecording] = useState(false);
+  const [micBusy, setMicBusy] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [avatarOn, setAvatarOn] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const callRef = useRef<CoachCall | null>(null);
   const avatarRef = useRef<AvatarHandle>(null);
-  const recorderRef = useRef<Recorder | null>(null);
   const liveResolve = useRef<(() => void) | null>(null);
   const stopRing = useRef<(() => void) | null>(null);
   const chatEnd = useRef<HTMLDivElement>(null);
@@ -103,7 +103,6 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
     return () => {
       stopRing.current?.();
       void callRef.current?.finish("stopped");
-      void recorderRef.current?.stop();
     };
   }, []);
 
@@ -189,33 +188,14 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
     callRef.current?.say(text);
   }
 
-  /** Mic button: an alternative to hands-free (noisy rooms). First tap records, second sends. */
+  /** Mic on/off: off releases the microphone and the trainee types in the chat instead. */
   async function toggleMic() {
     const call = callRef.current;
-    if (!call) return;
-    if (recorderRef.current) {
-      const recorder = recorderRef.current;
-      recorderRef.current = null;
-      setRecording(false);
-      const wav = await recorder.stop();
-      call.manual = false;
-      call.pauseListening(false);
-      await call.userEnded(wav);
-      return;
-    }
-    call.manual = true;
-    call.pauseListening(true);
-    const recorder = new Recorder();
-    recorder.onLimit = () => void toggleMic();
-    try {
-      await recorder.start();
-      recorderRef.current = recorder;
-      setRecording(true);
-    } catch {
-      call.manual = false;
-      call.pauseListening(false);
-      setStatus("Микрофон ашиглах зөвшөөрөл алга.");
-    }
+    if (!call || micBusy) return;
+    setMicBusy(true);
+    const on = await call.setMic(!listening);
+    setMicBusy(false);
+    if (!on) setShowChat(true);
   }
 
   function close() {
@@ -423,11 +403,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
               <button onClick={() => void answer()} aria-label="Хариулах" className="h-20 w-20 rounded-full bg-[#16a35a] text-3xl shadow-lg">
                 📞
               </button>
-            ) : (
-              <button onClick={hangUp} disabled={phase === "grading"} aria-label="Дуусгах" className="h-16 w-16 rounded-full bg-[#e11d48] text-2xl disabled:opacity-40">
-                ✕
-              </button>
-            )}
+            ) : null}
           </div>
         )}
 
@@ -449,52 +425,55 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
       </div>
 
       {(live || phase === "grading") && (
-        <section className="max-h-[50%] overflow-y-auto rounded-t-3xl bg-[#17141f] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          {!showChat && lastAi && <p className="mb-2 text-sm leading-snug text-[#e2def5]">«{lastAi.text}»</p>}
-          {showChat && (
-            <div className="mb-3 grid max-h-56 gap-2 overflow-y-auto text-sm">
-              {chat.map((l, i) => (
-                <p key={i} className={cn(l.role === "me" && "text-right text-[#b9a4ff]", l.role === "sys" && "text-center text-xs text-[#6f6990]")}>
-                  {l.text}
-                </p>
-              ))}
-              <div ref={chatEnd} />
+        <section className="max-h-[55%] overflow-y-auto rounded-t-3xl bg-[#17141f] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {showChat ? (
+            <div className="mb-3">
+              <div className="mb-2 grid max-h-56 gap-2 overflow-y-auto text-sm" aria-live="polite">
+                {chat.map((l, i) => (
+                  <p key={i} className={cn(l.role === "me" && "text-right text-[#b9a4ff]", l.role === "sys" && "text-center text-xs text-[#6f6990]")}>
+                    {l.text}
+                  </p>
+                ))}
+                <div ref={chatEnd} />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  onFocus={() => callRef.current && (callRef.current.manual = true)}
+                  onBlur={() => callRef.current && (callRef.current.manual = false)}
+                  onKeyDown={(e) => e.key === "Enter" && sendTyped()}
+                  disabled={phase !== "live"}
+                  aria-label="Мессеж"
+                  placeholder={pack.language === "en" ? "Type in English…" : "Энд бичнэ үү…"}
+                  className="min-w-0 flex-1 rounded-full border border-[#352e4a] bg-[#1e1734] px-4 py-3 text-sm text-[#ffffff] placeholder:text-[#6f6990]"
+                />
+                <button
+                  onClick={sendTyped}
+                  disabled={phase !== "live" || !typed.trim()}
+                  aria-label="Илгээх"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#8b5cf6] text-[#ffffff] disabled:opacity-40"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
             </div>
+          ) : (
+            lastAi && <p className="mb-2 text-sm leading-snug text-[#e2def5]">«{lastAi.text}»</p>
           )}
-          <p className="mb-2 min-h-4 text-xs text-[#a7a2c3]">
-            {listening && !recording ? "🎙️ " : ""}
-            {status}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => void toggleMic()}
-              disabled={phase !== "live"}
-              aria-label={recording ? "Илгээх" : "Товчоор ярих"}
-              className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl disabled:opacity-40", recording ? "animate-pulse bg-[#e11d48]" : "bg-[#8b5cf6] text-[#ffffff]")}
-            >
-              {recording ? "■" : "🎤"}
-            </button>
-            <input
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              onFocus={() => callRef.current && (callRef.current.manual = true)}
-              onBlur={() => callRef.current && (callRef.current.manual = false)}
-              onKeyDown={(e) => e.key === "Enter" && sendTyped()}
-              disabled={phase !== "live"}
-              placeholder={pack.language === "en" ? "Type in English…" : "Эсвэл энд бичнэ үү…"}
-              className="min-w-0 flex-1 rounded-full border border-[#352e4a] bg-[#1e1734] px-4 py-3 text-sm text-[#ffffff] placeholder:text-[#6f6990]"
-            />
-            <button onClick={() => setShowChat((v) => !v)} className="rounded-full border border-[#352e4a] px-3 py-3 text-xs">
-              {showChat ? "Нуух" : "Яриа"}
-            </button>
-            {video && (
-              <button onClick={hangUp} disabled={phase !== "live"} className="rounded-full bg-[#e11d48] px-4 py-3 text-xs font-semibold disabled:opacity-40">
-                Дуусгах
-              </button>
-            )}
-          </div>
+          <p className="mb-3 min-h-4 text-center text-xs text-[#a7a2c3]">{status}</p>
+          <CallControls
+            micOn={listening}
+            micBusy={micBusy}
+            chatOpen={showChat}
+            disabled={phase !== "live"}
+            onMic={() => void toggleMic()}
+            onChat={() => setShowChat((v) => !v)}
+            onEnd={hangUp}
+          />
         </section>
       )}
     </main>
   );
 }
+
