@@ -152,11 +152,15 @@ export function Examiner() {
     setError(null);
     setAnswers(quiz.questions.map(() => ""));
     setPhase("connecting");
-    // Ask for the microphone now, while the tap still counts as a user gesture.
-    await navigator.mediaDevices
-      ?.getUserMedia({ audio: true })
-      .then((s) => s.getTracks().forEach((t) => t.stop()))
-      .catch(() => {});
+    // Ask for the microphone now, while the tap still counts as a user gesture; an
+    // unanswered permission prompt must not hold up the exam (the mic button asks again).
+    await Promise.race([
+      navigator.mediaDevices
+        ?.getUserMedia({ audio: true })
+        .then((s) => s.getTracks().forEach((t) => t.stop()))
+        .catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, 8_000)),
+    ]);
     setAvatarOn(true);
     // Wait for the video (max 12 s); without it the examiner talks as audio only.
     await new Promise<void>((resolve) => {

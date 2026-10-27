@@ -292,11 +292,20 @@ export class CoachCall {
 
   private async openMic(): Promise<boolean> {
     const listener = new Listener({ onSpeechStart: () => this.userStarted(), onUtterance: (wav) => void this.userEnded(wav) });
-    try {
-      await listener.start();
-    } catch {
+    // An unanswered permission prompt must not hold up the call: give it 8 s, then go on
+    // with the mic off. If permission arrives later, release it (the mic button asks again).
+    const started = listener.start().then(
+      () => true,
+      () => false,
+    );
+    const ok = await Promise.race([started, new Promise<"late">((resolve) => setTimeout(() => resolve("late"), 8_000))]);
+    if (ok === "late") {
+      void started.then((on) => {
+        if (on) void listener.stop().catch(() => {});
+      });
       return false;
     }
+    if (!ok) return false;
     if (this.ended) {
       await listener.stop().catch(() => {});
       return false;
