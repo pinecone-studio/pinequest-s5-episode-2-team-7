@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import type { ComponentType } from "react";
 import { LogoutButton } from "./logout-button";
 import { Orb } from "./orb";
+import { useTeamAlerts } from "./team/use-team-alerts";
 import { buttonClass, cn } from "./ui";
 
 interface Item {
@@ -35,7 +36,14 @@ function isActive(pathname: string, href: string) {
 export function AppNav({ user }: { user: { name: string; admin: boolean } | null }) {
   const pathname = usePathname();
   const params = useSearchParams();
-  if (pathname === "/exam" || pathname === "/role" || (pathname === "/coach" && params.get("pack"))) return null;
+  const teamBadge = useTeamAlerts(Boolean(user));
+  if (pathname === "/exam" || pathname === "/role" || pathname.startsWith("/cases/") || (pathname === "/coach" && params.get("pack"))) return null;
+  const badge = (href: string) =>
+    href === "/team" && teamBadge > 0 ? (
+      <span className="absolute -right-0.5 -top-0.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-alert px-1 text-[10px] font-bold text-white">
+        {Math.min(teamBadge, 9)}
+      </span>
+    ) : null;
 
   return (
     <>
@@ -55,11 +63,12 @@ export function AppNav({ user }: { user: { name: string; admin: boolean } | null
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "rounded-full px-4 py-2 transition-colors",
+                      "relative rounded-full px-4 py-2 transition-colors",
                       active ? "bg-accent-gradient text-white shadow-[0_4px_12px_rgb(139_92_246/0.4)]" : "text-muted hover:bg-field hover:text-ink",
                     )}
                   >
                     {item.icon ? item.title : "AI дасгалжуулагч"}
+                    {badge(item.href)}
                   </Link>
                 );
               })}
@@ -106,16 +115,18 @@ export function AppNav({ user }: { user: { name: string; admin: boolean } | null
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                aria-label={item.href === "/team" && teamBadge > 0 ? `${item.title}, ${teamBadge} шинэ` : undefined}
                 className={cn("flex flex-col items-center gap-1", Icon ? "w-[62px]" : "w-[74px]")}
               >
                 {Icon ? (
                   <span
                     className={cn(
-                      "flex h-[46px] w-[46px] items-center justify-center rounded-full",
+                      "relative flex h-[46px] w-[46px] items-center justify-center rounded-full",
                       active ? "bg-accent-gradient text-white shadow-[0_4px_8px_rgb(139_92_246/0.4)]" : "bg-field text-ink",
                     )}
                   >
                     <Icon size={18} strokeWidth={active ? 2.4 : 1.8} aria-hidden />
+                    {badge(item.href)}
                   </span>
                 ) : (
                   <span className={cn("rounded-full ring-2", active ? "ring-gold" : "ring-white/25")}>

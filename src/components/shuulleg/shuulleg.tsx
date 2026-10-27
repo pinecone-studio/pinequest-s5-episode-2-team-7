@@ -49,8 +49,15 @@ export function Shuulleg({ topic = "" }: { topic?: string }) {
   const router = useRouter();
 
   // Coming back from the examiner (/exam): grade the spoken answers, or continue typed.
+  // From «Дүгнэлт»: ?attempt=<id> opens that saved result.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const attempt = params.get("attempt") && quizHistory.snapshot().find((a) => a.id === params.get("attempt"));
+    if (attempt) {
+      window.history.replaceState(null, "", "/soril");
+      void Promise.resolve().then(() => setStage({ name: "result", quiz: attempt.quiz, answers: attempt.answers, grade: attempt.grade }));
+      return;
+    }
     if (!params.get("oral")) return;
     window.history.replaceState(null, "", "/soril");
     const back = takeOralResult();

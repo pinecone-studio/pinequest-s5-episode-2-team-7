@@ -1,9 +1,9 @@
 "use client";
 
-import { BadgeCheck, Briefcase, ChevronRight, Copy, FilePlus2, Flag, UserRound, XCircle } from "lucide-react";
+import { BadgeCheck, Bell, Briefcase, ChevronRight, Copy, FilePlus2, Flag, UserRound, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { CustomSheet, Sheet } from "@/components/coach/coach-hub";
 import { Button, buttonClass, cn, inputClass } from "@/components/ui";
 import { apiFetch, ClientApiError } from "@/lib/fetcher";
@@ -26,6 +26,7 @@ export function TeamView({ teams, packs }: { teams: Team[]; packs: PublicPack[] 
 
   return (
     <div className="space-y-5">
+      {teams.length > 0 && <NotifyButton />}
       {teams.length === 0 && <StartCards onDone={setMessage} />}
 
       {teams.map((t) =>
@@ -76,6 +77,30 @@ export function TeamView({ teams, packs }: { teams: Team[]; packs: PublicPack[] 
         />
       )}
     </div>
+  );
+}
+
+const noSubscribe = () => () => {};
+
+/** Browsers only ask for notification permission after a click, so offer it here. */
+function NotifyButton() {
+  const [, rerender] = useState(0);
+  const permission = useSyncExternalStore(
+    noSubscribe,
+    () => (typeof Notification === "undefined" ? "unsupported" : Notification.permission),
+    () => "unsupported",
+  );
+  if (permission !== "default") return null;
+  return (
+    <button
+      type="button"
+      onClick={() => void Notification.requestPermission().then(() => rerender((n) => n + 1))}
+      className="glass flex w-full items-center gap-3 rounded-[20px] p-3 text-left text-sm"
+    >
+      <Bell size={18} className="text-accent" aria-hidden />
+      <span className="flex-1">Шинэ сорилт, ажилтны үр дүнг мэдэгдлээр авах</span>
+      <span className="font-semibold text-accent-deep">Асаах</span>
+    </button>
   );
 }
 

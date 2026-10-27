@@ -198,6 +198,33 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Emergency case scene (components/practice/scene-window.tsx). */
+.scene-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: scene-ping 1.8s ease-in-out infinite;
+}
+@keyframes scene-ping {
+  0%, 100% { transform: scale(0.9); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 0.2; }
+}
+.scene-flash-a { animation: scene-flash 0.9s ease-in-out infinite alternate; }
+.scene-flash-b { animation: scene-flash 0.9s ease-in-out infinite alternate-reverse; }
+@keyframes scene-flash {
+  from { opacity: 0.15; }
+  to { opacity: 0.6; }
+}
+.scene-smoke { animation: scene-smoke 1.8s ease-in-out infinite alternate; }
+@keyframes scene-smoke {
+  to { transform: translateY(-12px); }
+}
+.scene-danger { animation: scene-flash 0.9s ease-in-out infinite alternate; }
+.scene-ecg { animation: scene-ecg 2.4s linear infinite; }
+.scene-ecg-fast { animation: scene-ecg 1.4s linear infinite; }
+@keyframes scene-ecg {
+  to { transform: translateX(-160px); }
+}
+
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgb(139 92 246 / 0.45), 0 10px 30px -10px rgb(139 92 246 / 0.6); }
   50% { box-shadow: 0 0 0 14px rgb(139 92 246 / 0), 0 10px 40px -8px rgb(139 92 246 / 0.75); }

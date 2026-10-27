@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "@/components/ui";
 import { scoreColor } from "@/lib/coach/labels";
+import { scenarioHistory } from "@/lib/practice/history";
 import { quizHistory } from "@/lib/quiz-client";
 
 export interface CoachResultSummary {
@@ -25,6 +26,7 @@ const average = (scores: number[]) => (scores.length ? Math.round(scores.reduce(
  */
 export function FeedbackList({ results }: { results: CoachResultSummary[] }) {
   const attempts = useSyncExternalStore(quizHistory.subscribe, quizHistory.snapshot, quizHistory.serverSnapshot);
+  const cases = useSyncExternalStore(scenarioHistory.subscribe, scenarioHistory.snapshot, scenarioHistory.serverSnapshot);
   const coachAverage = average(results.map((r) => r.score));
   const quizAverage = average(attempts.map((a) => a.grade.score));
   const focus = [...results.slice(0, 5).flatMap((r) => r.improvements), ...attempts.slice(0, 3).flatMap((a) => a.grade.weaknesses)].slice(0, 4);
@@ -34,7 +36,7 @@ export function FeedbackList({ results }: { results: CoachResultSummary[] }) {
       <div className="grid grid-cols-3 gap-2.5">
         <StatTile value={coachAverage ?? "–"} label="Дасгалжуулагч" icon={<UserRound size={14} aria-hidden />} />
         <StatTile value={quizAverage ?? "–"} label="Сорил" icon={<ClipboardList size={14} aria-hidden />} />
-        <StatTile value={results.length + attempts.length} label="Нийт дадлага" icon={<Flame size={14} aria-hidden />} />
+        <StatTile value={results.length + attempts.length + cases.length} label="Нийт дадлага" icon={<Flame size={14} aria-hidden />} />
       </div>
 
       {focus.length > 0 && (
@@ -65,14 +67,25 @@ export function FeedbackList({ results }: { results: CoachResultSummary[] }) {
         <section className="space-y-2.5">
           <h2 className="text-lg font-semibold text-ink">Сорил</h2>
           {attempts.map((a) => (
-            <Link key={a.id} href="/soril" className="block">
+            <Link key={a.id} href={`/soril?attempt=${a.id}`} className="block">
               <ScoreRow score={a.grade.score} title={`📝 ${a.quiz.title}`} detail={a.grade.verdict} date={a.date} badge={null} />
             </Link>
           ))}
         </section>
       )}
 
-      {results.length === 0 && attempts.length === 0 && (
+      {cases.length > 0 && (
+        <section className="space-y-2.5">
+          <h2 className="text-lg font-semibold text-ink">Яаралтай тохиолдол</h2>
+          {cases.map((c) => (
+            <Link key={c.id} href={`/cases/${c.scenarioId}`} className="block">
+              <ScoreRow score={c.score} title={`🚑 ${c.title}`} detail={c.stable ? "Тогтворжсон" : "Дордсон"} date={c.date} badge={null} />
+            </Link>
+          ))}
+        </section>
+      )}
+
+      {results.length === 0 && attempts.length === 0 && cases.length === 0 && (
         <div className="flex flex-col items-center gap-2 py-12 text-center">
           <BarChart3 size={40} className="text-subtle" aria-hidden />
           <p className="font-semibold text-ink">Дүгнэлт алга</p>

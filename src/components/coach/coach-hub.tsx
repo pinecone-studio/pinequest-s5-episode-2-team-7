@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ChevronRight, FileText, Phone, PlusCircle, Sparkles, Trophy, Users, Video, X } from "lucide-react";
+import { AlertTriangle, Ambulance, Camera, ChevronRight, FileText, Phone, PlusCircle, Sparkles, Trophy, Users, Video, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -89,6 +89,17 @@ export function CoachHub({
           ))}
         </section>
       )}
+
+      <Link href="/cases" className="glass flex items-center gap-3.5 rounded-[22px] p-3.5">
+        <span className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+          <Ambulance size={24} aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-ink">Яаралтай тохиолдлын тоглоом</span>
+          <span className="block text-xs text-muted">Осол, цээжний өвдөлт, анафилакс: цаг, амин үзүүлэлттэй сценари (сервергүй)</span>
+        </span>
+        <ChevronRight size={18} className="text-subtle" aria-hidden />
+      </Link>
 
       {selected && <SetupSheet pack={selected} onClose={() => setSelected(null)} />}
       {showCustom && (
@@ -240,6 +251,7 @@ export function CustomSheet({
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
 
   async function add(list: FileList | null) {
     for (const file of Array.from(list ?? [])) {
@@ -305,9 +317,15 @@ export function CustomSheet({
       </div>
 
       <p className="mb-2 mt-5 font-semibold">Материал</p>
-      <button type="button" onClick={() => fileInput.current?.click()} className="flex w-full flex-col items-center gap-1.5 rounded-2xl bg-field py-3 text-xs font-medium">
-        <FileText size={20} className="text-accent" aria-hidden /> Файл (PDF, зураг, текст)
-      </button>
+      <div className="grid grid-cols-2 gap-2.5">
+        <button type="button" onClick={() => cameraInput.current?.click()} className="flex flex-col items-center gap-1.5 rounded-2xl bg-field py-3 text-xs font-medium">
+          <Camera size={20} className="text-accent" aria-hidden /> Зураг авах
+        </button>
+        <button type="button" onClick={() => fileInput.current?.click()} className="flex flex-col items-center gap-1.5 rounded-2xl bg-field py-3 text-xs font-medium">
+          <FileText size={20} className="text-accent" aria-hidden /> Файл (PDF, зураг, текст)
+        </button>
+      </div>
+      <input ref={cameraInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => void add(e.target.files).then(() => (e.target.value = ""))} />
       <input ref={fileInput} type="file" accept="image/*,application/pdf,.txt,.md" multiple className="hidden" onChange={(e) => void add(e.target.files).then(() => (e.target.value = ""))} />
       {files.map((f, i) => (
         <div key={i} className="mt-2 flex items-center gap-2 rounded-xl bg-field p-2.5 text-xs">
