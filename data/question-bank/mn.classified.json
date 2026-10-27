@@ -1078,6 +1078,66 @@
    "topics": [
     "broad"
    ]
+  },
+  {
+   "question": "Бие нь яаж байна?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Бие тань ямар байна?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Биеийн байдал ямар байна?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Та яаж байна?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Ямар байна даа?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Яасан бэ?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Юу болоо вэ?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Ямар асуудлаар ирсэн бэ?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "Юугаар ирсэн бэ?",
+   "topics": [
+    "broad"
+   ]
+  },
+  {
+   "question": "How are you feeling?",
+   "topics": [
+    "broad"
+   ]
   }
  ],
  "diagnosis_request": [

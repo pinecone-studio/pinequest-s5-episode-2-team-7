@@ -34,6 +34,7 @@ export function AnamAvatar({
   emotion,
   className,
   tokenUrl,
+  tokenBody,
   autoStart,
   onLive,
   scene,
@@ -48,6 +49,8 @@ export function AnamAvatar({
   sessionId: string;
   /** Where to get the Anam session token (default: this interview's patient face). */
   tokenUrl?: string;
+  /** Extra JSON fields for the token request (e.g. the AI дасгалжуулагч pack). */
+  tokenBody?: Record<string, unknown>;
   name: string;
   onSpeakingChange?: (speaking: boolean) => void;
   /** Starting expression style (Anam Director Notes). */
@@ -191,7 +194,7 @@ export function AnamAvatar({
     try {
       const [{ createClient, AnamEvent }, { sessionToken, provider }] = await Promise.all([
         import("@anam-ai/js-sdk"),
-        apiFetch<{ sessionToken: string; provider: string }>(tokenUrl ?? `/api/sessions/${sessionId}/avatar`, { method: "POST", json: { emotion } }),
+        apiFetch<{ sessionToken: string; provider: string }>(tokenUrl ?? `/api/sessions/${sessionId}/avatar`, { method: "POST", json: { emotion, ...tokenBody } }),
       ]);
       if (provider !== "anam") throw new Error("Аватарын тохиргоо өөрчлөгдсөн байна. Хуудсаа дахин ачаална уу.");
       // Our own microphone handling (Chimege STT) stays in charge.

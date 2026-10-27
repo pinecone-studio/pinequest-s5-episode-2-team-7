@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgTable, primaryKey, real, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import type { PatientCase } from "@/lib/cases/schema";
 import type { EvaluationResult } from "@/lib/evaluation/evaluator";
+import type { CoachDebrief, CoachLine, CoachPack } from "@/lib/coach/types";
 
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 
@@ -201,6 +202,97 @@ export const newsArticles = pgTable(
   },
   // One row per source link, so repeated imports never duplicate an article.
   (t) => [index("news_status_idx").on(t.status, t.publishedAt), uniqueIndex("news_source_url_idx").on(t.sourceUrl)],
+);
+
+/**
+ * AI дасгалжуулагч: an employer (owner) makes a team, shares its join code
+ * with new staff, gives them challenges (a practice persona + target score)
+ * and sees every result. Packs made from a company's own material live in
+ * `coach_packs` (private to the owner, or shared with one team).
+ */
+export const teams = pgTable("teams", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  code: text("code").notNull().unique(),
+  ownerId: uuid("owner_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: createdAt(),
+});
+
+export const teamMembers = pgTable(
+  "team_members",
+  {
+    teamId: uuid("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: text("role", { enum: ["owner", "member"] }).notNull().default("member"),
+    joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.teamId, t.userId] }), index("team_members_user_idx").on(t.userId)],
+);
+
+export const coachPacks = pgTable(
+  "coach_packs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    teamId: uuid("team_id").references(() => teams.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    /** The full pack, hidden facts included — server-side only. */
+    data: jsonb("data").$type<CoachPack>().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("coach_packs_owner_idx").on(t.ownerId, t.createdAt)],
+);
+
+export const challenges = pgTable(
+  "challenges",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    teamId: uuid("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    /** A built-in pack id ("callcenter") or a coach_packs id. */
+    packRef: text("pack_ref").notNull(),
+    title: text("title").notNull(),
+    mode: text("mode", { enum: ["video", "audio"] }).notNull().default("audio"),
+    difficulty: text("difficulty", { enum: ["easy", "medium", "hard"] }).notNull().default("medium"),
+    targetScore: integer("target_score").notNull().default(70),
+    dueAt: timestamp("due_at", { withTimezone: true }),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: createdAt(),
+  },
+  (t) => [index("challenges_team_idx").on(t.teamId, t.createdAt)],
+);
+
+export const coachResults = pgTable(
+  "coach_results",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    teamId: uuid("team_id").references(() => teams.id, { onDelete: "set null" }),
+    challengeId: uuid("challenge_id").references(() => challenges.id, { onDelete: "set null" }),
+    packRef: text("pack_ref").notNull(),
+    packTitle: text("pack_title").notNull(),
+    mode: text("mode").notNull(),
+    difficulty: text("difficulty").notNull(),
+    score: integer("score").notNull(),
+    durationSec: integer("duration_sec").notNull(),
+    debrief: jsonb("debrief").$type<CoachDebrief>().notNull(),
+    transcript: jsonb("transcript").$type<CoachLine[]>().notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [index("coach_results_user_idx").on(t.userId, t.createdAt), index("coach_results_team_idx").on(t.teamId, t.createdAt)],
 );
 
 export type User = typeof users.$inferSelect;
