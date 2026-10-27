@@ -6,7 +6,9 @@ import { BookOpen, Camera, ChevronLeft, ChevronRight, FileText, RotateCcw, Spark
 import { ScoreRing } from "@/components/score-ring";
 import { Alert, Badge, Button, Card, cn, Spinner, Textarea } from "@/components/ui";
 import { ClientApiError } from "@/lib/fetcher";
+import { formatDateTime } from "@/lib/i18n";
 import {
+  QUESTION_KINDS,
   quizApi,
   quizHistory,
   readQuizFile,
@@ -20,6 +22,7 @@ import {
   type Quiz,
   type QuizAttempt,
   type QuizFile,
+  type QuizQuestion,
 } from "@/lib/quiz-client";
 
 /**
@@ -34,10 +37,11 @@ function message(error: unknown): string {
   return error instanceof ClientApiError || error instanceof Error ? error.message : "Алдаа гарлаа. Дахин оролдоно уу.";
 }
 
-export function Shuulleg() {
+export function Shuulleg({ topic = "" }: { topic?: string }) {
   const [stage, setStage] = useState<Stage>({ name: "setup" });
   const [files, setFiles] = useState<QuizFile[]>([]);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(topic);
+  const [types, setTypes] = useState<QuizQuestion["kind"][]>(["choice", "open", "case"]);
   const [count, setCount] = useState(5);
   const [oral, setOral] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -46,10 +50,17 @@ export function Shuulleg() {
   const router = useRouter();
 
   // Coming back from the examiner (/exam): grade the spoken answers, or continue typed.
+  // From «Дүгнэлт»: ?attempt=<id> opens that saved result.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const attempt = params.get("attempt") && quizHistory.snapshot().find((a) => a.id === params.get("attempt"));
+    if (attempt) {
+      window.history.replaceState(null, "", "/soril");
+      void Promise.resolve().then(() => setStage({ name: "result", quiz: attempt.quiz, answers: attempt.answers, grade: attempt.grade }));
+      return;
+    }
     if (!params.get("oral")) return;
-    window.history.replaceState(null, "", "/shuulleg");
+    window.history.replaceState(null, "", "/soril");
     const back = takeOralResult();
     if (!back) return;
     void Promise.resolve().then(() => {
@@ -63,7 +74,7 @@ export function Shuulleg() {
     setError(null);
     setBusy(focus.length ? "Сул тал дээр тань шинэ асуулт бэлдэж байна…" : "Материалыг уншиж, асуулт бэлдэж байна…");
     try {
-      const quiz = await quizApi.generate(files, notes, count, focus);
+      const quiz = await quizApi.generate(files, notes, count, focus, types.length ? types : ["open"]);
       if (oral) {
         startOralExam(quiz);
         router.push("/exam");
@@ -102,7 +113,7 @@ export function Shuulleg() {
       )}
       {stage.name === "setup" && (
         <>
-          <Setup files={files} setFiles={setFiles} notes={notes} setNotes={setNotes} count={count} setCount={setCount} oral={oral} setOral={setOral} onStart={() => void generate()} busy={!!busy} onError={setError} />
+          <Setup files={files} setFiles={setFiles} notes={notes} setNotes={setNotes} count={count} setCount={setCount} types={types} setTypes={setTypes} oral={oral} setOral={setOral} onStart={() => void generate()} busy={!!busy} onError={setError} />
           <History attempts={history} onOpen={(a) => setStage({ name: "result", quiz: a.quiz, answers: a.answers, grade: a.grade })} onRemove={removeAttempt} />
         </>
       )}
@@ -132,6 +143,8 @@ function Setup(props: {
   setNotes: (v: string) => void;
   count: number;
   setCount: (n: number) => void;
+  types: QuizQuestion["kind"][];
+  setTypes: (t: QuizQuestion["kind"][]) => void;
   oral: boolean;
   setOral: (v: boolean) => void;
   onStart: () => void;
@@ -140,7 +153,7 @@ function Setup(props: {
 }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const cameraInput = useRef<HTMLInputElement>(null);
-  const canStart = props.files.length > 0 || props.notes.trim().length > 0;
+  const canStart = (props.files.length > 0 || props.notes.trim().length > 0) && props.types.length > 0;
 
   async function add(list: FileList | null) {
     if (!list) return;
@@ -191,7 +204,27 @@ function Setup(props: {
       <label htmlFor="shuulleg-notes" className="mb-1.5 mt-5 block text-sm font-semibold">
         Сэдэв эсвэл тэмдэглэл
       </label>
-      <Textarea id="shuulleg-notes" rows={3} value={props.notes} onChange={(e) => props.setNotes(e.target.value)} placeholder="Жишээ: Артерийн гипертензийн эмчилгээ" />
+      <Textarea id="shuulleg-notes" rows={3} value={props.notes} onChange={(e) => props.setNotes(e.target.value)} placeholder="Жишээ: Уурласан үйлчлүүлэгчтэй харьцах журам" />
+
+      <p className="mb-2 mt-5 text-sm font-semibold">Асуултын төрөл</p>
+      <div className="flex gap-2">
+        {QUESTION_KINDS.map((kind) => {
+          const on = props.types.includes(kind.id);
+          return (
+            <button
+              key={kind.id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => props.setTypes(on ? props.types.filter((t) => t !== kind.id) : [...props.types, kind.id])}
+              className={cn("flex-1 rounded-full px-3 py-2 text-sm font-semibold ring-1 ring-line", on ? "bg-accent text-white" : "bg-surface text-ink")}
+            >
+              {on && "✓ "}
+              {kind.label}
+            </button>
+          );
+        })}
+      </div>
+      {props.types.length === 0 && <p className="mt-1.5 text-xs text-alert">Дор хаяж нэг төрөл сонгоно уу.</p>}
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3 text-sm">
@@ -208,8 +241,8 @@ function Setup(props: {
         </div>
         <label className="flex cursor-pointer items-center gap-3 text-sm">
           <span>
-            <span className="block font-medium">Багш дуугаар асууна</span>
-            <span className="block text-xs text-subtle">Видео багш асууж, та ярьж хариулна</span>
+            <span className="block font-medium">AI шүүлэгч дуугаар асууна</span>
+            <span className="block text-xs text-subtle">Видео шүүлэгч асуултаа хэлж, та дуугаар хариулна</span>
           </span>
           <input type="checkbox" checked={props.oral} onChange={(e) => props.setOral(e.target.checked)} className="h-5 w-5 accent-[var(--accent)]" />
         </label>
@@ -489,7 +522,7 @@ function History({ attempts, onOpen, onRemove }: { attempts: QuizAttempt[]; onOp
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold">{a.quiz.title}</span>
-                <span className="block text-xs text-subtle">{new Date(a.date).toLocaleString("mn-MN")}</span>
+                <span className="block text-xs text-subtle">{formatDateTime(a.date)}</span>
               </span>
             </button>
             <Button variant="ghost" size="sm" aria-label="Устгах" onClick={() => onRemove(a.id)}>

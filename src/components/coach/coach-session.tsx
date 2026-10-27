@@ -1,12 +1,13 @@
 "use client";
 
+import { Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/lib/fetcher";
 import type { CoachDebrief, CoachDifficulty, CoachEmotion, CoachMode, PublicPack } from "@/lib/coach/types";
 import type { VoiceFeatures } from "@/lib/views";
+import { CallControls } from "../call-controls";
 import { AnamAvatar } from "../interview/anam-avatar";
-import { Recorder } from "../interview/recorder";
 import type { AvatarHandle } from "../interview/simli-avatar";
 import { ScoreRing } from "../score-ring";
 import { Spinner, cn } from "../ui";
@@ -65,18 +66,18 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
   const [error, setError] = useState<string | null>(null);
   const [chat, setChat] = useState<ChatLine[]>([]);
   const [status, setStatus] = useState("");
+  const [source, setSource] = useState<"model" | "claude" | null>(null);
   const [emotion, setEmotion] = useState<CoachEmotion>("calm");
   const [speaking, setSpeaking] = useState(false);
   const [listening, setListening] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [typed, setTyped] = useState("");
-  const [recording, setRecording] = useState(false);
+  const [micBusy, setMicBusy] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [avatarOn, setAvatarOn] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
   const callRef = useRef<CoachCall | null>(null);
   const avatarRef = useRef<AvatarHandle>(null);
-  const recorderRef = useRef<Recorder | null>(null);
   const liveResolve = useRef<(() => void) | null>(null);
   const stopRing = useRef<(() => void) | null>(null);
   const chatEnd = useRef<HTMLDivElement>(null);
@@ -102,7 +103,6 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
     return () => {
       stopRing.current?.();
       void callRef.current?.finish("stopped");
-      void recorderRef.current?.stop();
     };
   }, []);
 
@@ -141,6 +141,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
       listening: setListening,
       tick: setSeconds,
       ended: (reason) => void grade(call, reason),
+      source: setSource,
     });
     callRef.current = call;
     await call.prepare(); // inside the tap: unlocks audio
@@ -187,33 +188,14 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
     callRef.current?.say(text);
   }
 
-  /** Mic button: an alternative to hands-free (noisy rooms). First tap records, second sends. */
+  /** Mic on/off: off releases the microphone and the trainee types in the chat instead. */
   async function toggleMic() {
     const call = callRef.current;
-    if (!call) return;
-    if (recorderRef.current) {
-      const recorder = recorderRef.current;
-      recorderRef.current = null;
-      setRecording(false);
-      const wav = await recorder.stop();
-      call.manual = false;
-      call.pauseListening(false);
-      await call.userEnded(wav);
-      return;
-    }
-    call.manual = true;
-    call.pauseListening(true);
-    const recorder = new Recorder();
-    recorder.onLimit = () => void toggleMic();
-    try {
-      await recorder.start();
-      recorderRef.current = recorder;
-      setRecording(true);
-    } catch {
-      call.manual = false;
-      call.pauseListening(false);
-      setStatus("Микрофон ашиглах зөвшөөрөл алга.");
-    }
+    if (!call || micBusy) return;
+    setMicBusy(true);
+    const on = await call.setMic(!listening);
+    setMicBusy(false);
+    if (!on) setShowChat(true);
   }
 
   function close() {
@@ -222,14 +204,14 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
 
   function finishToApp() {
     if (result && pack && toApp({ type: "coachDone", resultId: result.id, score: result.debrief.score, title: pack.title })) return;
-    router.push("/");
+    router.push(result ? `/feedback/${result.id}` : "/coach");
   }
 
   // --- render ---------------------------------------------------------------
 
   if (phase === "loading") {
     return (
-      <main className="fixed inset-0 z-50 flex items-center justify-center bg-[#06101f] text-[#cbd5e1]">
+      <main className="fixed inset-0 z-50 flex items-center justify-center bg-[#09080f] text-[#c9c4e0]">
         <Spinner />
       </main>
     );
@@ -237,15 +219,15 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
 
   if (!pack || phase === "error") {
     return (
-      <main className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#06101f] p-6 text-center text-[#ffffff]">
+      <main className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#09080f] p-6 text-center text-[#ffffff]">
         <p className="max-w-sm text-sm text-[#fda4af]">{error ?? "Алдаа гарлаа."}</p>
         <div className="flex gap-3">
           {pack && (
-            <button onClick={() => window.location.reload()} className="rounded-full bg-[#2dd4c4] px-6 py-3 text-sm font-semibold text-[#04201e]">
+            <button onClick={() => window.location.reload()} className="rounded-full bg-[#8b5cf6] px-6 py-3 text-sm font-semibold text-[#ffffff]">
               Дахин оролдох
             </button>
           )}
-          <button onClick={close} className="rounded-full border border-[#334155] px-6 py-3 text-sm">
+          <button onClick={close} className="rounded-full border border-[#352e4a] px-6 py-3 text-sm">
             Хаах
           </button>
         </div>
@@ -257,15 +239,15 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
     const d = result.debrief;
     const icon = { yes: "✅", partial: "🟡", no: "❌" } as const;
     return (
-      <main className="fixed inset-0 z-50 overflow-y-auto bg-[#06101f] text-[#ffffff]">
+      <main className="fixed inset-0 z-50 overflow-y-auto bg-[#09080f] text-[#ffffff]">
         <div className="mx-auto flex max-w-xl flex-col gap-5 p-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))]">
           <div className="flex items-center gap-4">
             <ScoreRing score={d.score} size={104} />
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-[#94a3b8]">
+              <p className="text-xs text-[#a7a2c3]">
                 {pack.icon} {pack.title} · {fmt(seconds)} · {DIFFICULTY_LABEL[difficulty]}
               </p>
-              <p className="mt-1 text-sm leading-snug text-[#e2e8f0]">{d.summary}</p>
+              <p className="mt-1 text-sm leading-snug text-[#e2def5]">{d.summary}</p>
             </div>
           </div>
           {result.challenge && (
@@ -275,37 +257,37 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
                 : `Сорилтын зорилт ${result.challenge.targetScore} оноо. Дахин оролдоод биелүүлээрэй — менежер тань үр дүнг харна.`}
             </div>
           )}
-          <section className="rounded-2xl bg-[#0c1a2e] p-4">
-            <h2 className="mb-2 text-sm font-semibold text-[#5fe0d3]">Шалгуурууд</h2>
+          <section className="rounded-2xl bg-[#17141f] p-4">
+            <h2 className="mb-2 text-sm font-semibold text-[#b9a4ff]">Шалгуурууд</h2>
             <ul className="grid gap-2">
               {d.rubric.map((r) => (
                 <li key={r.id} className="grid grid-cols-[1.5rem_1fr] gap-2 text-sm">
                   <span>{icon[r.result]}</span>
                   <span>
                     {r.label}
-                    <span className="block text-xs text-[#94a3b8]">{r.evidence}</span>
+                    <span className="block text-xs text-[#a7a2c3]">{r.evidence}</span>
                   </span>
                 </li>
               ))}
             </ul>
           </section>
           <section className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl bg-[#0c1a2e] p-4">
+            <div className="rounded-2xl bg-[#17141f] p-4">
               <h2 className="mb-2 text-sm font-semibold text-[#86efac]">Сайн хийсэн</h2>
               <ul className="list-disc space-y-1 pl-4 text-sm">{d.strengths.map((s) => <li key={s}>{s}</li>)}</ul>
             </div>
-            <div className="rounded-2xl bg-[#0c1a2e] p-4">
+            <div className="rounded-2xl bg-[#17141f] p-4">
               <h2 className="mb-2 text-sm font-semibold text-[#fcd34d]">Сайжруулах</h2>
               <ul className="list-disc space-y-1 pl-4 text-sm">{d.improvements.map((s) => <li key={s}>{s}</li>)}</ul>
             </div>
           </section>
           {d.betterLines.length > 0 && (
-            <section className="rounded-2xl bg-[#0c1a2e] p-4">
-              <h2 className="mb-2 text-sm font-semibold text-[#5fe0d3]">Ингэж хэлбэл илүү</h2>
+            <section className="rounded-2xl bg-[#17141f] p-4">
+              <h2 className="mb-2 text-sm font-semibold text-[#b9a4ff]">Ингэж хэлбэл илүү</h2>
               <div className="grid gap-3">
                 {d.betterLines.map((b) => (
-                  <div key={b.said} className="border-l-2 border-[#2dd4c4] pl-3 text-sm">
-                    <s className="text-[#94a3b8]">{b.said}</s>
+                  <div key={b.said} className="border-l-2 border-[#8b5cf6] pl-3 text-sm">
+                    <s className="text-[#a7a2c3]">{b.said}</s>
                     <p>→ {b.better}</p>
                   </div>
                 ))}
@@ -318,12 +300,12 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
               <ul className="list-disc space-y-1 pl-4 text-sm">{d.factErrors.map((s) => <li key={s}>{s}</li>)}</ul>
             </section>
           )}
-          <details className="rounded-2xl bg-[#0c1a2e] p-4 text-sm">
-            <summary className="cursor-pointer text-[#cbd5e1]">Ярианы тэмдэглэл</summary>
+          <details className="rounded-2xl bg-[#17141f] p-4 text-sm">
+            <summary className="cursor-pointer text-[#c9c4e0]">Ярианы тэмдэглэл</summary>
             <div className="mt-3 grid gap-2">
               {chat.filter((l) => l.role !== "sys").map((l, i) => (
                 <p key={i} className={l.role === "me" ? "text-right" : ""}>
-                  <span className="text-xs text-[#64748b]">{fmt(l.t)} · {l.role === "me" ? "Та" : pack.personaName}</span>
+                  <span className="text-xs text-[#6f6990]">{fmt(l.t)} · {l.role === "me" ? "Та" : pack.personaName}</span>
                   <br />
                   {l.text}
                 </p>
@@ -331,10 +313,10 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
             </div>
           </details>
           <div className="flex gap-3">
-            <button onClick={() => window.location.reload()} className="flex-1 rounded-full bg-[#2dd4c4] px-5 py-3 text-sm font-semibold text-[#04201e]">
+            <button onClick={() => window.location.reload()} className="flex-1 rounded-full bg-[#8b5cf6] px-5 py-3 text-sm font-semibold text-[#ffffff]">
               Дахин оролдох
             </button>
-            <button onClick={finishToApp} className="flex-1 rounded-full bg-[#ffffff] px-5 py-3 text-sm font-semibold text-[#0f172a]">
+            <button onClick={finishToApp} className="flex-1 rounded-full bg-[#ffffff] px-5 py-3 text-sm font-semibold text-[#110f18]">
               Дуусгах
             </button>
           </div>
@@ -348,7 +330,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
   const lastAi = [...chat].reverse().find((l) => l.role === "ai");
 
   return (
-    <main className="fixed inset-0 z-50 flex h-dvh flex-col bg-[#06101f] text-[#ffffff]">
+    <main className="fixed inset-0 z-50 flex h-dvh flex-col bg-[#09080f] text-[#ffffff]">
       <header className="flex items-center gap-3 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button onClick={close} aria-label="Хаах" className="rounded-full bg-[#ffffff]/10 px-3 py-1.5 text-sm">
           ✕
@@ -357,25 +339,33 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
           <p className="truncate text-sm font-semibold">
             {pack.icon} {pack.title}
           </p>
-          <p className="truncate text-xs text-[#94a3b8]">
+          <p className="truncate text-xs text-[#a7a2c3]">
             {mode === "video" ? "🎥 Видео" : "📞 Аудио"} · {DIFFICULTY_LABEL[difficulty]}
             {challengeId ? " · 🏆 Сорилт" : ""}
           </p>
         </div>
-        {(live || phase === "grading") && <span className="font-mono text-sm tabular-nums text-[#cbd5e1]">{fmt(seconds)}</span>}
+        {source && (
+          <span
+            className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold", source === "model" ? "bg-[#8b5cf6]/25 text-[#b9a4ff]" : "bg-[#ffffff]/10 text-[#a7a2c3]")}
+            title={source === "model" ? "Манай fine-tuned загвар хариулж байна" : "Манай загвар унтарсан тул Claude орлож байна"}
+          >
+            {source === "model" ? "🧠 Манай загвар" : "Claude"}
+          </span>
+        )}
+        {(live || phase === "grading") && <span className="font-mono text-sm tabular-nums text-[#c9c4e0]">{fmt(seconds)}</span>}
       </header>
 
       <div className="relative min-h-0 flex-1">
         {phase === "intro" && (
           <div className="flex h-full flex-col items-center justify-center gap-4 overflow-y-auto p-6 text-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2dd4c4]/15 text-5xl">{pack.icon}</div>
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#8b5cf6]/15 text-5xl">{pack.icon}</div>
             <h1 className="text-xl font-bold">{pack.title}</h1>
-            <p className="max-w-md text-sm text-[#cbd5e1]">{pack.subtitle}</p>
-            <p className="max-w-md rounded-2xl bg-[#0c1a2e] p-4 text-left text-sm leading-relaxed text-[#e2e8f0]">{pack.brief}</p>
+            <p className="max-w-md text-sm text-[#c9c4e0]">{pack.subtitle}</p>
+            <p className="max-w-md rounded-2xl bg-[#17141f] p-4 text-left text-sm leading-relaxed text-[#e2def5]">{pack.brief}</p>
             {pack.draft && <p className="max-w-md text-xs text-[#fcd34d]">⚠️ Ноорог агуулга: мэргэжлийн байгууллагаар баталгаажуулна.</p>}
             {mode === "video" && !video && <p className="max-w-md text-xs text-[#fcd34d]">Видео аватар одоогоор тохируулагдаагүй тул дуугаар үргэлжилнэ.</p>}
-            <p className="text-xs text-[#94a3b8]">Товч дарахгүйгээр зүгээр л ярина. Чихэвч зүүвэл илүү найдвартай.</p>
-            <button onClick={() => void start()} className="rounded-full bg-[#2dd4c4] px-8 py-3 text-base font-semibold text-[#04201e]">
+            <p className="text-xs text-[#a7a2c3]">Товч дарахгүйгээр зүгээр л ярина. Чихэвч зүүвэл илүү найдвартай.</p>
+            <button onClick={() => void start()} className="rounded-full bg-[#8b5cf6] px-8 py-3 text-base font-semibold text-[#ffffff]">
               {video ? "Эхлэх" : "Дуудлага эхлүүлэх"}
             </button>
           </div>
@@ -391,7 +381,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
             emotion={pack.openingEmotion}
             autoStart
             onLive={() => liveResolve.current?.()}
-            className="relative h-full w-full overflow-hidden bg-[#0b1220]"
+            className="relative h-full w-full overflow-hidden bg-[#110f18]"
           />
         )}
 
@@ -413,11 +403,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
               <button onClick={() => void answer()} aria-label="Хариулах" className="h-20 w-20 rounded-full bg-[#16a35a] text-3xl shadow-lg">
                 📞
               </button>
-            ) : (
-              <button onClick={hangUp} disabled={phase === "grading"} aria-label="Дуусгах" className="h-16 w-16 rounded-full bg-[#e11d48] text-2xl disabled:opacity-40">
-                ✕
-              </button>
-            )}
+            ) : null}
           </div>
         )}
 
@@ -427,64 +413,67 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
           </span>
         )}
         {phase === "connecting" && (
-          <div className="absolute inset-0 flex items-center justify-center gap-3 bg-[#06101f]/70 text-sm text-[#cbd5e1]">
+          <div className="absolute inset-0 flex items-center justify-center gap-3 bg-[#09080f]/70 text-sm text-[#c9c4e0]">
             <Spinner /> {pack.personaName} холбогдож байна…
           </div>
         )}
         {phase === "grading" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#06101f]/85 p-6 text-center text-sm text-[#cbd5e1]">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#09080f]/85 p-6 text-center text-sm text-[#c9c4e0]">
             <Spinner /> AI сургагч таны яриаг дүгнэж байна… (10–30 сек)
           </div>
         )}
       </div>
 
       {(live || phase === "grading") && (
-        <section className="max-h-[50%] overflow-y-auto rounded-t-3xl bg-[#0c1a2e] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          {!showChat && lastAi && <p className="mb-2 text-sm leading-snug text-[#e2e8f0]">«{lastAi.text}»</p>}
-          {showChat && (
-            <div className="mb-3 grid max-h-56 gap-2 overflow-y-auto text-sm">
-              {chat.map((l, i) => (
-                <p key={i} className={cn(l.role === "me" && "text-right text-[#5fe0d3]", l.role === "sys" && "text-center text-xs text-[#64748b]")}>
-                  {l.text}
-                </p>
-              ))}
-              <div ref={chatEnd} />
+        <section className="max-h-[55%] overflow-y-auto rounded-t-3xl bg-[#17141f] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {showChat ? (
+            <div className="mb-3">
+              <div className="mb-2 grid max-h-56 gap-2 overflow-y-auto text-sm" aria-live="polite">
+                {chat.map((l, i) => (
+                  <p key={i} className={cn(l.role === "me" && "text-right text-[#b9a4ff]", l.role === "sys" && "text-center text-xs text-[#6f6990]")}>
+                    {l.text}
+                  </p>
+                ))}
+                <div ref={chatEnd} />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                  onFocus={() => callRef.current && (callRef.current.manual = true)}
+                  onBlur={() => callRef.current && (callRef.current.manual = false)}
+                  onKeyDown={(e) => e.key === "Enter" && sendTyped()}
+                  disabled={phase !== "live"}
+                  aria-label="Мессеж"
+                  placeholder={pack.language === "en" ? "Type in English…" : "Энд бичнэ үү…"}
+                  className="min-w-0 flex-1 rounded-full border border-[#352e4a] bg-[#1e1734] px-4 py-3 text-sm text-[#ffffff] placeholder:text-[#6f6990]"
+                />
+                <button
+                  onClick={sendTyped}
+                  disabled={phase !== "live" || !typed.trim()}
+                  aria-label="Илгээх"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#8b5cf6] text-[#ffffff] disabled:opacity-40"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
             </div>
+          ) : (
+            lastAi && <p className="mb-2 text-sm leading-snug text-[#e2def5]">«{lastAi.text}»</p>
           )}
-          <p className="mb-2 min-h-4 text-xs text-[#94a3b8]">
-            {listening && !recording ? "🎙️ " : ""}
-            {status}
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => void toggleMic()}
-              disabled={phase !== "live"}
-              aria-label={recording ? "Илгээх" : "Товчоор ярих"}
-              className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-xl disabled:opacity-40", recording ? "animate-pulse bg-[#e11d48]" : "bg-[#2dd4c4] text-[#04201e]")}
-            >
-              {recording ? "■" : "🎤"}
-            </button>
-            <input
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              onFocus={() => callRef.current && (callRef.current.manual = true)}
-              onBlur={() => callRef.current && (callRef.current.manual = false)}
-              onKeyDown={(e) => e.key === "Enter" && sendTyped()}
-              disabled={phase !== "live"}
-              placeholder={pack.language === "en" ? "Type in English…" : "Эсвэл энд бичнэ үү…"}
-              className="min-w-0 flex-1 rounded-full border border-[#334155] bg-[#1e293b] px-4 py-3 text-sm text-[#ffffff] placeholder:text-[#64748b]"
-            />
-            <button onClick={() => setShowChat((v) => !v)} className="rounded-full border border-[#334155] px-3 py-3 text-xs">
-              {showChat ? "Нуух" : "Яриа"}
-            </button>
-            {video && (
-              <button onClick={hangUp} disabled={phase !== "live"} className="rounded-full bg-[#e11d48] px-4 py-3 text-xs font-semibold disabled:opacity-40">
-                Дуусгах
-              </button>
-            )}
-          </div>
+          <p className="mb-3 min-h-4 text-center text-xs text-[#a7a2c3]">{status}</p>
+          <CallControls
+            micOn={listening}
+            micBusy={micBusy}
+            chatOpen={showChat}
+            disabled={phase !== "live"}
+            onMic={() => void toggleMic()}
+            onChat={() => setShowChat((v) => !v)}
+            onEnd={hangUp}
+          />
         </section>
       )}
     </main>
   );
 }
+

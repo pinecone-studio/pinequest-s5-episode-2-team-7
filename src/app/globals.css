@@ -16,17 +16,18 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", "Noto Sans", sans-serif;
   --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  /* One vivid accent: clinical teal/cyan. */
-  --color-brand-50: #ecfdfb;
-  --color-brand-100: #cdf8f2;
-  --color-brand-200: #9cefe5;
-  --color-brand-300: #5fe0d3;
-  --color-brand-400: #26c6bb;
-  --color-brand-500: #0fb0a6;
-  --color-brand-600: #0a8f88;
-  --color-brand-700: #0d716d;
-  --color-brand-800: #105a58;
-  --color-brand-900: #114a49;
+  /* One accent, as in the iOS app (ios/OtochAI/Theme.swift): violet. */
+  --color-brand-50: #f5f1ff;
+  --color-brand-100: #ebe3ff;
+  --color-brand-200: #d8c9ff;
+  --color-brand-300: #b9a4ff;
+  --color-brand-400: #9b6bff;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #6d3bff;
+  --color-brand-700: #5b2bd9;
+  --color-brand-800: #3a1f8c;
+  --color-brand-900: #1c1240;
+  --color-gold: #f2b25c;
 
   --animate-pulse-glow: pulse-glow 2.4s ease-in-out infinite;
   --animate-alarm: alarm 1.1s ease-in-out infinite;
@@ -46,6 +47,8 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-deep: var(--accent-deep);
+  --color-field: var(--field);
   --color-alert: var(--alert);
   --color-alert-soft: var(--alert-soft);
   --color-ok: var(--ok);
@@ -53,63 +56,49 @@
 }
 
 /*
- * Theme: tokens hold both values via light-dark(). The OS preference applies by
- * default; the toggle stores a cookie and the server renders html.light/.dark,
- * so there is no flash and no inline script.
+ * Theme: dark only, like the Otech AI iOS app (ios/OtochAI/Theme.swift) —
+ * near-black canvas deepening into violet, dark glass cards with hairline
+ * edges, one violet accent and a violet → amber glow on the hero inputs.
  */
 :root {
-  color-scheme: light dark;
-  --canvas: light-dark(#f4f7fa, #06101f);
-  --surface: light-dark(rgb(255 255 255 / 0.72), rgb(16 31 54 / 0.62));
-  --surface-solid: light-dark(#ffffff, #0c1a2e);
-  --sunken: light-dark(#eef2f6, #0a1627);
-  --ink: light-dark(#0b1b2b, #e7eef7);
-  --muted: light-dark(#526275, #9aabbf);
-  --subtle: light-dark(#8796a8, #66788e);
-  --line: light-dark(rgb(11 27 43 / 0.09), rgb(255 255 255 / 0.08));
-  --accent: light-dark(#0a9e96, #2dd4c4);
-  --accent-ink: light-dark(#ffffff, #04201e);
-  --accent-soft: light-dark(rgb(15 176 166 / 0.12), rgb(45 212 196 / 0.14));
-  --alert: light-dark(#e5484d, #ff5f63);
-  --alert-soft: light-dark(rgb(229 72 77 / 0.12), rgb(255 95 99 / 0.16));
-  --ok: light-dark(#12a150, #3ddc84);
-  --warn: light-dark(#d97706, #fbbf24);
-  --blob-a: light-dark(rgb(15 176 166 / 0.28), rgb(45 212 196 / 0.18));
-  --blob-b: light-dark(rgb(56 189 248 / 0.22), rgb(56 189 248 / 0.14));
-  --blob-c: light-dark(rgb(129 140 248 / 0.16), rgb(129 140 248 / 0.12));
-  --shadow-panel: 0 1px 2px rgb(11 27 43 / 0.04), 0 12px 32px -12px rgb(11 27 43 / 0.14);
-}
-:root.light {
-  color-scheme: light;
-}
-:root.dark {
   color-scheme: dark;
-}
-.dark {
+  --canvas: #09080f;
+  --surface: rgb(255 255 255 / 0.055);
+  --surface-solid: #17141f;
+  --sunken: #110f18;
+  --field: rgb(255 255 255 / 0.07);
+  --ink: #f4f2ff;
+  --muted: #a7a2c3;
+  --subtle: #6f6990;
+  --line: rgb(255 255 255 / 0.1);
+  --accent: #8b5cf6;
+  --accent-deep: #b9a4ff;
+  --accent-ink: #ffffff;
+  --accent-soft: rgb(139 92 246 / 0.18);
+  --accent-gradient: linear-gradient(135deg, #6d3bff, #9b6bff);
+  --glow-border: linear-gradient(90deg, #8b5cf6, #c084fc, #f2b25c);
+  --alert: #f87171;
+  --alert-soft: rgb(248 113 113 / 0.16);
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --blob-a: rgb(109 59 255 / 0.28);
+  --blob-b: rgb(242 178 92 / 0.08);
+  --blob-c: rgb(155 107 255 / 0.14);
   --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.3), 0 18px 40px -16px rgb(0 0 0 / 0.6);
 }
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --shadow-panel: 0 1px 2px rgb(0 0 0 / 0.3), 0 18px 40px -16px rgb(0 0 0 / 0.6);
-  }
-}
 
-/*
- * Older screens (admin, auth, history) are written with slate/white
- * utilities. Inverting the slate scale in dark mode keeps them readable
- * without rewriting every page; new components use the semantic tokens.
- */
+/* Older screens (admin, auth) use slate/white utilities: map them onto the dark palette. */
 :root {
-  --color-slate-50: light-dark(oklch(98.4% 0.003 247.858), #0d1b2e);
-  --color-slate-100: light-dark(oklch(96.8% 0.007 247.896), #13243a);
-  --color-slate-200: light-dark(oklch(92.9% 0.013 255.508), #1d3049);
-  --color-slate-300: light-dark(oklch(86.9% 0.022 252.894), #2b415d);
-  --color-slate-400: light-dark(oklch(70.4% 0.04 256.788), #6b7f97);
-  --color-slate-500: light-dark(oklch(55.4% 0.046 257.417), #8a9cb2);
-  --color-slate-600: light-dark(oklch(44.6% 0.043 257.281), #a9b8ca);
-  --color-slate-700: light-dark(oklch(37.2% 0.044 257.287), #c6d2e0);
-  --color-slate-800: light-dark(oklch(27.9% 0.041 260.031), #dbe4ee);
-  --color-slate-900: light-dark(oklch(20.8% 0.042 265.755), #e9eff6);
+  --color-slate-50: #110f18;
+  --color-slate-100: #17141f;
+  --color-slate-200: #241f33;
+  --color-slate-300: #352e4a;
+  --color-slate-400: #6f6990;
+  --color-slate-500: #8a84a8;
+  --color-slate-600: #a7a2c3;
+  --color-slate-700: #c9c4e0;
+  --color-slate-800: #e2def5;
+  --color-slate-900: #f4f2ff;
 }
 :where(.bg-white) {
   background-color: var(--surface-solid);
@@ -119,13 +108,18 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Canvas: near-black at the top, a deep violet glow rising from the bottom (AppBackground). */
 body {
-  background: var(--canvas);
+  background:
+    radial-gradient(60vmax 60vmax at 95% -10%, rgb(109 59 255 / 0.22), transparent 60%),
+    radial-gradient(50vmax 50vmax at 0% 105%, rgb(242 178 92 / 0.07), transparent 60%),
+    linear-gradient(180deg, #07060c 0%, #0e0b19 45%, #1c1240 82%, #3a1f8c 100%) fixed;
+  background-color: var(--canvas);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
   font-feature-settings: "cv11", "ss01";
   text-rendering: optimizeLegibility;
-  transition: background-color 0.3s ease;
 }
 
 /* Comfortable reading for Mongolian Cyrillic (long agglutinative words). */
@@ -163,9 +157,77 @@ body {
 .typing-dot:nth-child(2) { animation-delay: 0.15s; }
 .typing-dot:nth-child(3) { animation-delay: 0.3s; }
 
+@utility bg-accent-gradient {
+  background-image: var(--accent-gradient);
+}
+
+/* The violet → amber glowing edge (hero inputs, the main call to action). */
+@utility glow-edge {
+  border: 1.4px solid transparent;
+  background:
+    linear-gradient(var(--glow-fill, #14111d), var(--glow-fill, #14111d)) padding-box,
+    var(--glow-border) border-box;
+  box-shadow: 0 0 22px rgb(139 92 246 / 0.35);
+}
+
+/* The iridescent orb that stands for the AI (violet, lilac, sky and amber swirling). */
+.orb {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  box-shadow: 0 0.04em 0.16em rgb(139 92 246 / 0.55);
+}
+.orb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(#6d3bff, #b18cff, #5ec8ff, #f2b25c, #9b6bff, #6d3bff);
+  filter: blur(calc(var(--orb-size, 200px) * 0.05));
+  animation: orb-spin 14s linear infinite;
+}
+.orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 32% 28%, rgb(255 255 255 / 0.6), transparent 42%);
+  box-shadow: inset 0 0 0 max(1px, calc(var(--orb-size, 200px) * 0.012)) rgb(255 255 255 / 0.5);
+}
+@keyframes orb-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Emergency case scene (components/practice/scene-window.tsx). */
+.scene-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: scene-ping 1.8s ease-in-out infinite;
+}
+@keyframes scene-ping {
+  0%, 100% { transform: scale(0.9); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 0.2; }
+}
+.scene-flash-a { animation: scene-flash 0.9s ease-in-out infinite alternate; }
+.scene-flash-b { animation: scene-flash 0.9s ease-in-out infinite alternate-reverse; }
+@keyframes scene-flash {
+  from { opacity: 0.15; }
+  to { opacity: 0.6; }
+}
+.scene-smoke { animation: scene-smoke 1.8s ease-in-out infinite alternate; }
+@keyframes scene-smoke {
+  to { transform: translateY(-12px); }
+}
+.scene-danger { animation: scene-flash 0.9s ease-in-out infinite alternate; }
+.scene-ecg { animation: scene-ecg 2.4s linear infinite; }
+.scene-ecg-fast { animation: scene-ecg 1.4s linear infinite; }
+@keyframes scene-ecg {
+  to { transform: translateX(-160px); }
+}
+
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgb(15 176 166 / 0.45), 0 10px 30px -10px rgb(15 176 166 / 0.6); }
-  50% { box-shadow: 0 0 0 14px rgb(15 176 166 / 0), 0 10px 40px -8px rgb(15 176 166 / 0.75); }
+  0%, 100% { box-shadow: 0 0 0 0 rgb(139 92 246 / 0.45), 0 10px 30px -10px rgb(139 92 246 / 0.6); }
+  50% { box-shadow: 0 0 0 14px rgb(139 92 246 / 0), 0 10px 40px -8px rgb(139 92 246 / 0.75); }
 }
 
 @keyframes alarm {
@@ -229,7 +291,7 @@ body {
   animation: shimmer 1.4s infinite;
 }
 .skeleton::after {
-  background: linear-gradient(90deg, transparent, light-dark(rgb(255 255 255 / 0.35), rgb(255 255 255 / 0.06)), transparent);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.06), transparent);
 }
 
 /* Calm fallback: no looping motion, no transforms; state is still shown by colour. */

@@ -7,6 +7,7 @@ import { BUILTIN_PACKS, builtinPack } from "@/lib/coach/packs";
 import { publicPack, type CoachDebrief, type CoachLine, type CoachPack, type PublicPack } from "@/lib/coach/types";
 import { getDb } from "@/lib/db/client";
 import { challenges, coachPacks, coachResults, teamMembers, teams, users } from "@/lib/db/schema";
+import { modelPatientPack, modelPatientPacks } from "@/lib/coach/model-patient";
 
 /**
  * AI дасгалжуулагч data: packs made from company material, teams (an employer
@@ -36,7 +37,7 @@ async function requireOwner(userId: string, teamId: string) {
 
 /** A built-in pack id or a custom pack the user may use. */
 export async function resolvePack(userId: string, ref: string): Promise<{ pack: CoachPack; teamId: string | null }> {
-  const builtin = builtinPack(ref);
+  const builtin = builtinPack(ref) ?? modelPatientPack(ref);
   if (builtin) return { pack: builtin, teamId: null };
   if (!UUID.safeParse(ref).success) throw Errors.notFound("Дадлагын дүр");
   const db = await getDb();
@@ -49,7 +50,7 @@ export async function resolvePack(userId: string, ref: string): Promise<{ pack: 
   return { pack: { ...row.data, id: row.id }, teamId: row.teamId };
 }
 
-export async function listPacks(userId: string): Promise<{ builtin: PublicPack[]; custom: PublicPack[] }> {
+export async function listPacks(userId: string): Promise<{ builtin: PublicPack[]; custom: PublicPack[]; model: PublicPack[] }> {
   const db = await getDb();
   const teamIds = (await teamIdsOf(userId)).map((m) => m.teamId);
   const rows = await db
@@ -61,6 +62,8 @@ export async function listPacks(userId: string): Promise<{ builtin: PublicPack[]
   return {
     builtin: BUILTIN_PACKS.map((p) => publicPack(p)),
     custom: rows.map((r) => publicPack({ ...r.data, id: r.id }, r.teamId)),
+    // «Манай AI өвчтөн»: the demo cases played by our fine-tuned model.
+    model: modelPatientPacks().map((p) => publicPack(p)),
   };
 }
 

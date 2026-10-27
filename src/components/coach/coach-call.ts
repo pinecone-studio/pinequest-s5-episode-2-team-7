@@ -28,6 +28,8 @@ export interface CallEvents {
   listening(on: boolean): void;
   tick(seconds: number): void;
   ended(reason: EndReason): void;
+  /** «Манай AI өвчтөн»: which model answered the last turn. */
+  source?(v: "model" | "claude"): void;
 }
 
 interface Utterance {
@@ -100,14 +102,7 @@ export class CoachCall {
       this.ev.tick(s);
       if (s >= this.pack.maxSec) void this.finish("timeout");
     }, 500);
-    try {
-      this.listener = new Listener({ onSpeechStart: () => this.userStarted(), onUtterance: (wav) => void this.userEnded(wav) });
-      await this.listener.start();
-      this.ev.listening(true);
-    } catch {
-      this.listener = null;
-      this.ev.status("Микрофон нээгдсэнгүй. Доор бичиж хариулна уу.");
-    }
+    if (!(await this.openMic())) this.ev.status("Микрофон нээгдсэнгүй. Доор бичиж хариулна уу.");
     this.setEmotion(this.pack.openingEmotion);
     const u = this.utterance(this.emo);
     u.add(this.pack.opening);
@@ -295,6 +290,55 @@ export class CoachCall {
     void this.runTurn();
   }
 
+  private async openMic(): Promise<boolean> {
+    const listener = new Listener({ onSpeechStart: () => this.userStarted(), onUtterance: (wav) => void this.userEnded(wav) });
+    // An unanswered permission prompt must not hold up the call: give it 8 s, then go on
+    // with the mic off. If permission arrives later, release it (the mic button asks again).
+    const started = listener.start().then(
+      () => true,
+      () => false,
+    );
+    const ok = await Promise.race([started, new Promise<"late">((resolve) => setTimeout(() => resolve("late"), 8_000))]);
+    if (ok === "late") {
+      void started.then((on) => {
+        if (on) void listener.stop().catch(() => {});
+      });
+      return false;
+    }
+    if (!ok) return false;
+    if (this.ended) {
+      await listener.stop().catch(() => {});
+      return false;
+    }
+    this.listener = listener;
+    if (this.aiSpeaking) listener.vad.sensitivity = 2.5;
+    this.ev.listening(true);
+    return true;
+  }
+
+  /**
+   * The mic button: off releases the microphone (the browser's indicator goes
+   * out) and the trainee types instead; on opens hands-free listening again.
+   * Returns whether the mic is now on.
+   */
+  async setMic(on: boolean): Promise<boolean> {
+    if (this.ended) return false;
+    if (!on) {
+      const listener = this.listener;
+      this.listener = null;
+      this.clearSilence();
+      await listener?.stop().catch(() => {});
+      this.ev.listening(false);
+      this.ev.status("🔇 Микрофон унтраалттай — 💬 чатаар бичиж хариулна уу");
+      return false;
+    }
+    if (this.listener) return true;
+    const ok = await this.openMic();
+    this.ev.status(ok ? "🎙️ Микрофон асаалттай: ярина уу" : "Микрофон ашиглах зөвшөөрөл алга.");
+    if (ok && !this.aiSpeaking && !this.thinking) this.armSilence();
+    return ok;
+  }
+
   /** Pause hands-free listening (while the mic button records). */
   pauseListening(paused: boolean) {
     if (this.listener) this.listener.vad.sensitivity = paused ? 1_000 : this.aiSpeaking ? 2.5 : 1;
@@ -346,6 +390,8 @@ export class CoachCall {
           } else if (event.t === "say") {
             got = true;
             u.add(event.text);
+          } else if (event.t === "src") {
+            this.ev.source?.(event.v);
           } else if (event.t === "end") {
             endCall = true;
           } else if (event.t === "error") {

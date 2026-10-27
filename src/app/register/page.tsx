@@ -13,9 +13,9 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   return (
     <main className="mx-auto w-full max-w-md px-4 py-16">
       <Card className="p-6 sm:p-8">
-        <h1 className="text-xl font-semibold">Оюутны бүртгэл</h1>
+        <h1 className="text-xl font-semibold">Бүртгүүлэх</h1>
         <p className="mt-1 mb-6 text-sm text-slate-500">
-          Зөвхөн нэр, и-мэйл хадгална. Ярилцлагын түүх зөвхөн танд (болон сургалтын админд) харагдана.
+          Зөвхөн нэр, и-мэйл хадгална. Дадлагын дүгнэлт тань зөвхөн танд (багийн сорилт бол менежерт) харагдана.
         </p>
         <AuthForm mode="register" next={next} />
       </Card>

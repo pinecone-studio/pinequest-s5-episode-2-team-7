@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Manrope } from "next/font/google";
-import { cookies } from "next/headers";
 import { Providers } from "@/components/providers";
-import { SiteHeader } from "@/components/site-header";
-import { THEME_COOKIE } from "@/lib/theme";
+import { Suspense } from "react";
+import { AppNav } from "@/components/app-nav";
 import { t } from "@/i18n";
+import { getPageSession } from "@/lib/auth/server";
 import "./globals.css";
 
 // Both fonts ship Cyrillic Extended, which holds the Mongolian letters ө and ү.
@@ -21,28 +21,29 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: { default: "PineQuest AI Patient — Эмнэлзүйн асуумжийн дадлага", template: "%s · PineQuest AI Patient" },
-  description: "Анагаахын оюутнууд AI өвчтөнтэй монгол хэлээр ярилцаж, асуумж авах, онош тавих чадвараа хөгжүүлэх сургалтын симулятор.",
+  title: { default: "OTech AI — Жинхэнэ хүн дээр алдахаас өмнө AI дээр дадлагажуул", template: "%s · OTech AI" },
+  description: "AI дасгалжуулагч үйлчлүүлэгч, өвчтөн, сурагч, дуудлага өгөгч болж ярьж, материалаас тань сорил зохиож, хийсэн бүхэнд тань оноо, санал өгнө.",
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f4f7fa" },
-    { media: "(prefers-color-scheme: dark)", color: "#06101f" },
-  ],
+  themeColor: "#09080f",
+  colorScheme: "dark",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Chosen theme from the toggle's cookie; without it CSS follows the OS setting.
-  const theme = (await cookies()).get(THEME_COOKIE)?.value;
-  const themeClass = theme === "dark" || theme === "light" ? theme : "";
+  // If the database is unreachable, still render the page (signed-out navigation).
+  const session = await getPageSession().catch(() => null);
   return (
-    <html lang="mn" className={`${inter.variable} ${manrope.variable} ${themeClass} h-full antialiased`}>
+    // Dark only, like the iOS app.
+    <html lang="mn" className={`${inter.variable} ${manrope.variable} dark h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <Providers>
-          <SiteHeader />
+          <Suspense>
+            <AppNav user={session ? { id: session.userId, name: session.name, admin: session.role === "admin" } : null} />
+          </Suspense>
           <div className="flex flex-1 flex-col">{children}</div>
-          <footer className="border-t border-line">
+          {/* Room for the floating tab bar on phones. */}
+          <footer className={session ? "pb-28 md:pb-0" : undefined}>
             <div className="mx-auto max-w-6xl px-4 py-5 text-xs leading-relaxed text-subtle">
               <strong className="font-semibold text-muted">{t.app.disclaimerTitle}</strong> {t.app.disclaimer}
             </div>

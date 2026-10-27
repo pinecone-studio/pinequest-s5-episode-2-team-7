@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { apiFetch } from "@/lib/fetcher";
 import { AnamAvatar } from "../interview/anam-avatar";
+import { CallControls } from "../call-controls";
 import { MAX_RECORD_SECONDS, Recorder } from "../interview/recorder";
 import type { AvatarHandle } from "../interview/simli-avatar";
 import { Spinner, cn } from "../ui";
@@ -12,7 +13,7 @@ import { EXAM_ANSWERS_KEY } from "@/lib/quiz-client";
  * «Шүүлэг» oral exam: a talking examiner (Anam avatar, male TTS voice) asks
  * the questions one by one and the student answers by voice (Chimege STT) or
  * by typing. The quiz comes from the Otech AI iOS app (injected as
- * `window.__OTOCH_QUIZ`) or from the web page /shuulleg (sessionStorage); the
+ * `window.__OTOCH_QUIZ`) or from the web page /soril (sessionStorage); the
  * answers go back to whichever opened it, and that side grades them.
  */
 
@@ -57,11 +58,11 @@ function toApp(message: { type: "answers"; answers: string[] } | { type: "text" 
     app.postMessage(message);
     return;
   }
-  // Opened from the web page /shuulleg: hand the answers back through sessionStorage.
+  // Opened from the web page /soril: hand the answers back through sessionStorage.
   if (message.type === "answers") sessionStorage.setItem(EXAM_ANSWERS_KEY, JSON.stringify(message.answers));
-  // A full load: /shuulleg reads the hand-off once on arrival.
+  // A full load: /soril reads the hand-off once on arrival.
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  window.location.assign(`/shuulleg?oral=${message.type === "answers" ? "done" : "text"}`);
+  window.location.assign(`/soril?oral=${message.type === "answers" ? "done" : "text"}`);
 }
 
 /** Speaking time of a 16 kHz PCM16 WAV in ms (44-byte header). */
@@ -90,6 +91,7 @@ export function Examiner() {
   const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [avatarOn, setAvatarOn] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const avatarRef = useRef<AvatarHandle>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recorderRef = useRef<Recorder | null>(null);
@@ -150,11 +152,15 @@ export function Examiner() {
     setError(null);
     setAnswers(quiz.questions.map(() => ""));
     setPhase("connecting");
-    // Ask for the microphone now, while the tap still counts as a user gesture.
-    await navigator.mediaDevices
-      ?.getUserMedia({ audio: true })
-      .then((s) => s.getTracks().forEach((t) => t.stop()))
-      .catch(() => {});
+    // Ask for the microphone now, while the tap still counts as a user gesture; an
+    // unanswered permission prompt must not hold up the exam (the mic button asks again).
+    await Promise.race([
+      navigator.mediaDevices
+        ?.getUserMedia({ audio: true })
+        .then((s) => s.getTracks().forEach((t) => t.stop()))
+        .catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, 8_000)),
+    ]);
     setAvatarOn(true);
     // Wait for the video (max 12 s); without it the examiner talks as audio only.
     await new Promise<void>((resolve) => {
@@ -226,8 +232,11 @@ export function Examiner() {
 
   if (!quiz) {
     return (
-      <main className="flex flex-1 items-center justify-center p-6 text-center text-muted">
-        Шалгалтыг «Шүүлэг» хэсгээс эхлүүлнэ үү.
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center text-muted">
+        Аман шалгалтыг «Сорил» хэсгээс эхлүүлнэ үү.
+        <a href="/soril" className="rounded-full bg-[#8b5cf6] px-6 py-3 text-sm font-semibold text-[#ffffff]">
+          Сорил руу очих
+        </a>
       </main>
     );
   }
@@ -236,7 +245,7 @@ export function Examiner() {
   const busy = speaking || transcribing || phase === "asking" || phase === "connecting" || phase === "finished";
 
   return (
-    <main className="fixed inset-0 z-50 flex h-dvh flex-col bg-[#06101f] text-[#ffffff]">
+    <main className="fixed inset-0 z-50 flex h-dvh flex-col bg-[#09080f] text-[#ffffff]">
       <div className="relative min-h-0 flex-1">
         {avatarOn ? (
           <AnamAvatar
@@ -246,16 +255,16 @@ export function Examiner() {
             tokenUrl="/api/quiz/avatar"
             autoStart
             onLive={onLive}
-            className="relative h-full w-full overflow-hidden bg-[#0b1220]"
+            className="relative h-full w-full overflow-hidden bg-[#110f18]"
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2dd4c4]/15 text-5xl">🎓</div>
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#8b5cf6]/15 text-5xl">🎓</div>
             <h1 className="text-xl font-bold">Шалгагч багш</h1>
-            <p className="max-w-sm text-sm text-[#cbd5e1]">
+            <p className="max-w-sm text-sm text-[#c9c4e0]">
               «{quiz.title}» сэдвээр {quiz.questions.length} асуулт асууна. Хариултаа дуугаар хэлж эсвэл бичиж өгнө.
             </p>
-            <button onClick={begin} className="rounded-full bg-[#2dd4c4] px-8 py-3 text-base font-semibold text-[#04201e]">
+            <button onClick={begin} className="rounded-full bg-[#8b5cf6] px-8 py-3 text-base font-semibold text-[#ffffff]">
               Шалгалт эхлэх
             </button>
           </div>
@@ -269,14 +278,14 @@ export function Examiner() {
       </div>
 
       {phase !== "intro" && (
-        <section className="max-h-[55%] overflow-y-auto rounded-t-3xl bg-[#0c1a2e] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <section className="max-h-[55%] overflow-y-auto rounded-t-3xl bg-[#17141f] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {phase === "connecting" ? (
-            <div className="flex items-center gap-3 py-4 text-sm text-[#cbd5e1]">
+            <div className="flex items-center gap-3 py-4 text-sm text-[#c9c4e0]">
               <Spinner /> Багш холбогдож байна…
             </div>
           ) : (
             <>
-              <p className="mb-1 text-xs font-semibold text-[#5fe0d3]">
+              <p className="mb-1 text-xs font-semibold text-[#b9a4ff]">
                 Асуулт {index + 1} / {quiz.questions.length}
               </p>
               <p className="text-base font-semibold leading-snug">{q.prompt}</p>
@@ -289,7 +298,7 @@ export function Examiner() {
                       onClick={() => setAnswers((prev) => prev.map((a, j) => (j === index ? option : a)))}
                       className={cn(
                         "rounded-xl border px-3 py-2 text-left text-sm",
-                        answers[index] === option ? "border-[#2dd4c4] bg-[#2dd4c4]/20" : "border-[#334155] bg-[#1e293b]",
+                        answers[index] === option ? "border-[#8b5cf6] bg-[#8b5cf6]/20" : "border-[#352e4a] bg-[#1e1734]",
                       )}
                     >
                       {option}
@@ -297,44 +306,68 @@ export function Examiner() {
                   ))}
                 </div>
               )}
-              <textarea
-                value={answers[index] ?? ""}
-                onChange={(e) => setAnswers((prev) => prev.map((a, j) => (j === index ? e.target.value : a)))}
-                disabled={phase !== "answering"}
-                placeholder={phase === "answering" ? "Микрофон дээр дарж хариултаа хэлнэ үү, эсвэл бичнэ үү…" : "Багш асууж байна…"}
-                rows={3}
-                className="mt-3 w-full resize-none rounded-xl border border-[#334155] bg-[#1e293b] p-3 text-sm text-[#ffffff] placeholder:text-[#64748b]"
-              />
+              {showChat ? (
+                <>
+                  {index > 0 && (
+                    <div className="mt-3 grid max-h-40 gap-2 overflow-y-auto rounded-xl bg-[#110f18] p-3 text-xs">
+                      {quiz.questions.slice(0, index).map((pq, j) => (
+                        <div key={pq.id}>
+                          <p className="text-[#a7a2c3]">
+                            {j + 1}. {pq.prompt}
+                          </p>
+                          <p className="text-right text-[#b9a4ff]">{answers[j] || "—"}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <textarea
+                    value={answers[index] ?? ""}
+                    onChange={(e) => setAnswers((prev) => prev.map((a, j) => (j === index ? e.target.value : a)))}
+                    disabled={phase !== "answering"}
+                    aria-label="Хариулт"
+                    placeholder={phase === "answering" ? "Хариултаа энд бичнэ үү…" : "Багш асууж байна…"}
+                    rows={3}
+                    className="mt-3 w-full resize-none rounded-xl border border-[#352e4a] bg-[#1e1734] p-3 text-sm text-[#ffffff] placeholder:text-[#6f6990]"
+                  />
+                </>
+              ) : (
+                answers[index] && <p className="mt-3 rounded-xl bg-[#1e1734] p-3 text-sm text-[#e2def5]">{answers[index]}</p>
+              )}
               {error && <p className="mt-2 text-xs text-[#fda4af]">{error}</p>}
               <div className="mt-3 flex items-center gap-3">
                 <button
-                  onClick={toggleMic}
-                  disabled={phase !== "answering" || transcribing}
-                  aria-label={recording ? "Бичлэг зогсоох" : "Дуугаар хариулах"}
-                  className={cn(
-                    "flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl disabled:opacity-40",
-                    recording ? "animate-pulse bg-[#e11d48]" : "bg-[#2dd4c4] text-[#04201e]",
-                  )}
-                >
-                  {transcribing ? <Spinner /> : recording ? "■" : "🎤"}
-                </button>
-                <button
                   onClick={() => void say(spokenQuestion(q, index, quiz.questions.length))}
                   disabled={busy || recording}
-                  className="rounded-full border border-[#334155] px-4 py-3 text-sm disabled:opacity-40"
+                  className="rounded-full border border-[#352e4a] px-4 py-2.5 text-sm disabled:opacity-40"
                 >
                   Дахин сонсох
                 </button>
                 <button
                   onClick={() => void next()}
                   disabled={busy}
-                  className="ml-auto rounded-full bg-[#ffffff] px-5 py-3 text-sm font-semibold text-[#0f172a] disabled:opacity-40"
+                  className="ml-auto rounded-full bg-[#ffffff] px-5 py-2.5 text-sm font-semibold text-[#110f18] disabled:opacity-40"
                 >
                   {index === quiz.questions.length - 1 ? "Дуусгах" : "Дараах"}
                 </button>
               </div>
-              {recording && <p className="mt-2 text-xs text-[#cbd5e1]">Сонсож байна… дуусаад ■ дарна уу (урт хариултыг {MAX_RECORD_SECONDS} сек тутам хэсэглэн таньна).</p>}
-              {phase === "finished" && <p className="mt-2 text-xs text-[#cbd5e1]">Хариултыг шалгаж байна…</p>}
+              <p className="mb-3 mt-2 min-h-4 text-center text-xs text-[#c9c4e0]">
+                {transcribing
+                  ? "Бичвэр болгож байна…"
+                  : recording
+                    ? `Сонсож байна… дуусаад микрофоноо унтраана уу (${MAX_RECORD_SECONDS} сек тутам хэсэглэн таньна).`
+                    : phase === "answering"
+                      ? "Микрофоноо асааж хариулна уу, эсвэл 💬 чатаар бичнэ үү."
+                      : ""}
+              </p>
+              <CallControls
+                micOn={recording}
+                micBusy={transcribing}
+                chatOpen={showChat}
+                disabled={phase !== "answering"}
+                onMic={() => void toggleMic()}
+                onChat={() => setShowChat((v) => !v)}
+              />
+              {phase === "finished" && <p className="mt-2 text-xs text-[#c9c4e0]">Хариултыг шалгаж байна…</p>}
             </>
           )}
         </section>
