@@ -265,6 +265,12 @@ export const challenges = pgTable(
     difficulty: text("difficulty", { enum: ["easy", "medium", "hard"] }).notNull().default("medium"),
     targetScore: integer("target_score").notNull().default(70),
     dueAt: timestamp("due_at", { withTimezone: true }),
+    /** Time for one attempt (overrides the pack's own limit); null = the pack's limit. */
+    timeLimitSec: integer("time_limit_sec"),
+    /** Attempts each assignee gets; null = unlimited practice. */
+    maxAttempts: integer("max_attempts"),
+    /** Who must take it (user ids); null = every member of the team. */
+    assignees: jsonb("assignees").$type<string[]>(),
     createdBy: uuid("created_by")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),

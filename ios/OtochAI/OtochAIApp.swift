@@ -31,6 +31,8 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var askedSignIn = false
     @State private var showSignIn = false
+    @State private var keyboardShown = false
+    @ObservedObject private var chrome = AppChrome.shared
 
     /// No role yet, or one from the old health-only version: show the new onboarding.
     private var needsRole: Bool { UserRole(rawValue: roleRaw).map { !UserRole.pickable.contains($0) } ?? true }
@@ -44,10 +46,18 @@ struct RootView: View {
             FeedbackView().tag(AppTab.feedback).tabContent()
         }
         .overlay(alignment: .bottom) {
-            FloatingTabBar(tab: $tab, teamBadge: team.unseen)
-                .padding(.bottom, 2)
-                .ignoresSafeArea(.keyboard)
+            // Hidden while typing: otherwise the keyboard pushes it up over the form's buttons.
+            if !keyboardShown && !chrome.hideTabBar {
+                FloatingTabBar(tab: $tab, teamBadge: team.unseen)
+                    .padding(.bottom, 2)
+                    .ignoresSafeArea(.keyboard)
+                    .transition(.opacity)
+            }
         }
+        .animation(.easeOut(duration: 0.15), value: keyboardShown)
+        .animation(.easeOut(duration: 0.15), value: chrome.hideTabBar)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in keyboardShown = true }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in keyboardShown = false }
         .tint(brand)
         .preferredColorScheme(.dark)
         .environmentObject(history)
@@ -86,6 +96,13 @@ struct RootView: View {
             SignInSheet { Task { await coach.load(); await team.load() } }
         }
     }
+}
+
+/// App-wide chrome state: a full-screen flow (answering a Сорил) hides the floating tab bar
+/// so its own bottom buttons are not covered.
+final class AppChrome: ObservableObject {
+    static let shared = AppChrome()
+    @Published var hideTabBar = false
 }
 
 private extension View {

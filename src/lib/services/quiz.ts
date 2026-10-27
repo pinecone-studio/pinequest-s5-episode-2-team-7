@@ -230,6 +230,13 @@ async function ask<T extends z.ZodType>(schema: T, content: Anthropic.Beta.BetaC
   } catch (error) {
     if (error instanceof ApiError) throw error;
     if (error instanceof Anthropic.RateLimitError) throw new ApiError(429, "rate_limited", "AI түр завгүй байна. Хэдэн секундын дараа дахин оролдоно уу.");
+    if (error instanceof Anthropic.BadRequestError) {
+      console.error("[quiz] Anthropic 400:", error.message);
+      // Account problems also come back as 400: say so instead of blaming the learner's file.
+      if (/credit balance/i.test(error.message)) {
+        throw new ApiError(503, "quiz_unavailable", "AI үйлчилгээний эрх (кредит) дууссан байна. Админ Anthropic Console → Plans & Billing-ээс цэнэглэнэ үү.");
+      }
+    }
     if (error instanceof Anthropic.BadRequestError) throw Errors.badRequest("Файлыг уншиж чадсангүй. Зураг тод, PDF гэмтэлгүй эсэхийг шалгана уу.");
     if (error instanceof Anthropic.APIConnectionError) throw new ApiError(502, "quiz_network", "AI-д холбогдож чадсангүй. Дахин оролдоно уу.");
     throw error;

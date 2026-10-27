@@ -27,7 +27,26 @@ struct TeamInfo: Decodable, Identifiable, Hashable {
         let passed: Bool
         let passedCount: Int
         let attemptCount: Int
+        // Newer servers (avatar studio): optional so older ones still decode.
+        let timeLimitSec: Int?
+        let maxAttempts: Int?
+        let attemptsLeft: Int?
+        let assignedCount: Int?
+        let everyone: Bool?
+        let progress: [Progress]?
         var due: Date? { dueAt.map(ServerAPI.date) }
+        var outOfAttempts: Bool { attemptsLeft == 0 }
+    }
+
+    /// Owner only: one assignee's standing in a challenge.
+    struct Progress: Decodable, Identifiable, Hashable {
+        let userId: String
+        let name: String
+        let attempts: Int
+        let best: Int?
+        let passed: Bool
+        let lastResultId: String?
+        var id: String { userId }
     }
 
     struct FeedItem: Decodable, Identifiable, Hashable {
@@ -82,7 +101,7 @@ final class TeamStore: ObservableObject {
 
     var nextChallenge: PendingChallenge? {
         for team in teams where !team.isOwner {
-            if let c = team.challenges.first(where: { !$0.passed }) { return PendingChallenge(team: team, challenge: c) }
+            if let c = team.challenges.first(where: { !$0.passed && !$0.outOfAttempts }) { return PendingChallenge(team: team, challenge: c) }
         }
         return nil
     }
@@ -115,9 +134,13 @@ final class TeamStore: ObservableObject {
         return team.name
     }
 
-    func createChallenge(teamId: String, packRef: String, title: String, mode: String, difficulty: String, target: Int, dueDays: Int?) async throws {
+    func createChallenge(teamId: String, packRef: String, title: String, mode: String, difficulty: String, target: Int, dueDays: Int?,
+                         timeLimitMin: Int? = nil, maxAttempts: Int? = nil, assignees: [String]? = nil) async throws {
         var body: [String: Any] = ["packRef": packRef, "title": title, "mode": mode, "difficulty": difficulty, "targetScore": target]
-        if let dueDays { body["dueDays"] = dueDays } else { body["dueDays"] = NSNull() }
+        body["dueDays"] = dueDays.map { $0 as Any } ?? NSNull()
+        body["timeLimitMin"] = timeLimitMin.map { $0 as Any } ?? NSNull()
+        body["maxAttempts"] = maxAttempts.map { $0 as Any } ?? NSNull()
+        body["assignees"] = assignees.map { $0 as Any } ?? NSNull()
         _ = try await ServerAPI.post("api/teams/\(teamId)/challenges", body, as: ChallengeBody.self)
         await load()
         markSeen()
@@ -195,8 +218,20 @@ struct TeamView: View {
     @State private var working = false
     @State private var message: String?
     @State private var showSignIn = false
-    @State private var challengeFor: TeamInfo?
+    @State private var challengeFor: ChallengeTarget?
     @State private var materialFor: TeamInfo?
+    @State private var studioFor: TeamInfo?
+    @State private var progressFor: ChallengeTarget?
+    @State private var qrFor: TeamInfo?
+    @State private var scanning = false
+
+    /// A team, optionally with a persona (to send) or a challenge (to inspect).
+    struct ChallengeTarget: Identifiable {
+        let id = UUID()
+        let team: TeamInfo
+        var packRef: String? = nil
+        var challenge: TeamInfo.Challenge? = nil
+    }
     @State private var launch: CoachLaunch?
     @State private var showJoinMore = false
 
@@ -244,11 +279,40 @@ struct TeamView: View {
             team.markSeen()
         }
         .sheet(isPresented: $showSignIn) { SignInSheet { Task { await team.load(); await coach.load() } } }
-        .sheet(item: $challengeFor) { t in ChallengeCreateView(team: t) }
+        .sheet(item: $challengeFor) { t in ChallengeCreateView(team: t.team, preselected: t.packRef) }
         .sheet(item: $materialFor) { t in
-            CoachCustomView(teamId: t.id) { _ in
+            CoachCustomView(teamId: t.id) { pack in
                 materialFor = nil
-                message = "Компанийн дасгалжуулагч үүслээ. Одоо «Сорилт өгөх»-өөс сонгоод ажилтнууддаа илгээгээрэй."
+                Task {
+                    try? await Task.sleep(for: .milliseconds(450))
+                    challengeFor = ChallengeTarget(team: t, packRef: pack.id)
+                }
+            }
+        }
+        .sheet(item: $studioFor) { t in
+            AvatarStudioView(team: t) { pack in
+                // Saved: go straight to sending it to the staff.
+                Task {
+                    try? await Task.sleep(for: .milliseconds(450))
+                    challengeFor = ChallengeTarget(team: t, packRef: pack.id)
+                }
+            }
+        }
+        .sheet(item: $progressFor) { t in
+            if let c = t.challenge { ChallengeProgressView(team: t.team, challenge: c) }
+        }
+        .sheet(item: $qrFor) { t in TeamQRSheet(team: t) }
+        .sheet(isPresented: $scanning) {
+            ZStack(alignment: .bottom) {
+                TeamQRScanner { code in
+                    scanning = false
+                    run { let name = try await team.join(code: code); message = "«\(name)» багт нэгдлээ." }
+                }
+                .ignoresSafeArea()
+                Text("Менежерийн QR код руу чиглүүлнэ үү").font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+                    .background(.black.opacity(0.6), in: Capsule()).foregroundStyle(.white)
+                    .padding(.bottom, 40)
             }
         }
         .fullScreenCover(item: $launch) { item in
@@ -285,11 +349,17 @@ struct TeamView: View {
                     .textInputAutocapitalization(.characters)
                     .autocorrectionDisabled()
                     .padding(12).background(Theme.field, in: RoundedRectangle(cornerRadius: 14))
-                Button {
-                    run { let name = try await team.join(code: joinCode.trimmingCharacters(in: .whitespaces)); joinCode = ""; message = "«\(name)» багт нэгдлээ." }
-                } label: { Text("Нэгдэх") }
-                    .buttonStyle(.secondary)
-                    .disabled(working || joinCode.trimmingCharacters(in: .whitespaces).count < 4)
+                HStack(spacing: 10) {
+                    Button {
+                        run { let name = try await team.join(code: joinCode.trimmingCharacters(in: .whitespaces)); joinCode = ""; message = "«\(name)» багт нэгдлээ." }
+                    } label: { Text("Нэгдэх") }
+                        .buttonStyle(.secondary)
+                        .disabled(working || joinCode.trimmingCharacters(in: .whitespaces).count < 4)
+                    if TeamQRScanner.isAvailable {
+                        Button { scanning = true } label: { Label("QR уншуулах", systemImage: "qrcode.viewfinder") }
+                            .buttonStyle(.secondary)
+                    }
+                }
             }
             .card(padding: 16, radius: 22)
         }
@@ -315,40 +385,64 @@ struct TeamView: View {
                 }
                 Spacer()
                 if let code = t.code {
-                    ShareLink(item: "OTech AI-д манай «\(t.name)» багт нэгдээрэй. Апп → Баг → Нэгдэх, код: \(code)") {
+                    Button { qrFor = t } label: {
                         VStack(spacing: 2) {
                             Text(code).font(.headline.monospaced()).foregroundStyle(brand)
-                            Label("Хуваалцах", systemImage: "square.and.arrow.up").font(.caption2).foregroundStyle(Theme.muted)
+                            Label("QR · хуваалцах", systemImage: "qrcode").font(.caption2).foregroundStyle(Theme.muted)
                         }
                         .padding(.horizontal, 12).padding(.vertical, 8)
                         .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
                     }
+                    .buttonStyle(.plain)
                 }
             }
 
+            Button { studioFor = t } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "person.crop.rectangle.badge.plus").font(.title2)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Аватар студи").font(.headline)
+                        Text("Аватар хэн байх, юу асуух, юугаар дүгнэхийг өөрөө тохируул").font(.caption).opacity(0.85)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .foregroundStyle(.white)
+                .padding(14)
+                .background(Theme.accentGradient, in: RoundedRectangle(cornerRadius: 18))
+            }
+            .buttonStyle(.plain)
+
             HStack(spacing: 10) {
-                Button { challengeFor = t } label: { Label("Сорилт өгөх", systemImage: "flag.checkered") }
-                    .buttonStyle(.primary)
-                Button { materialFor = t } label: { Label("Материал", systemImage: "doc.badge.plus") }
+                Button { challengeFor = ChallengeTarget(team: t) } label: { Label("Сорилт өгөх", systemImage: "flag.checkered") }
+                    .buttonStyle(.secondary)
+                Button { materialFor = t } label: { Label("Материалаас", systemImage: "doc.badge.plus") }
                     .buttonStyle(.secondary)
             }
 
             if !t.challenges.isEmpty {
                 Text("Сорилтууд").font(.headline)
                 ForEach(t.challenges) { c in
-                    HStack(spacing: 12) {
-                        Text(coach.pack(c.packRef)?.icon ?? "🏆").font(.title2)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(c.title).font(.subheadline.weight(.semibold))
-                            Text("Зорилт \(c.targetScore) · \(CoachLabels.mode(c.mode)) · \(CoachLabels.difficulty(c.difficulty))" + dueText(c.due))
-                                .font(.caption).foregroundStyle(Theme.muted)
+                    Button { progressFor = ChallengeTarget(team: t, challenge: c) } label: {
+                        HStack(spacing: 12) {
+                            Text(coach.pack(c.packRef)?.icon ?? "🏆").font(.title2)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(c.title).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                                Text("Зорилт \(c.targetScore) · \(CoachLabels.mode(c.mode))" + limitsText(c) + dueText(c.due))
+                                    .font(.caption).foregroundStyle(Theme.muted)
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 1) {
+                                Text("\(c.passedCount)/\(c.assignedCount ?? max(0, t.memberCount - 1))")
+                                    .font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(brand)
+                                Text("тэнцсэн").font(.caption2).foregroundStyle(Theme.muted)
+                            }
+                            .accessibilityLabel("\(c.passedCount) ажилтан тэнцсэн")
+                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.subtle)
                         }
-                        Spacer()
-                        Text("\(c.passedCount)/\(max(0, t.memberCount - 1))")
-                            .font(.subheadline.weight(.semibold).monospacedDigit()).foregroundStyle(brand)
-                            .accessibilityLabel("\(c.passedCount) ажилтан биелүүлсэн")
+                        .padding(10).background(Theme.field, in: RoundedRectangle(cornerRadius: 14))
                     }
-                    .padding(10).background(Theme.field, in: RoundedRectangle(cornerRadius: 14))
+                    .buttonStyle(.plain)
                 }
             }
 
@@ -400,12 +494,14 @@ struct TeamView: View {
                     Text(coach.pack(c.packRef)?.icon ?? "🏆").font(.title2)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(c.title).font(.subheadline.weight(.semibold))
-                        Text("Зорилт \(c.targetScore)" + (c.myBest.map { " · Таны шилдэг \($0)" } ?? "") + dueText(c.due))
+                        Text("Зорилт \(c.targetScore)" + (c.myBest.map { " · Таны шилдэг \($0)" } ?? "") + limitsText(c) + dueText(c.due))
                             .font(.caption).foregroundStyle(Theme.muted)
                     }
                     Spacer()
                     if c.passed {
                         Label("Биелсэн", systemImage: "checkmark.seal.fill").font(.caption.weight(.semibold)).foregroundStyle(Theme.ok)
+                    } else if c.outOfAttempts {
+                        Text("Оролдлого дууссан").font(.caption.weight(.semibold)).foregroundStyle(Theme.muted)
                     } else {
                         Button {
                             launch = CoachLaunch(packRef: c.packRef, mode: c.mode, difficulty: c.difficulty, challengeId: c.id)
@@ -427,6 +523,13 @@ struct TeamView: View {
             }
         }
         .card(padding: 16, radius: 24)
+    }
+
+    private func limitsText(_ c: TeamInfo.Challenge) -> String {
+        var s = ""
+        if let t = c.timeLimitSec { s += " · ⏱ \(t / 60) мин" }
+        if let left = c.attemptsLeft { s += " · \(left) оролдлого үлдсэн" } else if let m = c.maxAttempts { s += " · \(m) оролдлого" }
+        return s
     }
 
     private func dueText(_ due: Date?) -> String {
@@ -480,6 +583,7 @@ struct ChallengeBanner: View {
 
 struct ChallengeCreateView: View {
     let team: TeamInfo
+    var preselected: String? = nil
     @EnvironmentObject private var store: TeamStore
     @EnvironmentObject private var coach: CoachStore
     @Environment(\.dismiss) private var dismiss
@@ -489,8 +593,15 @@ struct ChallengeCreateView: View {
     @State private var difficulty = "medium"
     @State private var target = 70
     @State private var dueDays: Int? = 7
+    @State private var timeLimitMin: Int? = nil
+    @State private var maxAttempts: Int? = nil
+    @State private var everyone = true
+    @State private var chosen: Set<String> = []
+    @State private var preview: CoachLaunch?
     @State private var working = false
     @State private var error: String?
+
+    private var staff: [TeamInfo.Member] { team.members.filter { $0.role != "owner" } }
 
     private var packs: [CoachPack] { coach.custom.filter { $0.teamId == nil || $0.teamId == team.id } + coach.roles }
 
@@ -508,12 +619,50 @@ struct ChallengeCreateView: View {
                     Picker("Хэлбэр", selection: $mode) { ForEach(CoachLabels.modes, id: \.0) { Text($0.1).tag($0.0) } }
                     Picker("Хүндийн зэрэг", selection: $difficulty) { ForEach(CoachLabels.difficulties, id: \.0) { Text($0.1).tag($0.0) } }
                     Stepper("Зорилт: \(target) оноо", value: $target, in: 40...100, step: 5)
-                    Picker("Хугацаа", selection: $dueDays) {
+                    Picker("Дуусах хугацаа", selection: $dueDays) {
                         Text("Хугацаагүй").tag(Int?.none)
+                        Text("Өнөөдөр").tag(Optional(1))
                         Text("3 хоног").tag(Optional(3))
                         Text("7 хоног").tag(Optional(7))
                         Text("14 хоног").tag(Optional(14))
                     }
+                    Picker("Нэг оролдлогын цаг", selection: $timeLimitMin) {
+                        Text("Дүрийнх").tag(Int?.none)
+                        ForEach([2, 3, 5, 10, 15], id: \.self) { Text("\($0) минут").tag(Optional($0)) }
+                    }
+                    Picker("Оролдлого", selection: $maxAttempts) {
+                        Text("Хязгааргүй").tag(Int?.none)
+                        Text("1 удаа (шалгалт)").tag(Optional(1))
+                        Text("2 удаа").tag(Optional(2))
+                        Text("3 удаа").tag(Optional(3))
+                    }
+                }
+                Section {
+                    Toggle("Бүх ажилтан (\(staff.count))", isOn: $everyone)
+                    if !everyone {
+                        if staff.isEmpty { Text("Ажилтан нэгдээгүй байна.").foregroundStyle(.secondary) }
+                        ForEach(staff) { m in
+                            Button {
+                                if chosen.contains(m.userId) { chosen.remove(m.userId) } else { chosen.insert(m.userId) }
+                            } label: {
+                                HStack {
+                                    Text(m.name).foregroundStyle(Theme.ink)
+                                    Spacer()
+                                    Image(systemName: chosen.contains(m.userId) ? "checkmark.circle.fill" : "circle").foregroundStyle(brand)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Хэнд")
+                } footer: {
+                    Text(everyone ? "Дараа нэгдэх ажилтанд ч мөн очно. Бүгдэд нэгэн зэрэг мэдэгдэл очно." : "Зөвхөн сонгосон ажилтнууд харна.")
+                }
+                Section {
+                    Button { preview = CoachLaunch(packRef: packRef, mode: mode, difficulty: difficulty) } label: {
+                        Label("Илгээхээс өмнө өөрөө туршиж үзэх", systemImage: "play.circle")
+                    }
+                    .disabled(packRef.isEmpty)
                 }
                 Section {
                     Text("Ажилтан бүрийн үр дүн танд мэдэгдэл болон «Баг» хэсэгт ирнэ.").font(.caption).foregroundStyle(.secondary)
@@ -526,15 +675,17 @@ struct ChallengeCreateView: View {
                 ToolbarItem(placement: .topBarLeading) { Button("Болих") { dismiss() } }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Илгээх") { Task { await send() } }
-                        .disabled(packRef.isEmpty || working)
+                        .fontWeight(.semibold)
+                        .disabled(packRef.isEmpty || working || (!everyone && chosen.isEmpty))
                 }
             }
             .onAppear {
-                if packRef.isEmpty, let first = packs.first {
-                    packRef = first.id
-                    mode = first.defaultMode
+                if packRef.isEmpty, let ref = preselected ?? packs.first?.id {
+                    packRef = ref
+                    if let p = coach.pack(ref) { mode = p.defaultMode }
                 }
             }
+            .fullScreenCover(item: $preview) { item in CoachSessionView(launch: item) { preview = nil } }
             .onChange(of: packRef) { _, ref in
                 if let p = packs.first(where: { $0.id == ref }) { mode = p.defaultMode }
             }
@@ -547,7 +698,9 @@ struct ChallengeCreateView: View {
         defer { working = false }
         do {
             try await store.createChallenge(teamId: team.id, packRef: packRef, title: title.trimmingCharacters(in: .whitespaces),
-                                            mode: mode, difficulty: difficulty, target: target, dueDays: dueDays)
+                                            mode: mode, difficulty: difficulty, target: target, dueDays: dueDays,
+                                            timeLimitMin: timeLimitMin, maxAttempts: maxAttempts,
+                                            assignees: everyone ? nil : Array(chosen))
             dismiss()
         } catch {
             self.error = error.localizedDescription

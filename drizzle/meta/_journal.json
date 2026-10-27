@@ -36,6 +36,13 @@
       "when": 1793000000000,
       "tag": "0004_coach",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793100000000,
+      "tag": "0005_team_studio",
+      "breakpoints": true
     }
   ]
 }
