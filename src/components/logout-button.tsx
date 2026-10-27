@@ -16,7 +16,7 @@ export function LogoutButton() {
         router.push("/");
         router.refresh();
       }}
-      className="rounded-md px-3 py-1.5 text-slate-600 hover:bg-slate-100 hover:text-ink disabled:opacity-50"
+      className="rounded-full px-3 py-1.5 text-muted hover:bg-field hover:text-ink disabled:opacity-50"
     >
       Гарах
     </button>

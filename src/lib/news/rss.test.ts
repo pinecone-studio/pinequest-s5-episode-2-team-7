@@ -50,6 +50,7 @@ describe("parseFeed", () => {
       link: "https://example.org/tb",
       description: "Shorter treatment for drug-resistant TB.",
       publishedAt: new Date("2026-10-20T08:00:00Z"),
+      image: null,
     });
   });
 

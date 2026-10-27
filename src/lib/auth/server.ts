@@ -30,6 +30,6 @@ export async function requirePageUser(next: string): Promise<SessionData> {
 export async function requirePageAdmin(next: string): Promise<{ session: SessionData; user: PublicUser }> {
   const current = await getPageSessionUser();
   if (!current) redirect(`/login?next=${encodeURIComponent(next)}`);
-  if (current.user.role !== "admin") redirect("/dashboard?denied=1");
+  if (current.user.role !== "admin") redirect("/?denied=1");
   return { session: { ...current.session, role: "admin" }, user: current.user };
 }

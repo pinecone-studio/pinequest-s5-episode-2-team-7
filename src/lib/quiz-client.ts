@@ -1,8 +1,9 @@
 /**
- * Browser side of «Шүүлэг» (the web page /shuulleg; the iOS app has its own
+ * Browser side of «Сорил» (the web page /soril; the iOS app has its own
  * screens). Response shapes mirror src/lib/services/quiz.ts.
  */
 import { apiFetch } from "./fetcher";
+import { clientRole } from "./role";
 
 export interface QuizQuestion {
   id: string;
@@ -50,16 +51,25 @@ export interface QuizFile {
   preview?: string; // object URL for images (not sent)
 }
 
+export const QUESTION_KINDS = [
+  { id: "choice", label: "Тест" },
+  { id: "open", label: "Өгүүлбэр" },
+  { id: "case", label: "Кейс бодлого" },
+] as const satisfies { id: QuizQuestion["kind"]; label: string }[];
+
+/** The role chosen on «Та юунд бэлдэж байна вэ?»: the server tailors the examiner and the questions to it. */
+const role = () => clientRole() ?? "learner";
+
 export const quizApi = {
-  generate: (files: QuizFile[], notes: string, count: number, focus: string[] = []) =>
+  generate: (files: QuizFile[], notes: string, count: number, focus: string[] = [], types: QuizQuestion["kind"][] = ["open", "choice"]) =>
     apiFetch<{ quiz: Quiz }>("/api/quiz/generate", {
       method: "POST",
-      json: { files: files.map(({ name, mediaType, data }) => ({ name, mediaType, data })), notes, count, focus },
+      json: { files: files.map(({ name, mediaType, data }) => ({ name, mediaType, data })), notes, count, focus, types, role: role() },
     }).then((r) => r.quiz),
   grade: (quiz: Quiz, answers: string[]) =>
-    apiFetch<{ grade: Grade }>("/api/quiz/grade", { method: "POST", json: { title: quiz.title, summary: quiz.summary, questions: quiz.questions, answers } }).then((r) => r.grade),
+    apiFetch<{ grade: Grade }>("/api/quiz/grade", { method: "POST", json: { title: quiz.title, summary: quiz.summary, questions: quiz.questions, answers, role: role() } }).then((r) => r.grade),
   explain: (topic: { topic: string; why: string }, quiz: Quiz) =>
-    apiFetch<{ lesson: Lesson }>("/api/quiz/explain", { method: "POST", json: { topic: topic.topic, why: topic.why, title: quiz.title, summary: quiz.summary } }).then((r) => r.lesson),
+    apiFetch<{ lesson: Lesson }>("/api/quiz/explain", { method: "POST", json: { topic: topic.topic, why: topic.why, title: quiz.title, summary: quiz.summary, role: role() } }).then((r) => r.lesson),
 };
 
 function base64(buffer: ArrayBuffer): string {
@@ -141,11 +151,11 @@ export function removeAttempt(id: string) {
   write(quizHistory.snapshot().filter((a) => a.id !== id));
 }
 
-/* ---------- Oral exam hand-off (/shuulleg → /exam → /shuulleg) ---------- */
+/* ---------- Oral exam hand-off (/soril → /exam → /soril) ---------- */
 
 /** The question sheet for /exam (no answer keys) — the same shape the iOS app injects. */
 export const EXAM_QUIZ_KEY = "otoch-quiz";
-/** The full quiz kept while the examiner asks, so /shuulleg can grade afterwards. */
+/** The full quiz kept while the examiner asks, so /soril can grade afterwards. */
 export const PENDING_QUIZ_KEY = "otech-pending-quiz";
 /** Answers /exam leaves behind when it was opened from the web, not the app. */
 export const EXAM_ANSWERS_KEY = "otech-exam-answers";

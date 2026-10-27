@@ -2,13 +2,8 @@ import Link from "next/link";
 import { requirePageAdmin } from "@/lib/auth/server";
 
 const NAV = [
-  { href: "/admin", label: "Кейсүүд" },
-  { href: "/admin/cases/new", label: "Шинэ кейс" },
-  { href: "/admin/news", label: "Эрүүл мэндийн мэдээ" },
-  { href: "/admin/import", label: "Импорт / Экспорт" },
-  { href: "/admin/sessions", label: "Ярилцлага ба сургалтын өгөгдөл" },
-  { href: "/admin/quality", label: "Өгөгдлийн чанар" },
-  { href: "/admin/diagnostics", label: "AI загварын төлөв" },
+  { href: "/admin/news", label: "Мэдээ" },
+  { href: "/admin/news/new", label: "Шинэ мэдээ" },
 ];
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {

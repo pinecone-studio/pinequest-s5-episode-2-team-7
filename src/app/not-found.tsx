@@ -7,7 +7,7 @@ export default function NotFound() {
       <p className="text-sm font-medium text-brand-700">404</p>
       <h1 className="mt-2 text-2xl font-semibold">Хуудас олдсонгүй</h1>
       <p className="mt-2 text-sm text-slate-500">Таны хайсан хуудас байхгүй эсвэл танд харах эрх алга.</p>
-      <Link href="/dashboard" className={buttonClass("primary", "md", "mt-6")}>
+      <Link href="/" className={buttonClass("primary", "md", "mt-6")}>
         Нүүр хуудас руу
       </Link>
     </main>

@@ -12,7 +12,7 @@ import { EXAM_ANSWERS_KEY } from "@/lib/quiz-client";
  * «Шүүлэг» oral exam: a talking examiner (Anam avatar, male TTS voice) asks
  * the questions one by one and the student answers by voice (Chimege STT) or
  * by typing. The quiz comes from the Otech AI iOS app (injected as
- * `window.__OTOCH_QUIZ`) or from the web page /shuulleg (sessionStorage); the
+ * `window.__OTOCH_QUIZ`) or from the web page /soril (sessionStorage); the
  * answers go back to whichever opened it, and that side grades them.
  */
 
@@ -57,11 +57,11 @@ function toApp(message: { type: "answers"; answers: string[] } | { type: "text" 
     app.postMessage(message);
     return;
   }
-  // Opened from the web page /shuulleg: hand the answers back through sessionStorage.
+  // Opened from the web page /soril: hand the answers back through sessionStorage.
   if (message.type === "answers") sessionStorage.setItem(EXAM_ANSWERS_KEY, JSON.stringify(message.answers));
-  // A full load: /shuulleg reads the hand-off once on arrival.
+  // A full load: /soril reads the hand-off once on arrival.
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  window.location.assign(`/shuulleg?oral=${message.type === "answers" ? "done" : "text"}`);
+  window.location.assign(`/soril?oral=${message.type === "answers" ? "done" : "text"}`);
 }
 
 /** Speaking time of a 16 kHz PCM16 WAV in ms (44-byte header). */
@@ -236,7 +236,7 @@ export function Examiner() {
   const busy = speaking || transcribing || phase === "asking" || phase === "connecting" || phase === "finished";
 
   return (
-    <main className="fixed inset-0 z-50 flex h-dvh flex-col bg-[#06101f] text-[#ffffff]">
+    <main className="fixed inset-0 z-50 flex h-dvh flex-col bg-[#09080f] text-[#ffffff]">
       <div className="relative min-h-0 flex-1">
         {avatarOn ? (
           <AnamAvatar
@@ -246,16 +246,16 @@ export function Examiner() {
             tokenUrl="/api/quiz/avatar"
             autoStart
             onLive={onLive}
-            className="relative h-full w-full overflow-hidden bg-[#0b1220]"
+            className="relative h-full w-full overflow-hidden bg-[#110f18]"
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#2dd4c4]/15 text-5xl">🎓</div>
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#8b5cf6]/15 text-5xl">🎓</div>
             <h1 className="text-xl font-bold">Шалгагч багш</h1>
-            <p className="max-w-sm text-sm text-[#cbd5e1]">
+            <p className="max-w-sm text-sm text-[#c9c4e0]">
               «{quiz.title}» сэдвээр {quiz.questions.length} асуулт асууна. Хариултаа дуугаар хэлж эсвэл бичиж өгнө.
             </p>
-            <button onClick={begin} className="rounded-full bg-[#2dd4c4] px-8 py-3 text-base font-semibold text-[#04201e]">
+            <button onClick={begin} className="rounded-full bg-[#8b5cf6] px-8 py-3 text-base font-semibold text-[#ffffff]">
               Шалгалт эхлэх
             </button>
           </div>
@@ -269,14 +269,14 @@ export function Examiner() {
       </div>
 
       {phase !== "intro" && (
-        <section className="max-h-[55%] overflow-y-auto rounded-t-3xl bg-[#0c1a2e] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <section className="max-h-[55%] overflow-y-auto rounded-t-3xl bg-[#17141f] p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {phase === "connecting" ? (
-            <div className="flex items-center gap-3 py-4 text-sm text-[#cbd5e1]">
+            <div className="flex items-center gap-3 py-4 text-sm text-[#c9c4e0]">
               <Spinner /> Багш холбогдож байна…
             </div>
           ) : (
             <>
-              <p className="mb-1 text-xs font-semibold text-[#5fe0d3]">
+              <p className="mb-1 text-xs font-semibold text-[#b9a4ff]">
                 Асуулт {index + 1} / {quiz.questions.length}
               </p>
               <p className="text-base font-semibold leading-snug">{q.prompt}</p>
@@ -289,7 +289,7 @@ export function Examiner() {
                       onClick={() => setAnswers((prev) => prev.map((a, j) => (j === index ? option : a)))}
                       className={cn(
                         "rounded-xl border px-3 py-2 text-left text-sm",
-                        answers[index] === option ? "border-[#2dd4c4] bg-[#2dd4c4]/20" : "border-[#334155] bg-[#1e293b]",
+                        answers[index] === option ? "border-[#8b5cf6] bg-[#8b5cf6]/20" : "border-[#352e4a] bg-[#1e1734]",
                       )}
                     >
                       {option}
@@ -303,7 +303,7 @@ export function Examiner() {
                 disabled={phase !== "answering"}
                 placeholder={phase === "answering" ? "Микрофон дээр дарж хариултаа хэлнэ үү, эсвэл бичнэ үү…" : "Багш асууж байна…"}
                 rows={3}
-                className="mt-3 w-full resize-none rounded-xl border border-[#334155] bg-[#1e293b] p-3 text-sm text-[#ffffff] placeholder:text-[#64748b]"
+                className="mt-3 w-full resize-none rounded-xl border border-[#352e4a] bg-[#1e1734] p-3 text-sm text-[#ffffff] placeholder:text-[#6f6990]"
               />
               {error && <p className="mt-2 text-xs text-[#fda4af]">{error}</p>}
               <div className="mt-3 flex items-center gap-3">
@@ -313,7 +313,7 @@ export function Examiner() {
                   aria-label={recording ? "Бичлэг зогсоох" : "Дуугаар хариулах"}
                   className={cn(
                     "flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl disabled:opacity-40",
-                    recording ? "animate-pulse bg-[#e11d48]" : "bg-[#2dd4c4] text-[#04201e]",
+                    recording ? "animate-pulse bg-[#e11d48]" : "bg-[#8b5cf6] text-[#ffffff]",
                   )}
                 >
                   {transcribing ? <Spinner /> : recording ? "■" : "🎤"}
@@ -321,20 +321,20 @@ export function Examiner() {
                 <button
                   onClick={() => void say(spokenQuestion(q, index, quiz.questions.length))}
                   disabled={busy || recording}
-                  className="rounded-full border border-[#334155] px-4 py-3 text-sm disabled:opacity-40"
+                  className="rounded-full border border-[#352e4a] px-4 py-3 text-sm disabled:opacity-40"
                 >
                   Дахин сонсох
                 </button>
                 <button
                   onClick={() => void next()}
                   disabled={busy}
-                  className="ml-auto rounded-full bg-[#ffffff] px-5 py-3 text-sm font-semibold text-[#0f172a] disabled:opacity-40"
+                  className="ml-auto rounded-full bg-[#ffffff] px-5 py-3 text-sm font-semibold text-[#110f18] disabled:opacity-40"
                 >
                   {index === quiz.questions.length - 1 ? "Дуусгах" : "Дараах"}
                 </button>
               </div>
-              {recording && <p className="mt-2 text-xs text-[#cbd5e1]">Сонсож байна… дуусаад ■ дарна уу (урт хариултыг {MAX_RECORD_SECONDS} сек тутам хэсэглэн таньна).</p>}
-              {phase === "finished" && <p className="mt-2 text-xs text-[#cbd5e1]">Хариултыг шалгаж байна…</p>}
+              {recording && <p className="mt-2 text-xs text-[#c9c4e0]">Сонсож байна… дуусаад ■ дарна уу (урт хариултыг {MAX_RECORD_SECONDS} сек тутам хэсэглэн таньна).</p>}
+              {phase === "finished" && <p className="mt-2 text-xs text-[#c9c4e0]">Хариултыг шалгаж байна…</p>}
             </>
           )}
         </section>
