@@ -95,7 +95,7 @@ export const TOPICS = [
     id: "relieving",
     kind: "hpi",
     label: { mn: "Намдаадаг хүчин зүйл", en: "Relieving factors" },
-    patterns: [/намд/, /багас(гадаг|даг|дог|ах|на)/, /гайгүй болдог/, /хөнгөр/, /юу(наас)? .*(дээрдэ|зүгээр бол)/, /relie/, /better (when|with)/, /makes it better/, /амрахаар/],
+    patterns: [/намд/, /багас(гадаг|даг|дог|ах|на)/, /гайгүй болдог/, /хөнгөр/, /юу(наас)? .*(дээрдэ|зүгээр бол)/, /relie/, /better (when|with)/, /makes it better/, /амрахаар/, /гадаа (гар|гарах|байх|салхи)/, /(гарахаар|гарахад) (яа|ямар)/],
   }),
   t({
     id: "previous_episodes",
@@ -418,7 +418,7 @@ export const TOPICS = [
     id: "living_situation",
     kind: "history",
     label: { mn: "Амьдрах орчин", en: "Living situation" },
-    patterns: [/хэнтэй (амьдар|хамт)/, /хаана амьдар/, /гэр(т)?ээ ганцаар/, /орон сууц/, /(^|\s)гэрт(\s|$)/, /live with/, /live alone/, /where do you live/],
+    patterns: [/хэнтэй (амьдар|хамт)/, /хаана амьдар/, /гэр(т)?ээ ганцаар/, /орон сууц/, /(^|\s)гэрт(\s|$)/, /халаа/, /зуух/, /түлш/, /live with/, /live alone/, /where do you live/, /heating/, /stove/],
   }),
   t({
     id: "exercise",
@@ -460,7 +460,7 @@ export const TOPICS = [
     id: "sick_contacts",
     kind: "history",
     label: { mn: "Өвчтэй хүнтэй харьцсан", en: "Sick contacts" },
-    patterns: [/(ойр|хажуу|хамт|орчин).*(өвчтэй|ханиад|ханиалга|томуу)/, /гэр.*(ханиад|ханиалга|томуу)/, /хэн нэг.*(өвчтэй|ханиад)/, /халдвар/, /хавьтал/, /sick contact/, /anyone (else )?(sick|ill)/, /exposure/],
+    patterns: [/(ойр|хажуу|хамт|орчин).*(өвчтэй|ханиад|ханиалга|томуу)/, /гэр.*(ханиад|ханиалга|томуу)/, /(гэрийнхэн|гэр бүлийнхэн|хүүхдүүд|бусад хүн).*(бас|адилхан|ийм|шинж|өвд)/, /хэн нэг.*(өвчтэй|ханиад)/, /халдвар/, /хавьтал/, /sick contact/, /anyone (else )?(sick|ill)/, /exposure/],
   }),
   t({
     id: "vaccination",

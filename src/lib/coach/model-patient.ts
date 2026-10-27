@@ -1,10 +1,14 @@
 import "server-only";
 import { loadDemoCases } from "@/lib/cases/demo";
 import type { PatientCase } from "@/lib/cases/schema";
-import { classifyQuestion } from "@/lib/patient/classifier";
+import { getConfig } from "@/lib/config";
+import { classifyQuestion, type Classification } from "@/lib/patient/classifier";
 import type { TranscriptTurn } from "@/lib/patient/context";
 import { planTurn } from "@/lib/patient/engine";
 import { getPatientProvider } from "@/lib/patient/providers";
+import { AnthropicPatientProvider } from "@/lib/patient/providers/anthropic";
+import type { PatientProvider } from "@/lib/patient/providers/types";
+import type { TopicId } from "@/lib/patient/topics";
 import { simulateTurn } from "@/lib/patient/simulator";
 import type { CoachLine, CoachPack, TurnEvent } from "./types";
 
@@ -97,6 +101,39 @@ export function resetModelStatusForTests() {
   status = null;
 }
 
+// --- Understanding the question ------------------------------------------------------
+
+const llmTopics = new Map<string, TopicId[]>();
+let classifier: AnthropicPatientProvider | null | undefined;
+
+/**
+ * Keywords first (instant, deterministic); when they find nothing — «Гэртээ юугаар
+ * халаадаг вэ?» — Claude Haiku labels the topics from the public taxonomy only
+ * (it never sees the case). Labels are cached so replaying earlier turns is free.
+ */
+async function classify(question: string): Promise<Classification> {
+  const keyword = classifyQuestion(question);
+  if (keyword.topics.length > 0) return keyword;
+  const cached = llmTopics.get(keyword.normalized);
+  if (cached) return { ...keyword, topics: cached, source: "llm" };
+  if (classifier === undefined) {
+    const config = getConfig();
+    classifier = config.ANTHROPIC_API_KEY ? new AnthropicPatientProvider(config.ANTHROPIC_API_KEY, config.ANTHROPIC_MODEL, config.ANTHROPIC_CLASSIFIER_MODEL) : null;
+  }
+  if (!classifier) return keyword;
+  try {
+    // The keyword classifier is the injection guard; a model's "injection" on a plain question is a mislabel.
+    let topics = (await classifier.classifyTopics(question, { signal: AbortSignal.timeout(6_000) })).filter((t) => t !== "injection");
+    // "Is your family sick too?" is labelled family history, but cases keep it under sick contacts.
+    if (topics.includes("family_history") && !topics.includes("sick_contacts")) topics = [...topics, "sick_contacts"];
+    if (topics.length === 0) return keyword;
+    llmTopics.set(keyword.normalized, topics);
+    return { ...keyword, topics, source: "llm" };
+  } catch {
+    return keyword;
+  }
+}
+
 // --- One reply ----------------------------------------------------------------------
 
 /**
@@ -115,9 +152,19 @@ export async function modelPatientTurn(packId: string, history: CoachLine[], emi
   if (!question) return false;
 
   const disclosed = new Set<string>();
-  asked.slice(0, -1).forEach((h, turnIndex) => {
-    planTurn(patientCase, classifyQuestion(h.text), { disclosedFactIds: disclosed, turnIndex }).newlyDisclosedIds.forEach((id) => disclosed.add(id));
-  });
+  for (const [turnIndex, h] of asked.slice(0, -1).entries()) {
+    planTurn(patientCase, await classify(h.text), { disclosedFactIds: disclosed, turnIndex }).newlyDisclosedIds.forEach((id) => disclosed.add(id));
+  }
+  // simulateTurn asks the provider for topics when keywords miss: lend it Claude's labels.
+  const model = getPatientProvider();
+  const provider: PatientProvider = {
+    id: model.id,
+    model: model.model,
+    label: model.label,
+    generate: (ctx, options) => model.generate(ctx, options),
+    health: () => model.health(),
+    classifyTopics: async (q) => (await classify(q)).topics,
+  };
   // The opening line is not part of the model's transcript (as in the original simulator).
   const transcript: TranscriptTurn[] = history
     .slice(history[0]?.role === "ai" ? 1 : 0, -1)
@@ -128,9 +175,9 @@ export async function modelPatientTurn(packId: string, history: CoachLine[], emi
     const result = await simulateTurn(
       { patientCase, question, disclosedFactIds: disclosed, history: transcript, turnIndex: asked.length - 1 },
       {
-        provider: getPatientProvider(),
+        provider,
         fallback: "none",
-        intentMode: "keyword",
+        intentMode: "hybrid",
         timeoutMs: 25_000,
         onSentence: (sentence) => {
           if (!spoke) emit({ t: "src", v: "model" });
