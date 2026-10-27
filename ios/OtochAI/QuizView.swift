@@ -306,6 +306,8 @@ private struct AnsweringView: View {
 
     @State private var index = 0
     @State private var answers: [String]
+    @State private var shareURL: URL?
+    @State private var pdfError: String?
     @FocusState private var typing: Bool
 
     init(quiz: Quiz, prefill: [String], finish: @escaping ([String]) -> Void, cancel: @escaping () -> Void) {
@@ -317,6 +319,11 @@ private struct AnsweringView: View {
 
     private var question: QuizQuestion { quiz.questions[index] }
     private var isLast: Bool { index == quiz.questions.count - 1 }
+
+    /// A4 worksheet to print or fill in a PDF reader; the share sheet offers Print and Save to Files.
+    private func exportPDF(answerKey: Bool) {
+        do { shareURL = try QuizPDF.write(quiz, answerKey: answerKey) } catch { pdfError = error.localizedDescription }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -383,7 +390,22 @@ private struct AnsweringView: View {
         }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) { Button("Болих", role: .cancel, action: cancel) }
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button { exportPDF(answerKey: false) } label: { Label("Хэвлэх / PDF татах", systemImage: "printer") }
+                    Button { exportPDF(answerKey: true) } label: { Label("Хариутай PDF (багшид)", systemImage: "key") }
+                } label: {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .accessibilityLabel("PDF татах")
+            }
         }
+        .sheet(isPresented: Binding(get: { shareURL != nil }, set: { if !$0 { shareURL = nil } })) {
+            if let shareURL { ShareSheet(items: [shareURL]).presentationDetents([.medium, .large]) }
+        }
+        .alert("PDF үүсгэж чадсангүй", isPresented: Binding(get: { pdfError != nil }, set: { if !$0 { pdfError = nil } })) {
+            Button("За", role: .cancel) {}
+        } message: { Text(pdfError ?? "") }
         .animation(.default, value: index)
     }
 }
