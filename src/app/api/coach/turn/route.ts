@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Errors, parseJson, requireUser, route } from "@/lib/api/http";
 import { streamTurn } from "@/lib/coach/engine";
+import { isCasePack, modelPatientTurn } from "@/lib/coach/model-patient";
 import { COACH_DIFFICULTIES, COACH_MODES, type TurnEvent } from "@/lib/coach/types";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { resolvePack } from "@/lib/services/coach";
@@ -15,7 +16,7 @@ const TurnSchema = z.object({
 });
 
 /**
- * The persona's next reply, streamed as NDJSON (`{t:"emo"|"say"|"end"|"done"|"error"}` per line)
+ * The persona's next reply (for «Манай AI өвчтөн» packs, from our fine-tuned model when it is up), streamed as NDJSON (`{t:"emo"|"say"|"end"|"done"|"error"}` per line)
  * so the page can start speaking after the first sentence. Closing the request
  * (the trainee interrupted) stops Claude.
  */
@@ -37,7 +38,12 @@ export const POST = route(async (request) => {
         }
       };
       try {
-        await streamTurn(pack, input, emit, request.signal);
+        // «Манай AI өвчтөн»: our fine-tuned model first, Claude when it cannot answer.
+        const handled = isCasePack(pack.id) && (await modelPatientTurn(pack.id, input.history, emit));
+        if (!handled) {
+          if (isCasePack(pack.id)) emit({ t: "src", v: "claude" });
+          await streamTurn(pack, input, emit, request.signal);
+        }
       } catch (error) {
         if (!request.signal.aborted) emit({ t: "error", error: error instanceof Error ? error.message : "AI хариулж чадсангүй." });
       }

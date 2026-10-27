@@ -65,6 +65,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
   const [error, setError] = useState<string | null>(null);
   const [chat, setChat] = useState<ChatLine[]>([]);
   const [status, setStatus] = useState("");
+  const [source, setSource] = useState<"model" | "claude" | null>(null);
   const [emotion, setEmotion] = useState<CoachEmotion>("calm");
   const [speaking, setSpeaking] = useState(false);
   const [listening, setListening] = useState(false);
@@ -141,6 +142,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
       listening: setListening,
       tick: setSeconds,
       ended: (reason) => void grade(call, reason),
+      source: setSource,
     });
     callRef.current = call;
     await call.prepare(); // inside the tap: unlocks audio
@@ -362,6 +364,14 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
             {challengeId ? " · 🏆 Сорилт" : ""}
           </p>
         </div>
+        {source && (
+          <span
+            className={cn("shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold", source === "model" ? "bg-[#8b5cf6]/25 text-[#b9a4ff]" : "bg-[#ffffff]/10 text-[#a7a2c3]")}
+            title={source === "model" ? "Манай fine-tuned загвар хариулж байна" : "Манай загвар унтарсан тул Claude орлож байна"}
+          >
+            {source === "model" ? "🧠 Манай загвар" : "Claude"}
+          </span>
+        )}
         {(live || phase === "grading") && <span className="font-mono text-sm tabular-nums text-[#c9c4e0]">{fmt(seconds)}</span>}
       </header>
 

@@ -28,6 +28,8 @@ export interface CallEvents {
   listening(on: boolean): void;
   tick(seconds: number): void;
   ended(reason: EndReason): void;
+  /** «Манай AI өвчтөн»: which model answered the last turn. */
+  source?(v: "model" | "claude"): void;
 }
 
 interface Utterance {
@@ -346,6 +348,8 @@ export class CoachCall {
           } else if (event.t === "say") {
             got = true;
             u.add(event.text);
+          } else if (event.t === "src") {
+            this.ev.source?.(event.v);
           } else if (event.t === "end") {
             endCall = true;
           } else if (event.t === "error") {

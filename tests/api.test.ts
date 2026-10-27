@@ -7,6 +7,12 @@ import { GET as listTeams, POST as createTeamRoute } from "@/app/api/teams/route
 import { POST as joinTeamRoute } from "@/app/api/teams/join/route";
 import { POST as createChallengeRoute } from "@/app/api/teams/[id]/challenges/route";
 import { POST as transcribeRoute } from "@/app/api/speech/transcribe/route";
+import { POST as coachTurn } from "@/app/api/coach/turn/route";
+import { GET as modelRoute } from "@/app/api/coach/model/route";
+import { resetModelStatusForTests } from "@/lib/coach/model-patient";
+import { renderMockReply } from "@/lib/patient/providers/mock";
+import { setPatientProviderForTests } from "@/lib/patient/providers";
+import type { PatientProvider } from "@/lib/patient/providers/types";
 import { resetConfigForTests } from "@/lib/config";
 import { wavFromPcm } from "@/lib/speech/chimege";
 import { hashPassword, sealSession } from "@/lib/auth/session";
@@ -151,3 +157,66 @@ describe("speech", () => {
     expect(anonymous.status).toBe(401);
   });
 });
+
+describe("«Манай AI өвчтөн»: our fine-tuned model in the coach", () => {
+  /** Stands in for the Modal service: answers in the trained format with reviewed case wording. */
+  function stubModel(up: boolean): PatientProvider & { calls: number } {
+    return {
+      id: "finetuned",
+      model: "pq-qwen3-4b-lora-v2",
+      label: "Fine-tuned (test)",
+      calls: 0,
+      async generate(ctx) {
+        this.calls++;
+        return renderMockReply(ctx);
+      },
+      async health() {
+        return { ok: up, provider: "finetuned", model: "pq-qwen3-4b-lora-v2", detail: up ? "ok" : "workspace is disabled" };
+      },
+    };
+  }
+
+  async function turn(question: string) {
+    const history = [
+      { role: "ai", text: "Эмч ээ, өглөө сэрэхэд толгой өвдөөд байна.", t: 0 },
+      { role: "me", text: question, t: 4 },
+    ];
+    const response = await coachTurn(req("/api/coach/turn", { body: { packRef: "case-headache-dizziness-01", mode: "audio", history }, cookie: staffCookie }), noCtx);
+    expect(response.status).toBe(200);
+    return (await response.text()).trim().split("\n").map((l) => JSON.parse(l) as { t: string; v?: string; text?: string });
+  }
+
+  afterEach(() => {
+    setPatientProviderForTests(null);
+    resetModelStatusForTests();
+  });
+
+  it("lists the demo cases as model packs and resolves them", async () => {
+    const body = await (await coachPacks(req("/api/coach/packs", { cookie: staffCookie }), noCtx)).json();
+    expect(body.model.length).toBeGreaterThanOrEqual(10);
+    expect(body.model.map((p: { id: string }) => p.id)).toContain("case-headache-dizziness-01");
+    // The diagnosis never reaches the browser.
+    expect(JSON.stringify(body.model)).not.toContain("Угаарын хийн");
+  });
+
+  it("answers with our model, through the trained prompt pipeline, and says so", async () => {
+    const model = stubModel(true);
+    setPatientProviderForTests(model);
+    expect(await (await modelRoute(req("/api/coach/model", { cookie: staffCookie }), noCtx)).json()).toMatchObject({ ok: true });
+    const events = await turn("Хэзээнээс өвдөж эхэлсэн бэ?");
+    expect(events[0]).toEqual({ t: "src", v: "model" });
+    expect(events.filter((e) => e.t === "say").map((e) => e.text).join(" ")).toContain("өглөө");
+    expect(events.at(-1)?.t).toBe("done");
+    expect(model.calls).toBe(1);
+  });
+
+  it("hands the turn to Claude when our model is down", async () => {
+    const model = stubModel(false);
+    setPatientProviderForTests(model);
+    expect(await (await modelRoute(req("/api/coach/model", { cookie: staffCookie }), noCtx)).json()).toMatchObject({ ok: false });
+    const events = await turn("Хэзээнээс өвдөж эхэлсэн бэ?");
+    expect(events[0]).toEqual({ t: "src", v: "claude" });
+    expect(model.calls).toBe(0);
+  });
+});
+

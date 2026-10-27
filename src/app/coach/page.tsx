@@ -29,7 +29,7 @@ export default async function CoachPage({ searchParams }: { searchParams: Promis
         .filter((t) => t.role !== "owner")
         .flatMap((t) => t.challenges.filter((c) => !c.passed).map((c) => ({ ...c, teamName: t.name })))[0] ?? null;
     const ownedTeams = overview.teams.filter((t) => t.role === "owner").map((t) => ({ id: t.id, name: t.name }));
-    return <CoachHub builtin={packs.builtin} custom={packs.custom} ownedTeams={ownedTeams} next={next} />;
+    return <CoachHub builtin={packs.builtin} custom={packs.custom} model={packs.model} ownedTeams={ownedTeams} next={next} />;
   }
   const mode = one(params.mode);
   const difficulty = one(params.difficulty);

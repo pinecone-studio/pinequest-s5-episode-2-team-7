@@ -127,4 +127,6 @@ export type TurnEvent =
   | { t: "say"; text: string }
   | { t: "end" }
   | { t: "done"; text: string }
-  | { t: "error"; error: string };
+  | { t: "error"; error: string }
+  /** Which model is answering: our fine-tuned one or Claude (only sent for «Манай AI өвчтөн»). */
+  | { t: "src"; v: "model" | "claude" };

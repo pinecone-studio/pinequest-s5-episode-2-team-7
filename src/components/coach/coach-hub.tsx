@@ -30,11 +30,13 @@ export interface NextChallenge {
 export function CoachHub({
   builtin,
   custom,
+  model,
   ownedTeams,
   next,
 }: {
   builtin: PublicPack[];
   custom: PublicPack[];
+  model: PublicPack[];
   ownedTeams: { id: string; name: string }[];
   next: NextChallenge | null;
 }) {
@@ -91,6 +93,8 @@ export function CoachHub({
         </section>
       )}
 
+      {model.length > 0 && <ModelPatients packs={model} onPick={setSelected} />}
+
       <Link href="/cases" className="glass flex items-center gap-3.5 rounded-[22px] p-3.5">
         <span className="flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
           <Ambulance size={24} aria-hidden />
@@ -117,6 +121,51 @@ export function CoachHub({
         />
       )}
     </main>
+  );
+}
+
+/** «Манай AI өвчтөн»: the cases our fine-tuned model was trained on, with its live status. */
+function ModelPatients({ packs, onPick }: { packs: PublicPack[]; onPick: (pack: PublicPack) => void }) {
+  const [status, setStatus] = useState<{ ok: boolean; detail: string } | null>(null);
+  useEffect(() => {
+    let stop = false;
+    const check = () =>
+      fetch("/api/coach/model")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((s: { ok: boolean; detail: string } | null) => !stop && s && setStatus(s))
+        .catch(() => undefined);
+    void check();
+    // A sleeping GPU takes a minute or two to wake: keep looking until it answers.
+    const timer = window.setInterval(() => void check(), 30_000);
+    return () => {
+      stop = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return (
+    <section className="space-y-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-ink">Манай AI өвчтөн</h2>
+        <span
+          className={cn("flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold", status?.ok ? "bg-ok/15 text-ok" : "bg-field text-muted")}
+          title={status?.detail}
+        >
+          <span className={cn("h-2 w-2 rounded-full", status === null ? "animate-pulse bg-subtle" : status.ok ? "bg-ok" : "bg-warn")} />
+          {status === null ? "Шалгаж байна…" : status.ok ? "Манай загвар ажиллаж байна" : "Загвар унтарсан — Claude орлоно"}
+        </span>
+      </div>
+      <p className="text-xs text-muted">Бидний сургасан монгол хэлний өвчтөний загвар (Qwen3 + LoRA). Анамнез авч, онош тавих дадлага.</p>
+      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 [scrollbar-width:thin]">
+        {packs.map((pack) => (
+          <button key={pack.id} type="button" onClick={() => onPick(pack)} className="glass flex w-56 shrink-0 flex-col items-start gap-1.5 rounded-[22px] p-3.5 text-left">
+            <span className="text-3xl leading-none">{pack.icon}</span>
+            <span className="font-semibold text-ink">{pack.title}</span>
+            <span className="line-clamp-2 text-xs text-muted">{pack.subtitle}</span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 
