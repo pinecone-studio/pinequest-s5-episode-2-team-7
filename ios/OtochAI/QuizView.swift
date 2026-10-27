@@ -208,7 +208,6 @@ private struct SetupView: View {
             }
             .padding()
         }
-        .contentMargins(.bottom, 110, for: .scrollContent) // clear of the floating tab bar
         .scrollDismissesKeyboard(.interactively)
         .onChange(of: photoItems) { _, items in
             guard !items.isEmpty else { return }
@@ -502,7 +501,6 @@ struct ResultView: View {
             }
             .padding()
         }
-        .contentMargins(.bottom, 110, for: .scrollContent) // clear of the floating tab bar
         .sheet(item: $lessonTopic) { topic in LessonView(topic: topic, quiz: quiz) }
     }
 }

@@ -271,6 +271,7 @@ struct TeamView: View {
             .appScreen()
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: String.self) { CoachResultDetailView(id: $0) }
+            .navigationDestination(for: MemberRoute.self) { MemberProgressView(route: $0) }
         }
         .tint(brand)
         .task {
@@ -450,19 +451,24 @@ struct TeamView: View {
             if !staff.isEmpty {
                 Text("Ажилтнууд").font(.headline)
                 ForEach(staff) { m in
-                    HStack {
-                        Image(systemName: "person.crop.circle.fill").font(.title2).foregroundStyle(Theme.subtle)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(m.name).font(.subheadline.weight(.semibold))
-                            Text("\(m.practices) дадлага").font(.caption).foregroundStyle(Theme.muted)
+                    NavigationLink(value: MemberRoute(teamId: t.id, userId: m.userId, name: m.name)) {
+                        HStack {
+                            Image(systemName: "person.crop.circle.fill").font(.title2).foregroundStyle(Theme.subtle)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(m.name).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.ink)
+                                Text("\(m.practices) дадлага · явцыг харах").font(.caption).foregroundStyle(Theme.muted)
+                            }
+                            Spacer()
+                            if let best = m.best {
+                                Text("\(best)").font(.headline.monospacedDigit()).foregroundStyle(scoreColor(best))
+                            } else {
+                                Text("–").foregroundStyle(Theme.subtle)
+                            }
+                            Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.subtle)
                         }
-                        Spacer()
-                        if let best = m.best {
-                            Text("\(best)").font(.headline.monospacedDigit()).foregroundStyle(scoreColor(best))
-                        } else {
-                            Text("–").foregroundStyle(Theme.subtle)
-                        }
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
             } else {
                 Text("Ажилтан нэгдээгүй байна. Дээрх кодыг илгээгээрэй.").font(.caption).foregroundStyle(Theme.muted)

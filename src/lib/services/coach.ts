@@ -404,3 +404,107 @@ export async function resultDetail(userId: string, id: string) {
     createdAt: r.createdAt.toISOString(),
   };
 }
+
+// --- One member's progress (owner view) -------------------------------------------
+
+/**
+ * Everything a manager needs to coach one employee: scores over time, which
+ * criteria keep failing, their challenges and every graded conversation.
+ * Only team work counts: free practice stays private.
+ */
+export async function memberProgress(ownerId: string, teamId: string, memberId: string) {
+  if (!UUID.safeParse(teamId).success || !UUID.safeParse(memberId).success) throw Errors.notFound("Ажилтан");
+  await requireOwner(ownerId, teamId);
+  const db = await getDb();
+  const [member] = await db
+    .select({ userId: teamMembers.userId, role: teamMembers.role, joinedAt: teamMembers.joinedAt, name: users.name })
+    .from(teamMembers)
+    .innerJoin(users, eq(users.id, teamMembers.userId))
+    .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, memberId)));
+  if (!member) throw Errors.notFound("Ажилтан");
+
+  const [rows, challengeRows] = await Promise.all([
+    db
+      .select()
+      .from(coachResults)
+      .where(and(eq(coachResults.teamId, teamId), eq(coachResults.userId, memberId)))
+      .orderBy(desc(coachResults.createdAt))
+      .limit(100),
+    db.select().from(challenges).where(eq(challenges.teamId, teamId)).orderBy(desc(challenges.createdAt)),
+  ]);
+
+  const scores = rows.map((r) => r.score);
+  const avg = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
+  // Trend: the latest 3 against the 3 before them (needs 4+ results).
+  const trend = rows.length >= 4 ? (avg(scores.slice(0, 3)) ?? 0) - (avg(scores.slice(3, 6)) ?? 0) : null;
+
+  // Criteria across all conversations: how often each one was met.
+  const byLabel = new Map<string, { label: string; met: number; partial: number; missed: number }>();
+  for (const r of rows) {
+    for (const c of r.debrief.rubric) {
+      const key = c.label.trim().toLowerCase();
+      const entry = byLabel.get(key) ?? { label: c.label, met: 0, partial: 0, missed: 0 };
+      if (c.result === "yes") entry.met++;
+      else if (c.result === "partial") entry.partial++;
+      else entry.missed++;
+      byLabel.set(key, entry);
+    }
+  }
+  const criteria = [...byLabel.values()]
+    .map((c) => {
+      const total = c.met + c.partial + c.missed;
+      return { ...c, total, rate: Math.round(((c.met + c.partial / 2) / total) * 100) };
+    })
+    .sort((a, b) => a.rate - b.rate);
+
+  const challengeStatus = challengeRows
+    .filter((c) => !c.assignees || c.assignees.includes(memberId))
+    .map((c) => {
+      const theirs = rows.filter((r) => r.challengeId === c.id);
+      const best = theirs.reduce<number | null>((b, r) => (b === null || r.score > b ? r.score : b), null);
+      const passed = best !== null && best >= c.targetScore;
+      return {
+        id: c.id,
+        title: c.title,
+        targetScore: c.targetScore,
+        attempts: theirs.length,
+        best,
+        passed,
+        overdue: !passed && c.dueAt !== null && c.dueAt.getTime() < Date.now(),
+        dueAt: c.dueAt?.toISOString() ?? null,
+      };
+    });
+
+  return {
+    member: { userId: member.userId, name: member.name, joinedAt: member.joinedAt.toISOString() },
+    stats: {
+      count: rows.length,
+      average: avg(scores),
+      best: scores.length ? Math.max(...scores) : null,
+      last: scores[0] ?? null,
+      trend,
+      minutes: Math.round(rows.reduce((s, r) => s + r.durationSec, 0) / 60),
+      lastActive: rows[0]?.createdAt.toISOString() ?? null,
+      passed: challengeStatus.filter((c) => c.passed).length,
+      pending: challengeStatus.filter((c) => !c.passed).length,
+      overdue: challengeStatus.filter((c) => c.overdue).length,
+    },
+    criteria: criteria.slice(0, 12),
+    // The latest coaching points (most recent conversation first, no repeats).
+    focus: [...new Set(rows.slice(0, 5).flatMap((r) => r.debrief.improvements))].slice(0, 5),
+    challenges: challengeStatus,
+    results: rows.map((r) => {
+      const c = challengeRows.find((x) => x.id === r.challengeId);
+      return {
+        id: r.id,
+        packTitle: r.packTitle,
+        score: r.score,
+        durationSec: r.durationSec,
+        challengeTitle: c?.title ?? null,
+        passed: c ? r.score >= c.targetScore : null,
+        summary: r.debrief.summary,
+        createdAt: r.createdAt.toISOString(),
+      };
+    }),
+  };
+}
