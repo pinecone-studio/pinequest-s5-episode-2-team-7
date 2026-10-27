@@ -38,6 +38,7 @@ export function CoachHub({
   ownedTeams: { id: string; name: string }[];
   next: NextChallenge | null;
 }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<PublicPack | null>(null);
   const [showCustom, setShowCustom] = useState(false);
 
@@ -110,6 +111,8 @@ export function CoachHub({
           onCreated={(pack) => {
             setShowCustom(false);
             setSelected(pack);
+            // Lists it under «Манай компанийн дүрүүд».
+            router.refresh();
           }}
         />
       )}
@@ -137,10 +140,10 @@ export function ChallengeBanner({ item }: { item: NextChallenge }) {
 /** A bottom sheet on phones, a centred panel on wider screens. */
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
+  // No close() on cleanup: it fires `close` → onClose, which would unmount the sheet
+  // right after StrictMode's second effect run. Removing the element closes it anyway.
   useEffect(() => {
-    const dialog = ref.current;
-    dialog?.showModal();
-    return () => dialog?.close();
+    if (ref.current && !ref.current.open) ref.current.showModal();
   }, []);
   return (
     <dialog

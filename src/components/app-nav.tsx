@@ -3,7 +3,7 @@
 import { BarChart3, ClipboardList, House, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { ComponentType } from "react";
+import { useEffect, type ComponentType } from "react";
 import { LogoutButton } from "./logout-button";
 import { Orb } from "./orb";
 import { useTeamAlerts } from "./team/use-team-alerts";
@@ -24,8 +24,33 @@ const ITEMS: Item[] = [
   { href: "/feedback", title: "Дүгнэлт", icon: BarChart3 },
 ];
 
+/** Sections reached from a tab count as that tab (the app opens cases from the coach, articles from «Нүүр»). */
+const PARENT: Record<string, string> = { "/cases": "/coach", "/knowledge": "/", "/news": "/" };
+
 function isActive(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+  const section = PARENT[`/${pathname.split("/")[1]}`] ?? pathname;
+  return href === "/" ? section === "/" : section === href || section.startsWith(`${href}/`);
+}
+
+/** Practice kept in this browser (Сорил, cases, team badge) belongs to one account. */
+const LOCAL_KEYS = ["otech-quiz-history", "otech-scenario-history", "otech-team-seen"];
+const OWNER_KEY = "otech-history-owner";
+
+/** Another account signed in on this browser: forget the previous one's local history. */
+function useLocalHistoryOwner(userId: string | null) {
+  useEffect(() => {
+    if (!userId) return;
+    try {
+      const owner = localStorage.getItem(OWNER_KEY);
+      if (owner === userId) return;
+      localStorage.setItem(OWNER_KEY, userId);
+      if (owner === null) return; // first account on this browser keeps what it did before signing in
+      LOCAL_KEYS.forEach((k) => localStorage.removeItem(k));
+      window.location.reload(); // the stores cache what they read
+    } catch {
+      // Storage blocked: nothing is kept anyway.
+    }
+  }, [userId]);
 }
 
 /**
@@ -33,10 +58,11 @@ function isActive(pathname: string, href: string) {
  * phones, a slim top bar on wider screens. Hidden on the full-screen practice
  * pages (/coach?pack=…, /exam) and during onboarding.
  */
-export function AppNav({ user }: { user: { name: string; admin: boolean } | null }) {
+export function AppNav({ user }: { user: { id: string; name: string; admin: boolean } | null }) {
   const pathname = usePathname();
   const params = useSearchParams();
   const teamBadge = useTeamAlerts(Boolean(user));
+  useLocalHistoryOwner(user?.id ?? null);
   if (pathname === "/exam" || pathname === "/role" || pathname.startsWith("/cases/") || (pathname === "/coach" && params.get("pack"))) return null;
   const badge = (href: string) =>
     href === "/team" && teamBadge > 0 ? (

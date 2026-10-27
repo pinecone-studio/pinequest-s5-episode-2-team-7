@@ -23,7 +23,7 @@ export function NewsStatusSelect({ articleId, status }: { articleId: string; sta
         disabled={pending}
         onChange={async (e) => {
           const next = e.target.value as Status;
-          if (next === "published" && !window.confirm("Мэдээг нийтэлж оюутанд харагдуулах уу?")) return;
+          if (next === "published" && !window.confirm("Мэдээг нийтэлж хэрэглэгчдэд харагдуулах уу?")) return;
           setPending(true);
           setError(null);
           try {

@@ -138,96 +138,97 @@ export function ScenarioPlay({ scenario, roleTitle }: { scenario: Scenario; role
 
   const step = index !== null ? scenario.steps[index] : null;
   return (
-    <main className="fixed inset-0 z-50 flex flex-col bg-black text-ink">
-      <div className="relative min-h-0 flex-1">
-        <SceneWindow kind={scenario.scene} danger={danger(vitals)} onPatient={step ? () => setShowFindings(true) : undefined} className="absolute inset-0" />
-        <div className="absolute inset-x-0 top-0 flex items-center gap-2 p-4" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}>
-          <CloseButton />
-          <span className="flex-1" />
-          {step && index !== null && (
-            <>
-              <span
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-2 text-sm font-semibold tabular-nums backdrop-blur",
-                  stepSeconds > step.timeLimit ? "text-red-400" : "text-white",
-                )}
-              >
-                <Timer size={15} aria-hidden /> {stepSeconds} / {step.timeLimit}с
-              </span>
-              <span className="rounded-full bg-black/45 px-3 py-2 text-sm font-semibold text-white backdrop-blur">
-                {index + 1}/{scenario.steps.length}
-              </span>
-            </>
+    <main className="fixed inset-0 z-50 flex justify-center bg-black text-ink">
+      {/* Phone-shaped column on wide screens, as in the app. */}
+      <div className="flex w-full max-w-xl flex-col">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          <SceneWindow kind={scenario.scene} danger={danger(vitals)} onPatient={step ? () => setShowFindings(true) : undefined} className="absolute inset-0" />
+          <div className="absolute inset-x-0 top-0 flex items-center gap-2 p-4" style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}>
+            <CloseButton />
+            <span className="flex-1" />
+            {step && index !== null && (
+              <>
+                <span
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-2 text-sm font-semibold tabular-nums backdrop-blur",
+                    stepSeconds > step.timeLimit ? "text-red-400" : "text-white",
+                  )}
+                >
+                  <Timer size={15} aria-hidden /> {stepSeconds} / {step.timeLimit}с
+                </span>
+                <span className="rounded-full bg-black/45 px-3 py-2 text-sm font-semibold text-white backdrop-blur">
+                  {index + 1}/{scenario.steps.length}
+                </span>
+              </>
+            )}
+          </div>
+          {showFindings && step && (
+            <div className="absolute inset-x-4 top-20 rounded-[20px] bg-[#17141f]/95 p-4 shadow-xl ring-1 ring-line backdrop-blur" role="dialog" aria-label="Үзлэгийн илрэл">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 font-semibold">
+                  <Stethoscope size={18} aria-hidden /> Үзлэгийн илрэл
+                </h2>
+                <button type="button" onClick={() => setShowFindings(false)} aria-label="Хаах" className="text-muted hover:text-ink">
+                  <XCircle size={20} />
+                </button>
+              </div>
+              <ul className="space-y-1.5 text-sm">
+                {step.findings.map((f) => (
+                  <li key={f} className="flex gap-2">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" /> {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
-        {showFindings && step && (
-          <div className="absolute inset-x-4 top-20 rounded-[20px] bg-[#17141f]/95 p-4 shadow-xl ring-1 ring-line backdrop-blur" role="dialog" aria-label="Үзлэгийн илрэл">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 font-semibold">
-                <Stethoscope size={18} aria-hidden /> Үзлэгийн илрэл
-              </h2>
-              <button type="button" onClick={() => setShowFindings(false)} aria-label="Хаах" className="text-muted hover:text-ink">
-                <XCircle size={20} />
+
+        <VitalsStrip vitals={vitals} />
+
+        <section className="max-h-[55dvh] overflow-y-auto rounded-t-[28px] bg-canvas px-5 pb-8 pt-5" style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom))" }}>
+          {stage.name === "briefing" && (
+            <div className="space-y-3">
+              <h1 className="text-2xl font-bold">{scenario.title}</h1>
+              <p className="prose-mn">{scenario.briefing}</p>
+              <p className="flex gap-2 text-sm text-muted">
+                <UserRound size={16} className="mt-0.5 shrink-0" aria-hidden /> {scenario.patient}
+              </p>
+              <p className="text-xs text-muted">Та: {roleTitle}. Хуруугаараа чирж (утсан дээр хөдөлгөж) эргэн тойрноо хар. Өвчтөн дээр дарж үзлэг хий.</p>
+              <button
+                type="button"
+                className={buttonClass("primary", "lg", "w-full")}
+                onClick={() => {
+                  void askMotion();
+                  setStage({ name: "step", i: 0 });
+                  setStepSeconds(0);
+                }}
+              >
+                Эхлэх
               </button>
             </div>
-            <ul className="space-y-1.5 text-sm">
-              {step.findings.map((f) => (
-                <li key={f} className="flex gap-2">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" /> {f}
-                </li>
+          )}
+
+          {stage.name === "step" && step && (
+            <div className="space-y-3">
+              <span className="inline-block rounded-full bg-accent-soft px-2.5 py-1 text-xs font-bold text-accent-deep">{step.phase}</span>
+              <p className="prose-mn text-sm">{step.situation}</p>
+              <h2 className="font-semibold">{step.question}</h2>
+              {step.options.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => choose(option, stage.i)}
+                  className="w-full rounded-2xl bg-field p-3.5 text-left text-sm ring-1 ring-subtle/35 transition hover:ring-accent"
+                >
+                  {option.text}
+                </button>
               ))}
-            </ul>
-          </div>
-        )}
+            </div>
+          )}
+
+          {stage.name === "feedback" && step && <Feedback step={step} picked={choices[step.id]} last={stage.i + 1 === scenario.steps.length} onNext={() => next(stage.i)} />}
+        </section>
       </div>
-
-      <VitalsStrip vitals={vitals} />
-
-      <section className="max-h-[55dvh] overflow-y-auto rounded-t-[28px] bg-canvas px-5 pb-8 pt-5" style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom))" }}>
-        {stage.name === "briefing" && (
-          <div className="space-y-3">
-            <h1 className="text-2xl font-bold">{scenario.title}</h1>
-            <p className="prose-mn">{scenario.briefing}</p>
-            <p className="flex gap-2 text-sm text-muted">
-              <UserRound size={16} className="mt-0.5 shrink-0" aria-hidden /> {scenario.patient}
-            </p>
-            <p className="text-xs text-muted">Та: {roleTitle}. Хуруугаараа чирж (утсан дээр хөдөлгөж) эргэн тойрноо хар. Өвчтөн дээр дарж үзлэг хий.</p>
-            <button
-              type="button"
-              className={buttonClass("primary", "lg", "w-full")}
-              onClick={() => {
-                void askMotion();
-                setStage({ name: "step", i: 0 });
-                setStepSeconds(0);
-              }}
-            >
-              Эхлэх
-            </button>
-          </div>
-        )}
-
-        {stage.name === "step" && step && (
-          <div className="space-y-3">
-            <span className="inline-block rounded-full bg-accent-soft px-2.5 py-1 text-xs font-bold text-accent-deep">{step.phase}</span>
-            <p className="prose-mn text-sm">{step.situation}</p>
-            <h2 className="font-semibold">{step.question}</h2>
-            {step.options.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => choose(option, stage.i)}
-                className="w-full rounded-2xl bg-field p-3.5 text-left text-sm ring-1 ring-subtle/35 transition hover:ring-accent"
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {stage.name === "feedback" && step && (
-          <Feedback step={step} picked={choices[step.id]} last={stage.i + 1 === scenario.steps.length} onNext={() => next(stage.i)} />
-        )}
-      </section>
     </main>
   );
 }
@@ -258,7 +259,7 @@ function Feedback({ step, picked, last, onNext }: { step: Scenario["steps"][numb
 
 function CloseButton() {
   return (
-    <Link href="/cases" aria-label="Гарах" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white ring-1 ring-white/55 backdrop-blur">
+    <Link href="/cases" aria-label="Гарах" className="flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white ring-1 ring-white/55 backdrop-blur">
       <X size={18} />
     </Link>
   );

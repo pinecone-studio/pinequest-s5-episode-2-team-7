@@ -7,6 +7,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { CustomSheet, Sheet } from "@/components/coach/coach-hub";
 import { Button, buttonClass, cn, inputClass } from "@/components/ui";
 import { apiFetch, ClientApiError } from "@/lib/fetcher";
+import { formatDateTime, formatDay } from "@/lib/i18n";
 import { coachHref, DIFFICULTY_LABELS, MODE_LABELS, modeLabel, difficultyLabel, scoreColor } from "@/lib/coach/labels";
 import type { CoachDifficulty, CoachMode, PublicPack } from "@/lib/coach/types";
 import type { teamsOverview } from "@/lib/services/coach";
@@ -14,7 +15,7 @@ import type { teamsOverview } from "@/lib/services/coach";
 type Team = Awaited<ReturnType<typeof teamsOverview>>["teams"][number];
 
 const errorText = (e: unknown) => (e instanceof ClientApiError || e instanceof Error ? e.message : "Алдаа гарлаа. Дахин оролдоно уу.");
-const dueText = (due: string | null) => (due ? ` · ${new Date(due).toLocaleDateString("mn-MN", { month: "short", day: "numeric" })} хүртэл` : "");
+const dueText = (due: string | null) => (due ? ` · ${formatDay(due)} хүртэл` : "");
 
 /** «Баг»: the employer hands out challenges, staff complete them; every result reaches the manager. */
 export function TeamView({ teams, packs }: { teams: Team[]; packs: PublicPack[] }) {
@@ -311,7 +312,7 @@ function Feed({ title, feed }: { title: string; feed: Team["feed"] }) {
             <span className="block truncate text-sm font-semibold">
               {item.name} · {item.packTitle}
             </span>
-            <span className="block text-xs text-muted">{new Date(item.createdAt).toLocaleString("mn-MN", { dateStyle: "medium", timeStyle: "short" })}</span>
+            <span className="block text-xs text-muted">{formatDateTime(item.createdAt)}</span>
           </span>
           {item.passed !== null &&
             (item.passed ? <BadgeCheck size={18} className="text-ok" aria-label="Биелсэн" /> : <XCircle size={18} className="text-alert" aria-label="Биелээгүй" />)}

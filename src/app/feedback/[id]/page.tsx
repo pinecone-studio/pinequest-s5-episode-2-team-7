@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { cn } from "@/components/ui";
 import { requirePageUser } from "@/lib/auth/server";
+import { formatDateTime } from "@/lib/i18n";
 import { difficultyLabel, modeLabel, scoreColor } from "@/lib/coach/labels";
 import { resultDetail } from "@/lib/services/coach";
 
@@ -29,7 +30,7 @@ export default async function ResultPage({ params }: PageProps<"/feedback/[id]">
           <p className="text-xs text-muted">
             {d.name} · {modeLabel(d.mode)} · {difficultyLabel(d.difficulty)}
           </p>
-          <p className="text-xs text-subtle">{new Date(d.createdAt).toLocaleString("mn-MN", { dateStyle: "medium", timeStyle: "short" })}</p>
+          <p className="text-xs text-subtle">{formatDateTime(d.createdAt)}</p>
         </div>
       </div>
 

@@ -64,7 +64,7 @@ export function SceneWindow({
 
   return (
     <div
-      className={`relative touch-none select-none overflow-hidden ${className ?? ""}`}
+      className={`touch-none select-none overflow-hidden ${className ?? "relative"}`}
       onPointerDown={(e) => interactive && (drag.current = { x: e.clientX, y: e.clientY, base: pan })}
       onPointerMove={(e) => {
         if (!drag.current) return;
@@ -77,7 +77,7 @@ export function SceneWindow({
       onPointerUp={() => (drag.current = null)}
       onPointerLeave={() => (drag.current = null)}
     >
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="h-full w-full" aria-hidden={!onPatient}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" className="h-full w-full" aria-hidden={!onPatient}>
         {kind === "roadAccident" && (
           <>
             <defs>
@@ -168,7 +168,7 @@ export function SceneWindow({
             {layer(0.3, <rect x="-200" y="200" width="800" height="150" fill="#9fb3c4" />)}
             {layer(
               0.45,
-              <g transform="translate(256 82)">
+              <g transform="translate(232 82)">
                 <Monitor danger={danger} />
               </g>,
             )}

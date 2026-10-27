@@ -46,7 +46,7 @@ export function CaseRow({ scenario }: { scenario: Scenario }) {
   const best = bestScore(useResults(), scenario.id);
   return (
     <Link href={`/cases/${scenario.id}`} className="glass flex items-center gap-3.5 rounded-3xl p-3">
-      <SceneWindow kind={scenario.scene} interactive={false} className="h-[84px] w-[84px] shrink-0 rounded-[18px]" />
+      <SceneWindow kind={scenario.scene} interactive={false} className="relative h-[84px] w-[84px] shrink-0 rounded-[18px]" />
       <span className="min-w-0 flex-1 space-y-1">
         <span className="block font-semibold text-ink">{scenario.title}</span>
         <span className="block text-xs text-muted">{scenario.subtitle}</span>

@@ -226,8 +226,11 @@ export function Examiner() {
 
   if (!quiz) {
     return (
-      <main className="flex flex-1 items-center justify-center p-6 text-center text-muted">
-        Шалгалтыг «Шүүлэг» хэсгээс эхлүүлнэ үү.
+      <main className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center text-muted">
+        Аман шалгалтыг «Сорил» хэсгээс эхлүүлнэ үү.
+        <a href="/soril" className="rounded-full bg-[#8b5cf6] px-6 py-3 text-sm font-semibold text-[#ffffff]">
+          Сорил руу очих
+        </a>
       </main>
     );
   }

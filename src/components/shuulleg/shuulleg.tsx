@@ -6,6 +6,7 @@ import { BookOpen, Camera, ChevronLeft, ChevronRight, FileText, RotateCcw, Spark
 import { ScoreRing } from "@/components/score-ring";
 import { Alert, Badge, Button, Card, cn, Spinner, Textarea } from "@/components/ui";
 import { ClientApiError } from "@/lib/fetcher";
+import { formatDateTime } from "@/lib/i18n";
 import {
   QUESTION_KINDS,
   quizApi,
@@ -521,7 +522,7 @@ function History({ attempts, onOpen, onRemove }: { attempts: QuizAttempt[]; onOp
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold">{a.quiz.title}</span>
-                <span className="block text-xs text-subtle">{new Date(a.date).toLocaleString("mn-MN")}</span>
+                <span className="block text-xs text-subtle">{formatDateTime(a.date)}</span>
               </span>
             </button>
             <Button variant="ghost" size="sm" aria-label="Устгах" onClick={() => onRemove(a.id)}>

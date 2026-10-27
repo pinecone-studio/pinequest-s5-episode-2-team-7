@@ -16,7 +16,7 @@ export default async function AdminNewsPage() {
     <main>
       <PageHeader
         title="Эрүүл мэндийн мэдээ"
-        subtitle="Зөвхөн нийтлэгдсэн (published) мэдээ оюутанд харагдана. RSS-ээс татсан мэдээ машин орчуулгатай ноорог болж орно — шалгаад нийтэлнэ үү."
+        subtitle="Зөвхөн нийтлэгдсэн (published) мэдээ хэрэглэгчдэд харагдана. RSS-ээс татсан мэдээ машин орчуулгатай ноорог болж орно — шалгаад нийтэлнэ үү."
         actions={
           <div className="flex items-start gap-2">
             <NewsImportButton />

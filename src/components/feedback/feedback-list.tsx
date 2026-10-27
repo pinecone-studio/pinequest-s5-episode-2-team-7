@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { cn } from "@/components/ui";
 import { scoreColor } from "@/lib/coach/labels";
+import { formatDateTime } from "@/lib/i18n";
 import { scenarioHistory } from "@/lib/practice/history";
 import { quizHistory } from "@/lib/quiz-client";
 
@@ -116,7 +117,7 @@ export function ScoreRow({ score, title, detail, date, badge }: { score: number;
           {badge && <span className="shrink-0 rounded-full bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold text-accent-deep">{badge}</span>}
         </span>
         <span className="line-clamp-2 text-xs text-muted">{detail}</span>
-        <span className="text-[11px] text-subtle">{new Date(date).toLocaleString("mn-MN", { dateStyle: "medium", timeStyle: "short" })}</span>
+        <span className="text-[11px] text-subtle">{formatDateTime(date)}</span>
       </span>
     </div>
   );

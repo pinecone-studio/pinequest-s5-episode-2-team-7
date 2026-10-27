@@ -32,8 +32,24 @@ export const NEWS_CATEGORY_LABELS: Record<string, string> = {
   education: "Боловсрол",
 };
 
-export function formatDateTime(iso: string): string {
-  const d = new Date(iso);
+/**
+ * Dates in Mongolia time (UTC+8, no daylight saving), the same on the server
+ * (UTC on Vercel) and in any browser, so server-rendered client components
+ * hydrate without a mismatch. Browsers have no "mn" locale data, so no Intl.
+ */
+function ulaanbaatar(iso: string) {
+  const d = new Date(new Date(iso).getTime() + 8 * 3_600_000);
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return { y: d.getUTCFullYear(), m: pad(d.getUTCMonth() + 1), d: pad(d.getUTCDate()), time: `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}` };
+}
+
+export function formatDateTime(iso: string): string {
+  const t = ulaanbaatar(iso);
+  return `${t.y}.${t.m}.${t.d} ${t.time}`;
+}
+
+/** "10.27" for short due dates. */
+export function formatDay(iso: string): string {
+  const t = ulaanbaatar(iso);
+  return `${t.m}.${t.d}`;
 }

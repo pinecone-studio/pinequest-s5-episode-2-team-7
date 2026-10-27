@@ -9,7 +9,7 @@ export default async function AdminNewNewsPage() {
   await requirePageAdmin("/admin/news/new");
   return (
     <main>
-      <PageHeader title="Шинэ мэдээ" subtitle="Мэдээ ноорог төлөвтэй үүснэ. Жагсаалтаас «Нийтлэгдсэн» болговол оюутанд харагдана." />
+      <PageHeader title="Шинэ мэдээ" subtitle="Мэдээ ноорог төлөвтэй үүснэ. Жагсаалтаас «Нийтлэгдсэн» болговол хэрэглэгчдэд харагдана." />
       <NewsForm />
     </main>
   );

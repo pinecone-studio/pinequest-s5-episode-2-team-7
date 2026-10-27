@@ -39,7 +39,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         <Providers>
           <Suspense>
-            <AppNav user={session ? { name: session.name, admin: session.role === "admin" } : null} />
+            <AppNav user={session ? { id: session.userId, name: session.name, admin: session.role === "admin" } : null} />
           </Suspense>
           <div className="flex flex-1 flex-col">{children}</div>
           {/* Room for the floating tab bar on phones. */}

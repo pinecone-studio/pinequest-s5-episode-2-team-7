@@ -24,8 +24,12 @@ function useLocalHistory() {
 }
 
 /** Days in a row (ending today or yesterday) with at least one case, quiz or conversation. */
+const noSubscribe = () => () => {};
+
 export function StreakBadge({ coachDates }: { coachDates: string[] }) {
   const { attempts, cases } = useLocalHistory();
+  // "Today" is the viewer's day, which the server cannot know: render after hydration only.
+  const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   const local = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   const days = new Set([...coachDates, ...attempts.map((a) => a.date), ...cases.map((c) => c.date)].map((d) => local(new Date(d))));
   const cursor = new Date();
@@ -35,7 +39,7 @@ export function StreakBadge({ coachDates }: { coachDates: string[] }) {
     streak++;
     cursor.setDate(cursor.getDate() - 1);
   }
-  if (streak === 0) return null;
+  if (!hydrated || streak === 0) return null;
   return (
     <span className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-2 text-sm font-semibold text-white ring-1 ring-white/55" aria-label={`${streak} өдөр дараалан дадлага хийсэн`}>
       <Flame size={16} aria-hidden /> {streak} өдөр
