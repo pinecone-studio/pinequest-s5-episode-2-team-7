@@ -6,7 +6,7 @@ import { apiFetch } from "./fetcher";
 
 export interface QuizQuestion {
   id: string;
-  kind: "open" | "choice";
+  kind: "open" | "choice" | "case";
   prompt: string;
   options: string[];
   keyPoints: string[];

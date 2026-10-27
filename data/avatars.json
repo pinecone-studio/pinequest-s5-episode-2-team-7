@@ -51,5 +51,33 @@
   "vomiting-thirst-01": {
     "anam": "400b9683-114e-4336-8348-f78a6860de54",
     "name": "Mateo"
+  },
+  "coach-patient": {
+    "anam": "32673c5e-f85f-4a87-a104-b92b7de9cb39",
+    "name": "Mei"
+  },
+  "coach-student": {
+    "anam": "cdd5ceb2-3edc-4d2f-a013-82b885784dfd",
+    "name": "Jun"
+  },
+  "coach-callcenter": {
+    "anam": "cc97774e-853d-4ca0-b31c-d1d927251b00",
+    "name": "Hana"
+  },
+  "coach-reception": {
+    "anam": "ccf00c0e-7302-455b-ace2-057e0cf58127",
+    "name": "Kevin"
+  },
+  "coach-buyer": {
+    "anam": "cc97774e-853d-4ca0-b31c-d1d927251b00",
+    "name": "Hana"
+  },
+  "coach-tourist": {
+    "anam": "dc9aa3e1-32f2-499e-9921-ecabac1076fc",
+    "name": "Bella"
+  },
+  "coach-dispatch103": {
+    "anam": "32673c5e-f85f-4a87-a104-b92b7de9cb39",
+    "name": "Mei"
   }
 }

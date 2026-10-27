@@ -9,6 +9,8 @@ export interface FeedItem {
   link: string;
   description: string;
   publishedAt: Date | null;
+  /** An http(s) picture the feed publishes for the item, if any. */
+  image: string | null;
 }
 
 const NAMED_ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", hellip: "…", mdash: "—", ndash: "–", rsquo: "’", lsquo: "‘", rdquo: "”", ldquo: "“" };
@@ -53,6 +55,23 @@ function parseDate(raw: string | null): Date | null {
 
 const isHttpUrl = (url: string) => /^https?:\/\/\S+$/i.test(url);
 
+/** The feed's own picture: media:content / media:thumbnail, an image enclosure, or an <img> in the description. */
+export function feedImage(block: string): string | null {
+  const attr = (tag: string, test?: (attrs: string) => boolean) => {
+    for (const m of block.matchAll(new RegExp(`<${tag}\\b([^>]*)>`, "gi"))) {
+      const attrs = m[1];
+      if (test && !test(attrs)) continue;
+      const url = attrs.match(/url=["']([^"']+)["']/i)?.[1];
+      if (url) return decodeEntities(url);
+    }
+    return null;
+  };
+  const isImage = (attrs: string) => !/type=/i.test(attrs) || /type=["']image\//i.test(attrs);
+  const fromImg = decodeEntities(block.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")).match(/<img\b[^>]*src=["']([^"']+)["']/i)?.[1] ?? null;
+  const url = attr("media:content", (a) => isImage(a) && !/medium=["'](?!image)/i.test(a)) ?? attr("media:thumbnail") ?? attr("enclosure", (a) => /type=["']image\//i.test(a)) ?? fromImg;
+  return url && isHttpUrl(url) ? url.replace(/^http:\/\//i, "https://") : null;
+}
+
 /** Items without a title or an http(s) link are dropped. */
 export function parseFeed(xml: string): FeedItem[] {
   const blocks: { kind: "rss" | "atom"; xml: string }[] = [...xml.matchAll(/<item[\s>][\s\S]*?<\/item>/gi)].map((m) => ({ kind: "rss", xml: m[0] }));
@@ -70,7 +89,7 @@ export function parseFeed(xml: string): FeedItem[] {
       block.kind === "rss"
         ? parseDate(tagContent(block.xml, "pubDate") ?? tagContent(block.xml, "dc:date"))
         : parseDate(tagContent(block.xml, "published") ?? tagContent(block.xml, "updated"));
-    items.push({ title, link, description, publishedAt });
+    items.push({ title, link, description, publishedAt, image: feedImage(block.xml) });
   }
   return items;
 }

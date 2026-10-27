@@ -37,6 +37,7 @@ export interface NewsArticle {
   category: string;
   sourceName: string | null;
   sourceUrl: string | null;
+  imageUrl: string | null;
   origin: "manual" | "rss";
   originalTitle: string | null;
   status: NewsStatus;
@@ -53,6 +54,7 @@ function toArticle(row: NewsArticleRow): NewsArticle {
     category: row.category,
     sourceName: row.sourceName,
     sourceUrl: row.sourceUrl,
+    imageUrl: row.imageUrl,
     origin: row.origin,
     originalTitle: row.originalTitle,
     status: row.status,

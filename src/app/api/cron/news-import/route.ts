@@ -19,7 +19,7 @@ function isCronRequest(request: Request): boolean {
 /** Daily news import, called by Vercel Cron (see vercel.json) with CRON_SECRET. */
 export const GET = route(async (request) => {
   if (!isCronRequest(request)) throw Errors.unauthorized();
-  const result = await importNewsFromFeeds();
+  const result = await importNewsFromFeeds({ publish: getConfig().NEWS_AUTO_PUBLISH === "true" });
   console.info(`[news] cron import: ${result.created} created, ${result.skipped} skipped, ${result.failed} failed`);
   return NextResponse.json(result);
 });

@@ -1,4 +1,6 @@
 import "server-only";
+import Anthropic from "@anthropic-ai/sdk";
+import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { getConfig } from "@/lib/config";
 import { GeminiPatientProvider } from "@/lib/patient/providers/gemini";
@@ -50,24 +52,59 @@ export function parseTranslation(text: string): Translation {
   return { title: data.title, summary: data.summary, category };
 }
 
+function userMessage(input: TranslationInput): string {
+  return JSON.stringify({ source: input.sourceName, title: input.title, description: input.description.slice(0, 1500) });
+}
+
 /**
- * Gemini translator (uses GEMINI_API_KEY whatever PATIENT_PROVIDER is).
- * Returns null when no key is configured.
+ * News translator: Gemini (GEMINI_API_KEY, free tier) first, Claude
+ * (ANTHROPIC_API_KEY, the small classifier model) when Gemini is missing or
+ * fails (quota, network). Returns null when neither key is configured.
  */
 export function getNewsTranslator(): NewsTranslator | null {
   const config = getConfig();
-  if (!config.GEMINI_API_KEY) return null;
-  const gemini = new GeminiPatientProvider(config.GEMINI_API_KEY, config.GEMINI_MODEL);
-  return async (input) => {
-    const text = await gemini.complete(
+  if (!config.GEMINI_API_KEY && !config.ANTHROPIC_API_KEY) return null;
+  const gemini = config.GEMINI_API_KEY ? new GeminiPatientProvider(config.GEMINI_API_KEY, config.GEMINI_MODEL) : null;
+  // Explicit base URL: never inherit ANTHROPIC_BASE_URL from the host environment.
+  const claude = config.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: config.ANTHROPIC_API_KEY, maxRetries: 1, baseURL: "https://api.anthropic.com" }) : null;
+
+  const viaGemini = async (input: TranslationInput) =>
+    parseTranslation(
+      await gemini!.complete(
+        { system: SYSTEM, messages: [{ role: "user", content: userMessage(input) }], maxTokens: 800, temperature: 0.2 },
+        { signal: AbortSignal.timeout(config.PROVIDER_TIMEOUT_MS) },
+      ),
+    );
+
+  // Structured output: the reply is always the JSON object, no parsing guesswork.
+  const ClaudeJson = z.object({ title: z.string(), summary: z.string(), category: z.enum(NEWS_CATEGORIES) });
+  const viaClaude = async (input: TranslationInput) => {
+    const reply = await claude!.beta.messages.parse(
       {
+        model: config.ANTHROPIC_CLASSIFIER_MODEL,
+        max_tokens: 1000,
         system: SYSTEM,
-        messages: [{ role: "user", content: JSON.stringify({ source: input.sourceName, title: input.title, description: input.description.slice(0, 1500) }) }],
-        maxTokens: 800,
-        temperature: 0.2,
+        messages: [{ role: "user", content: userMessage(input) }],
+        output_config: { format: betaZodOutputFormat(ClaudeJson) },
       },
       { signal: AbortSignal.timeout(config.PROVIDER_TIMEOUT_MS) },
     );
-    return parseTranslation(text);
+    if (!reply.parsed_output) throw new Error("Translator reply has no JSON object");
+    return parseTranslation(JSON.stringify(reply.parsed_output));
+  };
+
+  // After one Gemini failure in a run, go straight to Claude (no 20 s timeout per item).
+  let geminiDown = false;
+  return async (input) => {
+    if (gemini && !geminiDown) {
+      try {
+        return await viaGemini(input);
+      } catch (error) {
+        if (!claude) throw error;
+        geminiDown = true;
+        console.warn(`[news] Gemini failed, using Claude: ${error instanceof Error ? error.message : error}`);
+      }
+    }
+    return viaClaude(input);
   };
 }
