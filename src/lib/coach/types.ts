@@ -17,6 +17,8 @@ export type CoachDifficulty = (typeof COACH_DIFFICULTIES)[number];
 export interface RubricItem {
   id: string;
   label: string;
+  /** Relative importance (1–5) set in the avatar studio; missing = 1. */
+  weight?: number;
 }
 
 /** One practice persona with everything the AI needs to play and grade it. */
@@ -52,6 +54,10 @@ export interface CoachPack {
   rubric: RubricItem[];
   gradingNotes?: string;
   orgName?: string;
+  /** Avatar studio: the questions the persona must ask, in order. */
+  questions?: string[];
+  /** Made by a manager in the avatar studio (not drafted by AI from material). */
+  studio?: boolean;
 }
 
 /** What the browser and the app may see of a pack. */
@@ -77,6 +83,9 @@ export interface PublicPack {
   orgName: string | null;
   /** Custom packs: the team it was shared with (null = private to its owner). */
   teamId: string | null;
+  /** How many fixed questions the persona asks (the questions themselves stay hidden). */
+  questionCount: number;
+  studio: boolean;
 }
 
 export function publicPack(p: CoachPack, teamId: string | null = null): PublicPack {
@@ -101,6 +110,8 @@ export function publicPack(p: CoachPack, teamId: string | null = null): PublicPa
     factCount: p.facts?.length ?? 0,
     orgName: p.orgName ?? null,
     teamId,
+    questionCount: p.questions?.length ?? 0,
+    studio: Boolean(p.studio),
   };
 }
 

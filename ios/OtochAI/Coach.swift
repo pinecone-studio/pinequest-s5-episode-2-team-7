@@ -32,6 +32,8 @@ struct CoachPack: Codable, Identifiable, Hashable {
     let factCount: Int
     let orgName: String?
     let teamId: String?
+    var questionCount: Int? = nil
+    var studio: Bool? = nil
 
     var isCustom: Bool { kind == "custom" }
 
@@ -159,6 +161,13 @@ final class CoachStore: ObservableObject {
         } catch {
             self.error = error.localizedDescription
         }
+    }
+
+    /// «Аватар студи»: a persona the manager wrote by hand (saved at once, no AI call).
+    func createStudioPack(_ body: [String: Any]) async throws -> CoachPack {
+        let pack = try await ServerAPI.post("api/coach/studio", body, as: PackBody.self).pack
+        custom.insert(pack, at: 0)
+        return pack
     }
 
     /// Company material → a new persona (20–40 s: Claude reads it).

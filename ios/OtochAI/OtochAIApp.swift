@@ -31,23 +31,42 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var askedSignIn = false
     @State private var showSignIn = false
+    @State private var keyboardShown = false
+    @ObservedObject private var chrome = AppChrome.shared
 
     /// No role yet, or one from the old health-only version: show the new onboarding.
+    /// One tab's screen: always alive, shown only when selected.
+    private func page<V: View>(_ which: AppTab, @ViewBuilder _ content: () -> V) -> some View {
+        content()
+            .opacity(tab == which ? 1 : 0)
+            .allowsHitTesting(tab == which)
+            .accessibilityHidden(tab != which)
+    }
+
     private var needsRole: Bool { UserRole(rawValue: roleRaw).map { !UserRole.pickable.contains($0) } ?? true }
 
     var body: some View {
-        TabView(selection: $tab) {
-            HomeView(tab: $tab).tag(AppTab.home).tabContent()
-            QuizView().tag(AppTab.quiz).tabContent()
-            CoachHub().tag(AppTab.coach).tabContent()
-            TeamView().tag(AppTab.team).tabContent()
-            FeedbackView().tag(AppTab.feedback).tabContent()
+        // A ZStack of live pages (state is kept when switching) with the floating bar as a bottom
+        // safe-area inset: every screen, scrolling or not, stops above the bar instead of under it.
+        ZStack {
+            page(.home) { HomeView(tab: $tab) }
+            page(.quiz) { QuizView() }
+            page(.coach) { CoachHub() }
+            page(.team) { TeamView() }
+            page(.feedback) { FeedbackView() }
         }
-        .overlay(alignment: .bottom) {
-            FloatingTabBar(tab: $tab, teamBadge: team.unseen)
-                .padding(.bottom, 2)
-                .ignoresSafeArea(.keyboard)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            // Hidden while typing (and in full-screen flows such as answering a Сорил).
+            if !keyboardShown && !chrome.hideTabBar {
+                FloatingTabBar(tab: $tab, teamBadge: team.unseen)
+                    .padding(.bottom, 2)
+                    .transition(.opacity)
+            }
         }
+        .animation(.easeOut(duration: 0.15), value: keyboardShown)
+        .animation(.easeOut(duration: 0.15), value: chrome.hideTabBar)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in keyboardShown = true }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in keyboardShown = false }
         .tint(brand)
         .preferredColorScheme(.dark)
         .environmentObject(history)
@@ -88,13 +107,14 @@ struct RootView: View {
     }
 }
 
-private extension View {
-    /// Hides the system tab bar and keeps content clear of the floating one.
-    func tabContent() -> some View {
-        self.toolbar(.hidden, for: .tabBar)
-            .safeAreaInset(edge: .bottom, spacing: 0) { Color.clear.frame(height: 92) }
-    }
+/// App-wide chrome state: a full-screen flow (answering a Сорил) hides the floating tab bar
+/// so its own bottom buttons are not covered.
+final class AppChrome: ObservableObject {
+    static let shared = AppChrome()
+    @Published var hideTabBar = false
 }
+
+
 
 /// The floating pill tab bar: an icon with its name under it, the selected one
 /// magenta; the AI дасгалжуулагч sits in the middle as the orb.

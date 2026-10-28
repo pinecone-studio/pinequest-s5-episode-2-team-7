@@ -7,6 +7,7 @@ import { getConfig } from "@/lib/config";
 import { MAX_STT_BYTES, isSpeechWav, transcribe } from "@/lib/speech/chimege";
 import { synthesizeElevenLabs } from "@/lib/speech/elevenlabs";
 import { speak, voiceFor } from "@/lib/speech/features";
+import { weightedScore } from "./studio";
 import { COACH_EMOTIONS, type CoachDebrief, type CoachDifficulty, type CoachEmotion, type CoachLine, type CoachMode, type CoachPack, type TurnEvent } from "./types";
 
 /**
@@ -31,7 +32,13 @@ function getClient(): Anthropic {
 function aiError(error: unknown): never {
   if (error instanceof ApiError) throw error;
   if (error instanceof Anthropic.RateLimitError) throw new ApiError(429, "rate_limited", "AI түр завгүй байна. Хэдэн секундын дараа дахин оролдоно уу.");
-  if (error instanceof Anthropic.BadRequestError) throw Errors.badRequest("Материалыг уншиж чадсангүй. Зураг тод, PDF гэмтэлгүй эсэхийг шалгана уу.");
+  if (error instanceof Anthropic.BadRequestError) {
+    console.error("[coach] Anthropic 400:", error.message);
+    if (/credit balance/i.test(error.message)) {
+      throw new ApiError(503, "coach_unavailable", "AI үйлчилгээний эрх (кредит) дууссан байна. Админ Anthropic Console → Plans & Billing-ээс цэнэглэнэ үү.");
+    }
+    throw Errors.badRequest("Материалыг уншиж чадсангүй. Зураг тод, PDF гэмтэлгүй эсэхийг шалгана уу.");
+  }
   if (error instanceof Anthropic.APIConnectionError) throw new ApiError(502, "coach_network", "AI-д холбогдож чадсангүй. Дахин оролдоно уу.");
   throw error;
 }
@@ -63,7 +70,7 @@ ${list(p.hidden)}
 
 ДҮРИЙН ЗАН БАЙДАЛ:
 ${list(p.rules)}
-${p.facts?.length ? `\nБАЙГУУЛЛАГЫН МЭДЭЭЛЭЛ (чи үйлчлүүлэгч тул үүнийг нарийн мэдэхгүй; асуух сэдэв, ажилтны хариу зөв эсэхийг мэдрэхэд ашигла):\n${list(p.facts)}\n` : ""}
+${p.facts?.length ? `\nБАЙГУУЛЛАГЫН МЭДЭЭЛЭЛ (чи үйлчлүүлэгч тул үүнийг нарийн мэдэхгүй; асуух сэдэв, ажилтны хариу зөв эсэхийг мэдрэхэд ашигла):\n${list(p.facts)}\n` : ""}${p.questions?.length ? `\nАСУУЛТУУД (менежерийн тогтоосон, заавал бүгдийг асуух):\n${p.questions.map((q, i) => `${i + 1}. ${q}`).join("\n")}\n` : ""}
 ЕРӨНХИЙ ДҮРЭМ:
 - ${where} ${lang} Богино: ихэвчлэн 1–2 өгүүлбэр, хэзээ ч 3-аас олон биш.
 - Жинхэнэ хүн шиг: сэтгэл хөдлөлдөө тохирсон, заримдаа тасархай, давталттай. Жагсаалт, тайлбар, албан хэллэг бүү хэрэглэ.
@@ -332,7 +339,7 @@ export async function gradeConversation(pack: CoachPack, input: { difficulty: Co
 Дүр: ${pack.persona.name} — ${pack.persona.description}
 Хүндийн зэрэг: ${DIFFICULTY_TEXT[input.difficulty]}
 Шалгуурууд (id: тайлбар):
-${pack.rubric.map((r) => `- ${r.id}: ${r.label}`).join("\n")}
+${pack.rubric.map((r) => `- ${r.id}: ${r.label}${r.weight && r.weight > 1 ? ` (ач холбогдол ${r.weight}/5)` : ""}`).join("\n")}
 ${pack.facts?.length ? `БАЙГУУЛЛАГЫН МЭДЭЭЛЭЛ:\n${list(pack.facts)}\n` : ""}${pack.gradingNotes ? `Тэмдэглэл: ${pack.gradingNotes}\n` : ""}
 Заавар:
 - rubric: шалгуур бүрийг дээрх id, label-аар нь yes / partial / no гэж үнэлж, evidence-д тэмдэглэлээс секундээр иш тат.
@@ -349,7 +356,9 @@ ${pack.facts?.length ? `БАЙГУУЛЛАГЫН МЭДЭЭЛЭЛ:\n${list(pack.
     });
     if (!response.parsed_output) throw new ApiError(502, "coach_bad_response", "AI-н дүгнэлт дутуу ирлээ. Дахин оролдоно уу.");
     const d = response.parsed_output;
-    return { ...d, score: Math.max(0, Math.min(100, Math.round(d.score))) };
+    // Studio packs: the manager's weights decide the score, so it can be explained line by line.
+    const weighted = pack.studio ? weightedScore(pack.rubric, d.rubric) : null;
+    return { ...d, score: Math.max(0, Math.min(100, Math.round(weighted ?? d.score))) };
   } catch (error) {
     aiError(error);
   }

@@ -193,7 +193,10 @@ private struct SetupView: View {
                     }
                 }
 
-                Button(action: start) {
+                Button {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    start()
+                } label: {
                     Label("Асуулт бэлдэх", systemImage: "sparkles")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
@@ -407,6 +410,8 @@ private struct AnsweringView: View {
             Button("За", role: .cancel) {}
         } message: { Text(pdfError ?? "") }
         .animation(.default, value: index)
+        .onAppear { AppChrome.shared.hideTabBar = true }
+        .onDisappear { AppChrome.shared.hideTabBar = false }
     }
 }
 

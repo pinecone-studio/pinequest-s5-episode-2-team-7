@@ -74,6 +74,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
   const [showChat, setShowChat] = useState(false);
   const [avatarOn, setAvatarOn] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const callRef = useRef<CoachCall | null>(null);
   const avatarRef = useRef<AvatarHandle>(null);
   const recorderRef = useRef<Recorder | null>(null);
@@ -85,9 +86,11 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
   const video = mode === "video" && Boolean(voice?.avatar && voice.avatarProvider === "anam");
 
   useEffect(() => {
-    apiFetch<{ pack: PublicPack; voice: VoiceFeatures }>(`/api/coach/packs/${encodeURIComponent(packRef)}`)
-      .then(({ pack, voice }) => {
+    const query = challengeId ? `?challenge=${encodeURIComponent(challengeId)}` : "";
+    apiFetch<{ pack: PublicPack; voice: VoiceFeatures; attemptsLeft: number | null }>(`/api/coach/packs/${encodeURIComponent(packRef)}${query}`)
+      .then(({ pack, voice, attemptsLeft }) => {
         setPack(pack);
+        setAttemptsLeft(attemptsLeft ?? null);
         setVoice(voice);
         setEmotion(pack.openingEmotion);
         setPhase("intro");
@@ -96,7 +99,7 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
         setError(e instanceof Error ? e.message : "Дадлагыг ачаалж чадсангүй.");
         setPhase("error");
       });
-  }, [packRef]);
+  }, [packRef, challengeId]);
 
   useEffect(() => {
     return () => {
@@ -362,7 +365,12 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
             {challengeId ? " · 🏆 Сорилт" : ""}
           </p>
         </div>
-        {(live || phase === "grading") && <span className="font-mono text-sm tabular-nums text-[#cbd5e1]">{fmt(seconds)}</span>}
+        {(live || phase === "grading") && (
+          // Challenges count down (the manager's time limit); free practice counts up.
+          <span className={cn("font-mono text-sm tabular-nums", challengeId && pack.maxSec - seconds <= 30 ? "text-[#fda4af]" : "text-[#cbd5e1]")}>
+            {challengeId ? `⏱ ${fmt(Math.max(0, pack.maxSec - seconds))}` : fmt(seconds)}
+          </span>
+        )}
       </header>
 
       <div className="relative min-h-0 flex-1">
@@ -372,6 +380,12 @@ export function CoachSession({ packRef, mode: askedMode, difficulty, challengeId
             <h1 className="text-xl font-bold">{pack.title}</h1>
             <p className="max-w-md text-sm text-[#cbd5e1]">{pack.subtitle}</p>
             <p className="max-w-md rounded-2xl bg-[#0c1a2e] p-4 text-left text-sm leading-relaxed text-[#e2e8f0]">{pack.brief}</p>
+            {challengeId && (
+              <p className="text-xs text-[#cbd5e1]">
+                ⏱ {Math.round(pack.maxSec / 60)} минут{pack.questionCount ? ` · ${pack.questionCount} асуулт` : ""}
+                {attemptsLeft !== null ? ` · үлдсэн оролдлого: ${attemptsLeft}` : ""}
+              </p>
+            )}
             {pack.draft && <p className="max-w-md text-xs text-[#fcd34d]">⚠️ Ноорог агуулга: мэргэжлийн байгууллагаар баталгаажуулна.</p>}
             {mode === "video" && !video && <p className="max-w-md text-xs text-[#fcd34d]">Видео аватар одоогоор тохируулагдаагүй тул дуугаар үргэлжилнэ.</p>}
             <p className="text-xs text-[#94a3b8]">Товч дарахгүйгээр зүгээр л ярина. Чихэвч зүүвэл илүү найдвартай.</p>
