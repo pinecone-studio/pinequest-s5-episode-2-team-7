@@ -87,6 +87,8 @@ final class TeamStore: ObservableObject {
     @Published private(set) var needsSignIn = false
     @Published private(set) var error: String?
     @Published private(set) var loaded = false
+    /// The server could not be reached (usually an old Cloudflare tunnel address).
+    @Published private(set) var offline = false
     /// New results (owners) or new challenges (members) since the «Баг» tab was last opened.
     @Published private(set) var unseen = 0
 
@@ -110,13 +112,20 @@ final class TeamStore: ObservableObject {
         do {
             teams = try await ServerAPI.get("api/teams", as: Overview.self).teams
             needsSignIn = false
+            offline = false
             error = nil
             loaded = true
             refreshUnseen()
         } catch QuizAPIError.notSignedIn {
             needsSignIn = true
+            offline = false
+            error = nil
             teams = []
+        } catch QuizAPIError.network {
+            offline = true
+            error = nil
         } catch {
+            offline = false
             self.error = error.localizedDescription
         }
     }
@@ -245,10 +254,17 @@ struct TeamView: View {
                             .font(.subheadline).foregroundStyle(.white.opacity(0.9))
                     }
 
-                    if team.needsSignIn {
+                    if team.offline {
+                        ServerAddressCard {
+                            await team.load()
+                            await coach.load()
+                        }
+                    } else if team.needsSignIn {
                         SignInBanner(text: "Багт нэгдэх эсвэл баг үүсгэхийн тулд нэвтэрнэ үү.") { showSignIn = true }
                     } else if team.loaded && team.teams.isEmpty {
                         startCards
+                    } else if !team.loaded && team.error == nil {
+                        ProgressView().frame(maxWidth: .infinity).padding(.top, 30)
                     }
 
                     ForEach(team.teams) { t in
@@ -562,6 +578,53 @@ private struct FeedRow: View {
                 Image(systemName: passed ? "checkmark.seal.fill" : "xmark.seal").foregroundStyle(passed ? Theme.ok : Theme.alert)
             }
             Image(systemName: "chevron.right").font(.caption).foregroundStyle(Theme.subtle)
+        }
+    }
+}
+
+/// Shown when the server cannot be reached: the Cloudflare tunnel address changes on every run,
+/// so the user can paste the new one here instead of rebuilding the app.
+struct ServerAddressCard: View {
+    let reload: () async -> Void
+    @State private var address = Config.urlString
+    @State private var working = false
+    @State private var note: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Сервертэй холбогдож чадсангүй", systemImage: "wifi.exclamationmark")
+                .font(.headline).foregroundStyle(Theme.ink)
+            Text("«Баг» хэсэг серверээс мэдээлэл авдаг. Компьютер дээрээ сервер (npm run dev) болон cloudflared tunnel асаалттай эсэхийг шалгаад, tunnel-ийн шинэ хаягийг доор оруулна уу.")
+                .font(.caption).foregroundStyle(Theme.muted)
+            TextField("https://….trycloudflare.com", text: $address)
+                .keyboardType(.URL)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .padding(12).background(Theme.field, in: RoundedRectangle(cornerRadius: 14))
+            HStack(spacing: 10) {
+                Button {
+                    guard Config.setURL(address) else { note = "Хаяг буруу байна. Жишээ: https://abc-def.trycloudflare.com"; return }
+                    address = Config.urlString
+                    retry()
+                } label: { Text("Хадгалаад холбогдох") }
+                    .buttonStyle(.primary)
+                    .disabled(working)
+                Button { retry() } label: { Text("Дахин оролдох") }
+                    .buttonStyle(.secondary)
+                    .disabled(working)
+            }
+            if working { ProgressView() }
+            if let note { Text(note).font(.caption).foregroundStyle(Theme.alert) }
+        }
+        .card(padding: 16, radius: 22)
+    }
+
+    private func retry() {
+        working = true
+        note = nil
+        Task {
+            await reload()
+            working = false
         }
     }
 }
