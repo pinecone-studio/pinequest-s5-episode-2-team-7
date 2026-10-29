@@ -22,6 +22,37 @@ missed and why it matters.
 Мэдэхгүй ээ, эмч ээ. Тийм болохоор л танд үзүүлэх гэж ирсэн шүү дээ.
 ```
 
+## OTech AI — AI coach (AI дасгалжуулагч)
+
+The same server also powers **OTech AI**, a SwiftUI iOS app (`ios/OtochAI/`)
+for practising real conversations on an AI before having them with real people.
+The app opens the web `/coach` page for the live call.
+
+- **Practice personas** (`src/lib/coach/packs.ts`): patient, student, call
+  center, reception, buyer, English-speaking tourist and an AI 103 emergency
+  call. The persona speaks Mongolian (or English), by voice or as a talking
+  video avatar, then grades the conversation against a rubric. Patient and 103
+  content is a **draft** until a doctor / the 103 centre reviews it.
+- **AI custom**: a company uploads its material (PDF, photos, text) and Claude
+  writes a persona for its new staff; their answers are graded against facts
+  taken only from that material (the AI must not invent any). Fictional test material is in [`samples/`](samples/).
+- **Teams** (`/api/teams`): an employer creates a team, staff join with a code,
+  the owner gives challenges (persona, target score, deadline) and sees every
+  member's results.
+- **Сорил / Шүүлэг** (`/api/quiz`, `/exam`): study material → exam questions
+  with answer keys, graded answers and a short lesson on weak topics.
+
+| Path | What |
+|---|---|
+| `/coach?pack=<id>&mode=video\|audio&difficulty=easy\|medium\|hard` | Live practice call (opened by the iOS app) |
+| `src/lib/coach/engine.ts` | Claude: streamed persona replies, packs from material, grading, speech |
+| `src/lib/services/coach.ts` | Custom packs, teams, challenges, results (Drizzle, `drizzle/0004_coach.sql`) |
+| `src/app/api/coach/*`, `src/app/api/teams/*`, `src/app/api/quiz/*` | API |
+
+The coach needs `ANTHROPIC_API_KEY`; voice and avatar keys are optional (see
+[Configuration](#configuration)). Continuing the work on another computer:
+[`OTECH_HANDOFF.md`](OTECH_HANDOFF.md).
+
 ## What works now
 
 | Area | Status |
