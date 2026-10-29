@@ -1,6 +1,6 @@
 # OTech AI — өөр компьютер дээр үргэлжлүүлэх даалгавар (Claude-д зориулав)
 
-> Энэ файлыг уншаад доорх **ДААЛГАВАР**-ыг гүйцэтгэнэ үү. Эхлээд `../OTECH_AI_NOTES.md`-г (ажлын тэмдэглэл) уншина.
+> Энэ файлыг уншаад доорх **ДААЛГАВАР**-ыг гүйцэтгэнэ үү. Эхлээд `OTECH_AI_NOTES.md`-г (ажлын тэмдэглэл) уншина — энэ файл репонд байхгүй, эзэмшигчээс zip-ээр ирдэг; репогийн гадна, хажуу хавтсанд нь байна.
 > Бүх UI бичвэр монгол хэлээр. Код, тайлбар (comment) англиар байж болно.
 
 ## Төсөл юу вэ
@@ -9,7 +9,7 @@ OTech AI — «Жинхэнэ хүн дээр алдахаас өмнө AI дэ�
 утсаар монголоор ярьж, дараа нь шалгуураар дүгнэдэг. Ажил олгогч баг үүсгэж, сорилт өгч, үр дүнг хардаг.
 
 ## Бүтэц
-- `pinequest-team7/` — Next.js 16 сервер + вэб (дадлагын хуудас). **AGENTS.md-г заавал унш: Next.js 16 нь өөрчлөгдсөн API-тай.**
+- Репогийн үндэс (`/`) — Next.js 16 сервер + вэб (дадлагын хуудас). **AGENTS.md-г заавал унш: Next.js 16 нь өөрчлөгдсөн API-тай.**
   - `src/lib/coach/engine.ts` — Claude: дүрийн урсгалтай яриа (`streamTurn`), материалаас багц үүсгэх (`draftPackFromMaterial`), дүгнэлт (`gradeConversation`), дуу.
   - `src/lib/coach/packs.ts` — бэлэн дүрүүд (өвчтөн, сурагч, call center, ресепшн, худалдан авагч, жуулчин, 103).
   - `src/lib/coach/types.ts` — `CoachPack` (бүтэн, нууц мэдээлэлтэй, зөвхөн серверт) ба `PublicPack` (апп руу).
@@ -17,19 +17,20 @@ OTech AI — «Жинхэнэ хүн дээр алдахаас өмнө AI дэ�
   - `src/app/api/coach/*`, `src/app/api/teams/*` — API.
   - `src/components/coach/` — `/coach` хуудас: `coach-call.ts` (VAD, тасалж ярих, өгүүлбэрээр дуу), `coach-session.tsx` (UI, Anam аватар).
   - `src/lib/speech/features.ts` — Anam/Simli токен, `anamAvatarFor` (царай сонгох), ElevenLabs/Chimege дуу. `data/avatars.json` — дүр бүрийн царай.
-- `otoch-ai-ios/` — SwiftUI апп (iOS 17). `Coach.swift` (дүр сонгох, **AI custom** = `CoachCustomView`), `Team.swift`, `Feedback.swift`,
+- `ios/OtochAI/` — SwiftUI апп (iOS 17), Xcode төсөл: `ios/OtochAI.xcodeproj`. `Coach.swift` (дүр сонгох, **AI custom** = `CoachCustomView`), `Team.swift`, `Feedback.swift`,
   `Onboarding.swift`, `ServerAPI.swift`, `Theme.swift` (хар/нил ягаан дизайн). Апп нь `/coach` хуудсыг WKWebView-ээр нээдэг.
   **Swift-ийг зөвхөн Mac + Xcode дээр build хийнэ.**
 
 ## Ажиллуулах
 ```bash
-cd pinequest-team7
+git clone https://github.com/pinecone-studio/pinequest-s5-episode-2-team-7.git
+cd pinequest-s5-episode-2-team-7
 npm install
 # .env файлыг эзэмшигчээс тусад нь (USB/AirDrop) авна. Хэзээ ч git/чатад оруулахгүй.
 npm run dev            # http://localhost:3000 (PGlite өгөгдлийн сан автоматаар үүснэ, migration хэрэгжинэ)
 ```
 Вэбээр турших: бүртгүүлээд `http://localhost:3000/coach?pack=buyer&mode=video` нээнэ.
-Утсаар турших бол: `cloudflared tunnel --url http://localhost:3000` → хаягийг `otoch-ai-ios/OtochAI/Config.swift`-д.
+Утсаар турших бол: `cloudflared tunnel --url http://localhost:3000` → хаягийг `ios/OtochAI/Config.swift`-д.
 
 ## ДААЛГАВАР: «AI custom»-ийг жижиг компанид бэлэн болгох
 Жишээ: машин худалдаалдаг компани `samples/auto-dealer.txt`-ийг (зохиомол) оруулахад шинэ борлуулагчдаа зориулсан
@@ -49,6 +50,6 @@ npm run dev            # http://localhost:3000 (PGlite өгөгдлийн сан
 
 ## Дүрэм
 - Материалд байхгүй баримтыг AI зохиож болохгүй. API түлхүүр зөвхөн серверт.
-- `npx tsc --noEmit` ба `npx eslint` алдаагүй байх. Шинэ migration бол `drizzle/meta/_journal.json`-д нэм.
+- `npm run check` (lint + typecheck + test) алдаагүй байх. Typecheck нь `next typegen`-ийг эхэлж ажиллуулдаг тул `npx tsc --noEmit`-ийг дангаар нь биш `npm run typecheck`-ээр ажиллуул. Шинэ migration бол `drizzle/meta/_journal.json`-д нэм.
 - `.env`, `.data/`, `node_modules/` хуулахгүй, commit хийхгүй.
-- Дуусахад `../OTECH_AI_NOTES.md`-ийн төгсгөлд юу хийснээ, юуг шалгаагүйгээ товч нэм.
+- Дуусахад `OTECH_AI_NOTES.md`-ийн (репогийн гадна) төгсгөлд юу хийснээ, юуг шалгаагүйгээ товч нэм.
